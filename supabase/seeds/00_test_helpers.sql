@@ -39,6 +39,10 @@ end $$;
 create or replace function tests.touch(p_user uuid, p_ago interval default '0 seconds')
 returns void language plpgsql as $$
 begin
+  -- La tabla nace en la Tarea 5; las pruebas anteriores no la necesitan.
+  if to_regclass('private.session_activity') is null then
+    return;
+  end if;
   insert into private.session_activity (session_id, user_id, last_activity_at)
   values (p_user, p_user, now() - p_ago)
   on conflict (session_id) do update set last_activity_at = excluded.last_activity_at;
