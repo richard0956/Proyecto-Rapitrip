@@ -28,3 +28,6 @@ verify_enabled = true
 
 [auth.sessions]
 inactivity_timeout = "10m"
+
+[functions.send-outbox]
+verify_jwt = false
