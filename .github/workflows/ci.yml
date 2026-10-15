@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Aplica migraciones y seeds de prueba. Auth debe correr porque crea el esquema `auth`.
+      - name: Levantar Supabase local
+        run: supabase start
+
+      - name: Pruebas de base de datos (pgTAP)
+        run: supabase test db
+
+      - name: Lint de la base de datos
+        run: supabase db lint --level warning
+
+      - name: Pruebas de Edge Functions
+        run: pnpm fn:test
+
+      - name: Pruebas de paquetes
+        run: pnpm test
+
+      - name: Los tipos generados están al día
+        run: |
+          pnpm db:types
+          git diff --exit-code packages/db-types
+
+      - name: Detener Supabase
+        if: always()
+        run: supabase stop --no-backup
