@@ -16,6 +16,16 @@ enable_signup = true
 enable_anonymous_sign_ins = false
 minimum_password_length = 8
 
+[functions.purge-exports]
+verify_jwt = false
+
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/private/custom_access_token_hook"
+
+[functions.accept-invitation]
+verify_jwt = false
+
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
