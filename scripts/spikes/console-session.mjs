@@ -39,7 +39,10 @@ const { error: bootError } = await admin.rpc("bootstrap_superadmin", { p_user: c
 if (bootError) throw bootError;
 
 const client = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
-const { data: signIn, error: signInError } = await client.auth.signInWithPassword({ email, password });
+// Con el CAPTCHA activo, el inicio de sesión exige un token (CAPTCHA_TOKEN=XXXX.DUMMY.TOKEN.XXXX con la clave de prueba).
+const { data: signIn, error: signInError } = await client.auth.signInWithPassword({
+  email, password, options: { captchaToken: process.env.CAPTCHA_TOKEN },
+});
 if (signInError) throw signInError;
 
 let claims = decode(signIn.session.access_token);
@@ -77,6 +80,6 @@ if (process.env.RUN_FUNCTIONS === "1") {
     });
     return `${res.status} ${await res.text()}`;
   };
-  console.log("5) invite-staff:", await call("invite-staff", { email: "invitado@t.test", role: "admin" }));
+  console.log("5) invite-staff:", await call("invite-staff", { email: process.env.INVITE_EMAIL ?? "invitado@t.test", role: "admin" }));
   console.log("6) export-data:", await call("export-data", { dataset: "accounts", reason: "prueba de exportación local" }));
 }

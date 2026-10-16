@@ -1,4 +1,4 @@
--- Solo local. `supabase db push` nunca ejecuta seeds, así que esto no llega a producción.
+
 create schema if not exists tests;
 
 create or replace function tests.create_user(p_email text, p_full_name text default null)
@@ -19,8 +19,7 @@ begin
   return v_id;
 end $$;
 
--- plpgsql (no sql) y p_role como text: Postgres revisa tablas y tipos de una función sql al
--- crearla, y estas se crean antes que las migraciones de identidad.
+
 create or replace function tests.create_commerce(p_name text default 'Comercio de prueba')
 returns uuid language plpgsql as $$
 declare v_id uuid;
@@ -68,9 +67,20 @@ end $$;
 create or replace function tests.authenticate_as(p_user uuid, p_aal text default 'aal2', p_amr jsonb default null)
 returns void language plpgsql as $$
 begin
+
+  insert into auth.sessions (id, user_id, created_at, updated_at)
+  values (p_user, p_user, now(), now())
+  on conflict (id) do nothing;
   perform tests.touch(p_user);
   perform tests.set_claims(p_user, p_aal, p_amr);
   perform set_config('role', 'authenticated', true);
+end $$;
+
+
+create or replace function tests.age_session(p_user uuid, p_age interval)
+returns void language plpgsql as $$
+begin
+  update auth.sessions set created_at = now() - p_age where id = p_user;
 end $$;
 
 create or replace function tests.authenticate_as_anon()
