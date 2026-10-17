@@ -58,7 +58,7 @@ El diseño aprobado el 16 de octubre cambió al construirse. Los cambios siguien
 | Paleta | Selva `#0B4F45`, Hoja `#006C5F`, Mango `#F59E2B` como acento | Verde esmeralda `#24C08E` y azul marino `#0C4E67` sacados del logo; sin Mango | Aceptado (el logo definió la identidad) |
 | Componentes base | shadcn/ui sobre Radix | Componentes propios con `class-variance-authority`, `clsx` y `tailwind-merge`, íconos de `lucide-react` | Aceptado |
 | Datos en cliente | TanStack Query y Table | No se usan; tablas propias (`DataTable`) y datos desde el servidor | Aceptado; reevaluar si F2 necesita estado de cliente complejo |
-| Cierre por inactividad | 15 minutos en la consola | 10 minutos (`SESSION_INACTIVITY_MINUTES = 10` y `inactivity_timeout = "10m"` en `supabase/config.toml`) | **Por confirmar**: el diseño del backend decía 15 minutos |
+| Cierre por inactividad | 15 minutos en la consola | 15 minutos (`SESSION_INACTIVITY_MINUTES = 15` y `inactivity_timeout = "15m"` en `supabase/config.toml`), igual que la ventana de actividad de la base de datos | **Confirmado el 17 de octubre de 2026**: 15 minutos (antes estaba en 10) |
 | Sesión del cliente | 1 día | 24 horas (`has_valid_session`) | Igual |
 | Áreas de la consola | `admin`, `operations`, `comercio` | `admin`, `caja`, `coordinacion`, `comercio` | Aceptado |
 | Lecturas de auditoría, accesos y comercios | Sin ruta de lectura | Migración 17 (`admin_reads`) con funciones auditadas | Resuelto |
@@ -182,7 +182,7 @@ El token de acceso incluye los roles en el claim `app_roles` (hook `custom_acces
 | Datos personales | `list_anonymization_candidates`, `get_client_detail` | `confirm_anonymization`; Edge Function `export-data` |
 | Auditoría y accesos | `audit_events_page` y `login_events_page` (migración 17); cada consulta queda registrada | n/a |
 
-Latido de actividad: mientras el usuario interactúa se llama a `touch_session`. Sin actividad por 10 minutos la consola cierra la sesión.
+Latido de actividad: mientras el usuario interactúa se llama a `touch_session`. Sin actividad por 15 minutos la consola cierra la sesión.
 
 ### 9.2 Tienda
 
@@ -232,16 +232,24 @@ Regla de terminado: una tarea está terminada cuando las pruebas pasan, el CI es
 - **Configuración de Supabase.** El archivo `config.toml` solo se lee al iniciar: tras cambiarlo hay que correr `pnpm db:stop` y `pnpm db:start`. Con Google activado hacen falta las credenciales en `supabase/.env`, o el arranque falla.
 - **Renovación de la sesión con segundo factor.** Está probada a nivel de base de datos; falta confirmarla desde el navegador (riesgo del informe técnico §12).
 - **Riesgo legal.** Los textos de `/terminos` y `/privacidad` son una base redactada según el comportamiento real del sistema y deben revisarse con un abogado antes de publicar (Ley 787).
-- **Decisión abierta.** Confirmar si el cierre por inactividad de la consola es de 10 o de 15 minutos (sección 4).
+- **Decisión resuelta.** El cierre por inactividad de la consola es de 15 minutos (sección 4).
 
 ## 13. Pendientes de la Fase 1
 
-1. Revisión legal de los textos (fuera del código).
-2. Confirmar el plazo de inactividad.
-3. Prueba manual de la lista de `docs/fase-1-puesta-en-marcha.md`, en especial la renovación del token con segundo factor.
-4. Credenciales reales de Google, Cloudflare y Resend para producción, y rotación del secreto de Google que se compartió en una conversación.
-5. Despliegue en Vercel (dos proyectos) y dominio propio, cuando se decida pasar a producción.
-6. Recuperar o reescribir la especificación y el plan del backend, que ya no están en el repositorio.
+Estado al 17 de octubre de 2026.
+
+| # | Pendiente | Estado |
+|---|---|---|
+| 1 | Revisión legal de los textos (Ley 787) | Abierto: lo hace una persona abogada; fuera del código |
+| 2 | Confirmar el plazo de inactividad (10 o 15 minutos) | Resuelto: 15 minutos en la interfaz, en `config.toml` y en la base de datos (`has_strong_session`) |
+| 3 | Prueba manual de la lista de `docs/fase-1-puesta-en-marcha.md` | Parcial: la renovación del token con segundo factor y las sesiones simultáneas de tienda y consola ya tienen E2E (`e2e/tests/sesion.spec.ts`); el resto de la lista sigue siendo manual |
+| 4 | Credenciales reales de Google, Cloudflare y Resend; rotar el secreto de Google compartido en una conversación | Abierto: solo el titular de las cuentas. El repositorio no contiene secretos (solo `.env.example` vacíos) |
+| 5 | Despliegue en Vercel y dominio propio | Abierto: se decide al pasar a producción |
+| 6 | Recuperar la especificación y el plan del backend | Resuelto como referencia: `docs/backend-referencia.md`, reconstruida desde las migraciones y la base viva |
+
+**Verificado el 17 de octubre de 2026:** la renovación del token (dura 5 minutos) mantiene `aal2` y la sesión fuerte durante 20 minutos de actividad simulada; consola y tienda conviven en el mismo navegador sin cerrarse entre sí; la suite pgTAP completa (24 archivos, 392 pruebas) pasa sobre una base limpia; los E2E de comercio y de accesibilidad pasan con las apps compiladas para producción.
+
+**Corrección posterior:** el horario de las tiendas y la moneda por defecto se habían fijado para Costa Rica por error. Rapitrip opera en Nicaragua: ahora se usa `America/Managua` (migración 24) y el córdoba (`NIO`, configurable con `NEXT_PUBLIC_CURRENCY`).
 
 ## 14. Traspaso a la Fase 2: área de comercio
 
@@ -299,7 +307,7 @@ Estado al 17 de octubre de 2026.
 
 **Decisiones tomadas en las etapas 1 y 2**
 - Los horarios son por tienda, con varios tramos por día y excepciones por fecha (que mandan sobre el horario semanal).
-- La hora de evaluación es la de Costa Rica (`America/Costa_Rica`); el cierre temporal admite hasta 90 días y se puede reabrir a mano.
+- La hora de evaluación es la de Nicaragua (`America/Managua`, UTC−6 sin horario de verano) y la moneda por defecto es el córdoba (`NIO`); el cierre temporal admite hasta 90 días y se puede reabrir a mano.
 - Una tienda sin horario nunca aparece abierta. Desactivar una tienda exige motivo y conserva su historial.
 - Un comercio gestiona solo sus tiendas; administración y dirección ven todas. Toda escritura exige sesión de consola con segundo factor.
 

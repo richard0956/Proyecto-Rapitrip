@@ -119,7 +119,7 @@ function ClosureControls({ store, close, reopen, setStatus }: { store: Store; cl
             run(() => close(store.id, { until, reason }), "Cierre temporal programado.");
           }}
         >
-          <p className="text-[12.5px] text-tinta-suave">Cierre temporal: la tienda no recibe pedidos hasta la fecha que indiques (hora de Costa Rica, máximo 90 días).</p>
+          <p className="text-[12.5px] text-tinta-suave">Cierre temporal: la tienda no recibe pedidos hasta la fecha que indiques (hora de Nicaragua, máximo 90 días).</p>
           <Field label="Reabre el" type="datetime-local" value={until} min={`${todayInStoreZone()}T00:00`} onChange={(e) => setUntil(e.target.value)} required />
           <Field label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} hint="Opcional" maxLength={200} />
           <Button variant="secondary" type="submit" disabled={pending || !until} className="self-start">
@@ -179,7 +179,7 @@ function HoursCard({ storeId, initial, disabled, save }: { storeId: string; init
 
   return (
     <Card className="p-5">
-      <CardHeader title="Horario semanal" subtitle="Hora de Costa Rica. Un día puede tener varios tramos; sin tramos, ese día está cerrado." />
+      <CardHeader title="Horario semanal" subtitle="Hora de Nicaragua. Un día puede tener varios tramos; sin tramos, ese día está cerrado." />
       <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
         <ul className="flex flex-col divide-y divide-borde">
           {weekdays.map(({ value, label }) => {

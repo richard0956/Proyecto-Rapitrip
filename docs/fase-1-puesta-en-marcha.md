@@ -74,11 +74,11 @@ La consola no debería indexarse ni anunciarse; el dominio de la tienda sí.
 - [ ] `/vende`: enviar solicitud; ver estado "pendiente"; el formulario desaparece.
 - [ ] Consola (admin con MFA): Solicitudes muestra representante, teléfono, dirección, categoría; aprobar con convenio; la tienda pasa a "aprobada".
 - [ ] Rechazar con motivo → la tienda muestra el motivo y permite reenviar.
-- [ ] Consola: 10 min de inactividad cierra sesión; tienda: a las 24 h aparece "tu sesión venció".
-- [ ] Iniciar sesión en tienda y consola simultáneamente en `localhost` sin que se cierren entre sí.
-- [ ] Refrescar token con una sesión `aal2`: debe mantenerse `aal2` (riesgo del informe §12).
+- [ ] Consola: 15 min de inactividad cierra sesión; tienda: a las 24 h aparece "tu sesión venció".
+- [x] Iniciar sesión en tienda y consola simultáneamente en `localhost` sin que se cierren entre sí. *(E2E: `e2e/tests/sesion.spec.ts`)*
+- [x] Refrescar token con una sesión `aal2`: debe mantenerse `aal2` (riesgo del informe §12). *(E2E: `e2e/tests/sesion.spec.ts`)*
 - [ ] Auditoría y Accesos (admin): paginación y filtros.
-- [ ] `pnpm e2e:backend` con el stack local arriba.
+- [x] `pnpm e2e:backend` con el stack local arriba. *(el flujo de comercio y el de sesión se corren con `pnpm e2e:comercio` y el spec de sesión; las invitaciones necesitan `supabase functions serve`)*
 
 ## 7. Fuera de esta fase
 Revisión legal de los textos (Ley 787) y las credenciales reales de Google/Cloudflare.

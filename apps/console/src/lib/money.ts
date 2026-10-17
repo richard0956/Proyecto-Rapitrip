@@ -1,5 +1,5 @@
-/** Moneda de la tienda; configurable con NEXT_PUBLIC_CURRENCY (por defecto, colones de Costa Rica). */
-const currency = process.env.NEXT_PUBLIC_CURRENCY || "CRC";
+/** Moneda de la tienda; configurable con NEXT_PUBLIC_CURRENCY (por defecto, córdobas de Nicaragua). */
+const currency = process.env.NEXT_PUBLIC_CURRENCY || "NIO";
 const formatter = new Intl.NumberFormat("es", { style: "currency", currency, maximumFractionDigits: 2 });
 
 export const formatMoney = (value: number | string | null | undefined) => (value === null || value === undefined ? "—" : formatter.format(Number(value)));

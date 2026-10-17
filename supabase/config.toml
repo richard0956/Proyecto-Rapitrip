@@ -66,7 +66,7 @@ provider = "turnstile"
 secret = "env(SUPABASE_AUTH_CAPTCHA_SECRET)"
 
 [auth.sessions]
-inactivity_timeout = "10m"
+inactivity_timeout = "15m"
 
 [functions.send-outbox]
 verify_jwt = false

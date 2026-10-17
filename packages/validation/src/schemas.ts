@@ -104,7 +104,7 @@ export const storeExceptionSchema = z
   .refine((value) => value.closed || (value.opens !== undefined && value.closes !== undefined && value.opens < value.closes), "indica apertura y cierre, con la apertura antes del cierre");
 
 export const temporaryClosureSchema = z.object({
-  /** Fecha y hora local de Costa Rica (formato de `datetime-local`). */
+  /** Fecha y hora local de Nicaragua (formato de `datetime-local`). */
   until: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "fecha inválida"),
   reason: optionalText(200),
 });

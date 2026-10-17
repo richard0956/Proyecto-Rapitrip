@@ -1,5 +1,5 @@
-/** Utilidades de tiendas: el horario se muestra siempre en hora de Costa Rica, igual que lo evalúa la base de datos. */
-export const STORE_TIME_ZONE = "America/Costa_Rica";
+/** Utilidades de tiendas: el horario se muestra siempre en hora de Nicaragua, igual que lo evalúa la base de datos. */
+export const STORE_TIME_ZONE = "America/Managua";
 
 /** Orden de la semana para mostrar (lunes primero); el número es el de la base de datos (0 = domingo). */
 export const weekdays = [
@@ -35,10 +35,10 @@ export const formatStoreDateTime = (value: string | null | undefined) => (value 
 /** `on_date` llega como AAAA-MM-DD sin zona: se formatea como fecha de calendario. */
 export const formatCalendarDate = (value: string) => dateOnly.format(new Date(`${value}T00:00:00Z`));
 
-/** Hoy en Costa Rica (AAAA-MM-DD), para el mínimo de los selectores de fecha. */
+/** Hoy en Nicaragua (AAAA-MM-DD), para el mínimo de los selectores de fecha. */
 export const todayInStoreZone = () => new Intl.DateTimeFormat("sv-SE", { timeZone: STORE_TIME_ZONE }).format(new Date());
 
-/** El selector de fecha y hora local se interpreta como hora de Costa Rica (UTC−6, sin horario de verano). */
+/** El selector de fecha y hora local se interpreta como hora de Nicaragua (UTC−6, sin horario de verano). */
 export const storeLocalToIso = (local: string) => new Date(`${local}:00-06:00`).toISOString();
 
 export function storeState(store: { status: string | null; closed_until: string | null; open_now: boolean | null }) {

@@ -27,7 +27,7 @@ export SUPABASE_SERVICE_ROLE_KEY=<service_role key>
 pnpm e2e:backend
 ```
 
-Cada ejecución crea cuentas con correos únicos (`*@e2e.test`), así que no hace falta limpiar entre corridas.
+Cada ejecución crea cuentas con correos únicos (`*@e2e.test`), así que no hace falta limpiar entre corridas. Pero esos datos alteran los conteos de las pruebas pgTAP: antes de `pnpm db:test` en la misma base, corre `pnpm db:reset`.
 
 ### Área de comercio (Fase 2)
 

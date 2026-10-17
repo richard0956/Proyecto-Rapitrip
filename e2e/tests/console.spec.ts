@@ -94,12 +94,12 @@ test.describe("@backend consola · acceso y roles", () => {
     await expect(page).toHaveURL(/\/sin-acceso$/);
   });
 
-  test("la sesión se cierra tras 10 minutos sin actividad", async ({ page }) => {
+  test("la sesión se cierra tras 15 minutos sin actividad", async ({ page }) => {
     const director = await createSuperadmin();
     await page.clock.install({ time: new Date() });
     await signInAndEnroll(page, director.email, director.password);
     await expect(page).toHaveURL(/\/admin$/);
-    await page.clock.fastForward("11:00");
+    await page.clock.fastForward("16:00");
     await expect(page).toHaveURL(/\/sesion-expirada$/);
     await page.goto(`${CONSOLE_URL}/admin`);
     await expect(page).toHaveURL(/\/login$/);

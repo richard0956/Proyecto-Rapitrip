@@ -17,7 +17,7 @@ describe("horarios de tienda", () => {
     expect(flattenHours({ 2: [{ opens: "08:00", closes: "12:00" }] })).toEqual([{ weekday: 2, opens: "08:00", closes: "12:00" }]);
   });
 
-  it("interpreta la fecha local como hora de Costa Rica (UTC−6)", () => {
+  it("interpreta la fecha local como hora de Nicaragua (UTC−6)", () => {
     expect(storeLocalToIso("2026-10-20T08:00")).toBe("2026-10-20T14:00:00.000Z");
   });
 });
