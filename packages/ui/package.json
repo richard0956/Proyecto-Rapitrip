@@ -10,16 +10,24 @@
     "./tokens.css": "./src/tokens.css",
     "./tailwind-preset": "./tailwind-preset.cjs"
   },
-  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "lucide-react": "^0.469.0",
     "tailwind-merge": "2.6.0"
   },
-  "peerDependencies": { "react": "^19.0.0", "react-dom": "^19.0.0" },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.6.8",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "jsdom": "^25.0.1",

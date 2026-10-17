@@ -3,23 +3,23 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "./cn";
 
 export const buttonStyles = cva(
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja disabled:cursor-not-allowed disabled:opacity-60",
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-boton px-[18px] text-sm font-bold transition-[background-color,transform] duration-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100",
   {
     variants: {
       variant: {
-        primary: "bg-mango text-tinta hover:brightness-95",
-        secondary: "bg-hoja text-papel hover:bg-selva",
+        primary: "bg-hoja text-white hover:bg-selva",
+        secondary: "border border-hoja bg-papel text-hoja hover:bg-menta",
+        soft: "bg-calido text-tinta hover:bg-durazno",
         ghost: "bg-transparent text-hoja hover:bg-menta",
-        danger: "border-2 border-guayaba bg-papel text-tinta hover:bg-calido",
+        danger: "bg-rosa text-rojo hover:brightness-95",
       },
     },
-    defaultVariants: { variant: "secondary" },
+    defaultVariants: { variant: "primary" },
   },
 );
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & VariantProps<typeof buttonStyles>;
 
-/** Un solo botón `primary` (Mango) por vista. */
 export function Button({ variant, className, type = "button", ...props }: ButtonProps) {
   return <button type={type} className={cn(buttonStyles({ variant }), className)} {...props} />;
 }
