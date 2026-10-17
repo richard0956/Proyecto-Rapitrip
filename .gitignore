@@ -7,6 +7,7 @@ dist/
 !.env.example
 supabase/.temp/
 supabase/.branches/
-.DS_Store.next/
+.DS_Store
+.next/
 next-env.d.ts
 *.tsbuildinfo
