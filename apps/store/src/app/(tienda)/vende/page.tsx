@@ -15,7 +15,7 @@ export default async function VendePage() {
     <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
       <h1 className="text-[26px] font-extrabold leading-tight text-tinta">Vende en Rapitrip</h1>
       <p className="mt-1 max-w-[62ch] text-[13.5px] text-tinta-suave">Cuéntanos de tu negocio. El equipo revisa tu solicitud y, con el convenio firmado, activamos tu comercio.</p>
-      <Card className="mt-6 max-w-[640px] p-6">
+      <Card outerClassName="mt-6 max-w-[640px]" className="p-6 sm:p-8">
         <Alert className="mb-4">Para enviar la solicitud tu cuenta necesita el correo confirmado. Solo puedes tener una solicitud pendiente a la vez.</Alert>
         <CommerceForm initialName={profile?.full_name ?? ""} submit={submitCommerceRequest} />
       </Card>

@@ -64,7 +64,7 @@ export default async function AuditoriaPage({ searchParams }: { searchParams: Se
     <>
       <PageHeader title="Auditoría y accesos" description="Registro inmutable de acciones e inicios de sesión. Consultarlo también queda registrado." />
       <AuditTabs active="/admin/auditoria" />
-      <Card className="mb-5">
+      <Card outerClassName="mb-5">
         <form method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SelectField label="Persona" name="actor" defaultValue={filters.actor ?? ""}>
             <option value="">Todas</option>

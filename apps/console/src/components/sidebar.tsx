@@ -4,7 +4,7 @@ import { Activity, Banknote, Clock, FileText, House, Layers, ClipboardList, Lock
 import { Avatar, cn, Logo } from "@rapitrip/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { accountItem, type NavIcon, type NavItem, type NavSection } from "@/lib/nav";
 
 const icons: Record<NavIcon, LucideIcon> = {
@@ -37,7 +37,7 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
   }
   const active = isActive(pathname, item);
   return (
-    <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(itemBase, active ? "bg-menta-borde font-bold text-selva" : "font-medium text-nav-texto hover:bg-selva-panel")}>
+    <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(itemBase, active ? "bg-esmeralda font-bold text-selva" : "font-medium text-nav-texto hover:bg-selva-panel")}>
       {content}
     </Link>
   );
@@ -54,17 +54,17 @@ type Props = {
 /** Barra lateral de 264 px en escritorio; por debajo de 1024 px pasa a un cajón que se abre con un botón. */
 export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: Props) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => setOpen(false), [pathname]);
+  // El cajón se abre para una ruta concreta: al navegar deja de coincidir y se cierra solo, sin efectos.
+  const [openFor, setOpenFor] = useState<string | null>(null);
+  const open = openFor === pathname;
 
   return (
     <>
       <header className="flex items-center justify-between bg-selva px-4 py-3 lg:hidden">
-        <Logo subtitle="Consola de operación" />
+        <Logo tone="dark" subtitle="Consola de operación" priority />
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => setOpenFor(open ? null : pathname)}
           aria-expanded={open}
           aria-controls="menu-principal"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
@@ -80,17 +80,17 @@ export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: 
           open ? "fixed inset-x-0 bottom-0 top-[68px] z-40 flex" : "hidden",
         )}
       >
-        <Logo subtitle="Consola de operación" className="mb-3.5 hidden lg:flex" />
+        <Logo tone="dark" subtitle="Consola de operación" priority className="mb-4 hidden lg:flex" />
         <div className="flex items-center gap-2.5 rounded-panel bg-selva-panel px-3 py-2.5">
           <Avatar name={name} tone="dark" size="sm" />
           <div className="min-w-0 leading-[1.4]">
             <p className="truncate text-[13px] font-bold text-white">{name ?? "Mi cuenta"}</p>
-            <p className="truncate text-[11px] text-menta-borde">{roleLabel}</p>
+            <p className="truncate text-[11px] text-bruma">{roleLabel}</p>
           </div>
         </div>
         {sections.map((section, index) => (
           <nav key={section.label ?? index} aria-label={section.label ?? "Principal"} className="flex flex-col gap-[3px]">
-            {section.label ? <p className="px-2.5 pb-1 pt-3.5 text-micro font-bold uppercase tracking-[0.08em] text-menta-borde">{section.label}</p> : <div className="h-3" />}
+            {section.label ? <p className="px-2.5 pb-1 pt-3.5 text-micro font-bold uppercase tracking-[0.08em] text-bruma">{section.label}</p> : <div className="h-3" />}
             {section.items.map((item) => (
               <NavEntry key={item.href} item={item} pathname={pathname} />
             ))}
@@ -104,7 +104,7 @@ export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: 
               Cerrar sesión
             </button>
           </form>
-          <p className="px-2.5 pt-2.5 text-micro text-menta-borde">La sesión se cierra a los {sessionMinutes} min sin actividad</p>
+          <p className="px-2.5 pt-2.5 text-micro text-bruma">La sesión se cierra a los {sessionMinutes} min sin actividad</p>
         </div>
       </aside>
     </>

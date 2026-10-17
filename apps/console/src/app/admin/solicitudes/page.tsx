@@ -12,10 +12,9 @@ export default async function SolicitudesPage() {
   const { data, error } = await supabase.from("commerce_requests_list").select("*").order("created_at", { ascending: false });
   if (error) console.error("[solicitudes]", error.message);
 
-  const now = Date.now();
   const rows: RequestRow[] = (data ?? []).flatMap((row) =>
     row.id && row.status
-      ? [{ id: row.id, name: row.business_name ?? "Sin nombre", status: row.status, receivedAgo: timeAgo(row.created_at, now), receivedAt: formatDateTime(row.created_at), decisionReason: row.decision_reason, reviewedAt: row.reviewed_at ? formatDateTime(row.reviewed_at) : null }]
+      ? [{ id: row.id, name: row.business_name ?? "Sin nombre", status: row.status, receivedAgo: timeAgo(row.created_at), receivedAt: formatDateTime(row.created_at), decisionReason: row.decision_reason, reviewedAt: row.reviewed_at ? formatDateTime(row.reviewed_at) : null }]
       : [],
   );
 

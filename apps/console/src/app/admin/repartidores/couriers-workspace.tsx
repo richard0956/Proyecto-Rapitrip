@@ -119,7 +119,7 @@ function CourierDetail({ row, update, setStatus, documentUrl }: { row: CourierRo
   }
 
   return (
-    <Card className="p-5 xl:sticky xl:top-6">
+    <Card outerClassName="xl:sticky xl:top-6" className="p-5">
       <div className="mb-4 flex items-center gap-3">
         <Avatar name={row.name} />
         <div className="min-w-0">
