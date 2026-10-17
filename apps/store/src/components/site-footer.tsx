@@ -19,6 +19,12 @@ export function SiteFooter() {
           <Link href="/registro" className="underline-offset-4 hover:underline">
             Crear cuenta
           </Link>
+          <Link href="/terminos" className="underline-offset-4 hover:underline">
+            Términos
+          </Link>
+          <Link href="/privacidad" className="underline-offset-4 hover:underline">
+            Privacidad
+          </Link>
         </nav>
         <p className="text-xs text-tinta-suave">© {new Date().getFullYear()} Rapitrip</p>
       </div>

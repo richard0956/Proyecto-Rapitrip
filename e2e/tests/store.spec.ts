@@ -28,6 +28,7 @@ test.describe("@backend tienda · cuenta del cliente", () => {
     await page.getByLabel("Correo").fill(email);
     await page.getByLabel("Contraseña", { exact: true }).fill(PASSWORD);
     await page.getByLabel("Repite la contraseña").fill(PASSWORD);
+    await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Crear cuenta" }).click();
     await expect(page.getByRole("status")).toContainText(`Si ${email} no tenía cuenta`);
 

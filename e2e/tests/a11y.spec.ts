@@ -13,6 +13,8 @@ const pages = [
   { name: "tienda · ingresar", url: `${STORE_URL}/ingresar` },
   { name: "tienda · ingresar con sesión vencida", url: `${STORE_URL}/ingresar?next=/vende&expirada=1` },
   { name: "tienda · crear cuenta", url: `${STORE_URL}/registro` },
+  { name: "tienda · términos", url: `${STORE_URL}/terminos` },
+  { name: "tienda · privacidad", url: `${STORE_URL}/privacidad` },
   { name: "tienda · recuperar contraseña", url: `${STORE_URL}/recuperar` },
   { name: "tienda · página no encontrada", url: `${STORE_URL}/no-existe` },
 ];

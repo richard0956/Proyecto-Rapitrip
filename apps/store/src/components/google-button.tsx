@@ -2,6 +2,7 @@
 
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
 import { Alert, Button } from "@rapitrip/ui";
+import Link from "next/link";
 import { useState } from "react";
 
 function GoogleMark() {
@@ -40,6 +41,17 @@ export function GoogleButton({ next }: { next: string }) {
         <GoogleMark />
         {busy ? "Conectando…" : "Continuar con Google"}
       </Button>
+      <p className="text-center text-[12px] leading-snug text-tinta-suave">
+        Al continuar aceptas los{" "}
+        <Link href="/terminos" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+          términos
+        </Link>{" "}
+        y la{" "}
+        <Link href="/privacidad" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+          política de privacidad
+        </Link>
+        .
+      </p>
       {error ? <Alert tone="error">No pudimos iniciar con Google. Inténtalo de nuevo o usa tu correo.</Alert> : null}
     </div>
   );

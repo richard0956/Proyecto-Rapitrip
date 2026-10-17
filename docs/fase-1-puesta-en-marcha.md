@@ -52,6 +52,9 @@ Hecho en código: widget `Turnstile` en login/registro/recuperación (consola y 
 ## 4. Seguridad de cabeceras
 Ambas apps envían CSP (permite solo Supabase y `challenges.cloudflare.com`), `frame-ancestors 'none'`, Permissions-Policy y, en producción, HSTS. Si añades un servicio externo (analítica, mapas, fuentes), amplía la CSP en `apps/*/next.config.mjs`. `'unsafe-inline'` en scripts es necesario por la hidratación de Next y la introducción; migrar a nonces es una mejora futura.
 
+## 4b. Términos y privacidad
+Páginas públicas `/terminos` y `/privacidad` en la tienda (texto en `apps/store/src/lib/legal.ts`, versión `LEGAL_VERSION`). El registro exige aceptarlas y guarda `terms_version` y `terms_accepted_at` en los metadatos del usuario; con Google se muestra el aviso "Al continuar aceptas…". Los textos son una base redactada según el comportamiento real del sistema (sesiones, anonimización a 12 meses, proveedores): **conviene que los revise un abogado antes de publicar**. Al cambiarlos, sube `LEGAL_VERSION` y `LEGAL_UPDATED`. Define `NEXT_PUBLIC_CONTACT_EMAIL` para mostrar el contacto.
+
 ## 5. Vercel (no activado)
 Crea **dos proyectos** apuntando al mismo repo con *Root Directory* `apps/console` y `apps/store`; cada uno trae su `vercel.json` (install/build desde la raíz del monorepo y `ignoreCommand` para no construir si no cambió nada relevante). Variables por proyecto:
 
@@ -62,6 +65,7 @@ Crea **dos proyectos** apuntando al mismo repo con *Root Directory* `apps/consol
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | ✔ | ✔ |
 | `NEXT_PUBLIC_TIMEZONE` (`America/Managua`) | ✔ | ✔ |
 | `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED` | — | ✔ |
+| `NEXT_PUBLIC_CONTACT_EMAIL` (contacto para derechos de datos) | — | ✔ |
 
 La consola no debería indexarse ni anunciarse; el dominio de la tienda sí.
 
@@ -77,4 +81,4 @@ La consola no debería indexarse ni anunciarse; el dominio de la tienda sí.
 - [ ] `pnpm e2e:backend` con el stack local arriba.
 
 ## 7. Fuera de esta fase
-Textos legales definitivos (términos, privacidad, Ley 787), y las credenciales reales de Google/Cloudflare.
+Revisión legal de los textos (Ley 787) y las credenciales reales de Google/Cloudflare.
