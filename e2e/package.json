@@ -7,6 +7,7 @@
     "e2e": "playwright test",
     "e2e:a11y": "playwright test --grep @a11y",
     "e2e:backend": "playwright test --grep @backend",
+    "e2e:comercio": "playwright test tests/comercio.spec.ts",
     "typecheck": "tsc -p tsconfig.json",
     "e2e:front": "playwright test --grep-invert @backend"
   },

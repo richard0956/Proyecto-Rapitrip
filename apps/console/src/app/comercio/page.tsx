@@ -1,5 +1,5 @@
 import { Alert, Card, CardHeader, EmptyState, KpiCard, buttonStyles, ButtonIsland } from "@rapitrip/ui";
-import { Clock, Store, TriangleAlert } from "lucide-react";
+import { Clock, PackageX, Store, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shell";
 import { requireConsoleAccess } from "@/lib/guard";
@@ -9,11 +9,13 @@ import { storeState } from "@/lib/stores";
 export default async function ComercioHome() {
   await requireConsoleAccess("comercio");
   const supabase = await serverSupabase();
-  const [profile, stores] = await Promise.all([
+  const [profile, stores, stock] = await Promise.all([
     supabase.from("my_profile").select("full_name").maybeSingle(),
     supabase.from("stores_list").select("id, name, status, closed_until, open_now, hour_ranges").order("name"),
+    supabase.from("inventory_list").select("*", { count: "exact", head: true }).in("stock_state", ["agotado", "bajo"]).eq("variant_status", "activa"),
   ]);
   if (stores.error) console.error("[comercio:inicio]", stores.error.message);
+  if (stock.error) console.error("[comercio:inicio:stock]", stock.error.message);
   const rows = stores.data ?? [];
   const firstName = profile.data?.full_name?.trim().split(/\s+/)[0];
   const open = rows.filter((row) => storeState(row).tone === "positive").length;
@@ -32,9 +34,14 @@ export default async function ComercioHome() {
         }
       />
       {stores.error ? <Alert tone="error" className="mb-5">No pudimos cargar tus tiendas. Recarga la página.</Alert> : null}
-      <ul className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <ul className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <li><KpiCard icon={<Store className="size-[18px]" />} label="Tiendas" value={rows.length} hint="Registradas en tu comercio" /></li>
         <li><KpiCard icon={<Clock className="size-[18px]" />} tone="lavanda" label="Abiertas ahora" value={open} hint="Según horario y cierres" /></li>
+        <li>
+          <Link href="/comercio/inventario" className="group block h-full rounded-tarjeta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+            <KpiCard icon={<PackageX className="size-[18px]" />} tone="durazno" label="Stock por reponer" value={stock.error ? "—" : (stock.count ?? 0)} hint="Variantes agotadas o con stock bajo" />
+          </Link>
+        </li>
         <li><KpiCard icon={<TriangleAlert className="size-[18px]" />} tone="durazno" label="Sin horario" value={noHours.length} hint="Nunca estarán abiertas hasta definirlo" /></li>
       </ul>
       <Card className="p-5">

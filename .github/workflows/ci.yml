@@ -105,3 +105,64 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report
           retention-days: 7
+
+  # Área de comercio con backend real: tiendas, horarios, catálogo con subida de imágenes a Storage, inventario y aislamiento entre comercios.
+  e2e-comercio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Levantar Supabase local
+        run: supabase start
+
+      # Las variables públicas se incrustan al compilar: por eso las apps se compilan después de levantar Supabase.
+      - name: Variables de Supabase local
+        run: |
+          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+          } >> "$GITHUB_ENV"
+
+      - name: Compilar la consola
+        run: pnpm --filter @rapitrip/console build
+
+      - name: Compilar la tienda
+        run: pnpm --filter @rapitrip/store build
+
+      - name: Instalar Chromium
+        run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium
+
+      - name: E2E del área de comercio
+        run: pnpm e2e:comercio
+
+      - name: Informe de Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-comercio
+          path: e2e/playwright-report
+          retention-days: 7
+
+      - name: Detener Supabase
+        if: always()
+        run: supabase stop --no-backup

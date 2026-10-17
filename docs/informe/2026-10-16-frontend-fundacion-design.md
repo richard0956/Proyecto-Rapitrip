@@ -294,8 +294,8 @@ Estado al 17 de octubre de 2026.
 | 2. Mis tiendas (frontend) | Hecha | Área `comercio` con su propio diseño, inicio con indicadores, lista de tiendas, detalle con datos, horario semanal por tramos, excepciones por fecha, cierre temporal y activación; columna "Tiendas activas" en Comercios (admin) |
 | 3. Catálogo maestro | Hecha | Migración 20 (`commerce.master_items`: categorías con un nivel de subcategorías, marcas, tipos de producto y atributos), funciones auditadas, pruebas pgTAP (`200`) y pantalla `admin/catalogo`. **Decidido: orientativo**, publicar un producto no lo exige |
 | 4. Productos y variantes | Hecha | Migración 21 (`products`, `product_variants`, `product_images`, bucket público `product-images`), funciones auditadas, pruebas pgTAP (`210`) y pantallas `comercio/catalogo` (selección de tienda, lista, editor con variantes, imágenes y publicación). Imágenes: hasta 5, JPEG/PNG/WebP, 2 MB; publicar exige una variante activa |
-| 5. Inventario con alertas | Pendiente | |
-| 6. E2E del área de comercio y CI | Pendiente | |
+| 5. Inventario con alertas | Hecha | Migración 22 (`inventory`, `stock_movements`), control de stock opcional por variante con umbral, entradas, salidas y conteos con motivo e historial, estado `sin_control`/`agotado`/`bajo`/`disponible` (y `available` para ocultar agotados en F4), pruebas pgTAP (`220`), pantalla `comercio/inventario` y alerta en el inicio del comercio |
+| 6. E2E del área de comercio y CI | Hecha | `e2e/tests/comercio.spec.ts` (3 flujos con backend real y axe en cada pantalla) y trabajo `e2e-comercio` en el CI, que levanta Supabase local, compila las apps y los corre |
 
 **Decisiones tomadas en las etapas 1 y 2**
 - Los horarios son por tienda, con varios tramos por día y excepciones por fecha (que mandan sobre el horario semanal).
@@ -303,6 +303,10 @@ Estado al 17 de octubre de 2026.
 - Una tienda sin horario nunca aparece abierta. Desactivar una tienda exige motivo y conserva su historial.
 - Un comercio gestiona solo sus tiendas; administración y dirección ven todas. Toda escritura exige sesión de consola con segundo factor.
 
+**Hallazgo corregido en la etapa 6**
+- La sesión de consola exige actividad registrada con `touch_session`, pero el primer latido llegaba hasta 15 segundos después de entrar: en ese lapso, las lecturas y escrituras protegidas fallaban o devolvían listas vacías. Ahora se envía un latido al verificar el segundo factor (`mfa-form.tsx`) y otro al montar la consola (`session-activity.tsx`).
+
 **Pendiente de verificar**
-- Recorrido manual en el navegador del área de comercio con una cuenta con segundo factor.
+- Recorrido manual con ojos humanos del área de comercio (los E2E cubren funcionamiento y accesibilidad, no criterio visual).
+- Que el trabajo `e2e-comercio` pase por primera vez en GitHub Actions (no se pudo ejecutar localmente).
 - La suite pgTAP completa falla en las pruebas 050, 070 y 130 sobre la base local actual (tiene 33 cuentas reales que alteran los conteos). Hay que correr `pnpm db:reset` antes de `pnpm db:test` para confirmar que pasan en limpio; el archivo 190 pasa solo.

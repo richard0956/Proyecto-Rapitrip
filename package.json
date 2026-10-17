@@ -15,6 +15,7 @@
     "e2e": "pnpm --filter @rapitrip/e2e e2e",
     "e2e:a11y": "pnpm --filter @rapitrip/e2e e2e:a11y",
     "e2e:backend": "pnpm --filter @rapitrip/e2e e2e:backend",
+    "e2e:comercio": "pnpm --filter @rapitrip/e2e e2e:comercio",
     "lint": "pnpm -r --if-present lint",
     "e2e:front": "pnpm --filter @rapitrip/e2e e2e:front"
   },

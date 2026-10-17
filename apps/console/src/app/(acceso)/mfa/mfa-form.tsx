@@ -58,6 +58,8 @@ export function MfaForm() {
       setBusy(false);
       return;
     }
+    // La sesión de consola exige actividad reciente: sin este latido inicial, las lecturas y escrituras de los primeros segundos fallan.
+    await supabase.rpc("touch_session");
     const session = await getSessionInfo(supabase);
     router.replace(homePathForRole(session.role));
     router.refresh();

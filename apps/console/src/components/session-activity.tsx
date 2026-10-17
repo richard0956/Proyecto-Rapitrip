@@ -16,7 +16,11 @@ export function SessionActivity() {
   useEffect(() => {
     const supabase = createBrowserSupabase();
     let lastActivity = Date.now();
-    let lastBeat = 0;
+    let lastBeat = Date.now();
+    // Latido inmediato: la actividad registrada en la base puede haber vencido (por ejemplo, tras recargar una pestaña dormida).
+    void supabase.rpc("touch_session").then(({ error }) => {
+      if (error) router.replace("/sesion-expirada");
+    });
     const mark = () => {
       lastActivity = Date.now();
     };

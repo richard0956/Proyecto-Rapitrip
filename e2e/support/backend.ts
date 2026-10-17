@@ -78,6 +78,11 @@ export async function createSuperadmin() {
 
 /** Sesión de consola completa (contraseña + TOTP + latido) para preparar datos por la API, sin pasar por la interfaz. */
 export async function consoleClient(email: string, password = PASSWORD): Promise<SupabaseClient> {
+  return (await consoleSession(email, password)).client;
+}
+
+/** Igual que `consoleClient`, pero devuelve también el secreto TOTP para poder iniciar sesión después por la interfaz. */
+export async function consoleSession(email: string, password = PASSWORD): Promise<{ client: SupabaseClient; secret: string }> {
   const client = createClient(url!, anon!, options);
   const { error } = await client.auth.signInWithPassword({ email, password });
   if (error) throw error;
@@ -88,7 +93,7 @@ export async function consoleClient(email: string, password = PASSWORD): Promise
   const { error: verifyError } = await client.auth.mfa.verify({ factorId: enroll.id, challengeId: challenge.id, code: totp(enroll.totp.secret) });
   if (verifyError) throw verifyError;
   await client.rpc("touch_session");
-  return client;
+  return { client, secret: enroll.totp.secret };
 }
 
 /** Crea una invitación con un token conocido (los correos de las Edge Functions solo se imprimen en el registro). */
@@ -97,4 +102,21 @@ export async function createInvitation(client: SupabaseClient, email: string, ro
   const { error } = await client.rpc("create_invitation", { p_email: email, p_role: role, p_token_hash: createHash("sha256").update(token).digest("hex") });
   if (error) throw error;
   return token;
+}
+
+/** Cuenta de comercio lista para usar: solicitud enviada por el cliente y aprobada por un director. */
+export async function createCommerceAccount(businessName = "Comercio E2E") {
+  const email = uniqueEmail("comercio");
+  await createUser(email, { fullName: "Dueña de Comercio" });
+  const customer = createClient(url!, anon!, options);
+  const { error: signInError } = await customer.auth.signInWithPassword({ email, password: PASSWORD });
+  if (signInError) throw signInError;
+  const { data: request, error: requestError } = await customer.rpc("submit_commerce_request", { p_business_name: businessName, p_details: {} });
+  if (requestError || !request) throw requestError ?? new Error("No se pudo enviar la solicitud");
+
+  const director = await createSuperadmin();
+  const api = await consoleClient(director.email, director.password);
+  const { error: approveError } = await api.rpc("approve_commerce_request", { p_request: request, p_convenio_confirmed: true });
+  if (approveError) throw approveError;
+  return { email, password: PASSWORD, businessName, director };
 }

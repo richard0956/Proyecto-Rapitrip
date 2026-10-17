@@ -29,6 +29,17 @@ pnpm e2e:backend
 
 Cada ejecución crea cuentas con correos únicos (`*@e2e.test`), así que no hace falta limpiar entre corridas.
 
+### Área de comercio (Fase 2)
+
+`tests/comercio.spec.ts` recorre el área de comercio con el backend real: crea una cuenta de comercio (solicitud aprobada por un director), define tienda,
+horario y cierre temporal, publica un producto con variante e imagen (sube a Storage con las políticas reales), controla el inventario y comprueba
+que un comercio no ve ni modifica las tiendas de otro. También recorre el catálogo maestro como director. Incluye axe en cada pantalla.
+No necesita las Edge Functions. El CI lo corre en el trabajo `e2e-comercio`.
+
+```bash
+pnpm e2e:comercio   # con las variables de arriba definidas
+```
+
 ### Cómo funcionan
 
 - **Segundo factor:** la pantalla de alta muestra la clave manual; la prueba la lee y calcula el código TOTP (`support/backend.ts`).
