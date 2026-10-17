@@ -1,5 +1,5 @@
-/** Zona fija para que servidor y navegador formateen igual. Configurable porque el proyecto no fija un país. */
-const timeZone = process.env.NEXT_PUBLIC_TIMEZONE ?? "UTC";
+/** Zona fija para que servidor y navegador formateen igual. Por defecto, Managua (el prototipo usa córdobas); configurable con NEXT_PUBLIC_TIMEZONE. */
+const timeZone = process.env.NEXT_PUBLIC_TIMEZONE ?? "America/Managua";
 const dateTime = new Intl.DateTimeFormat("es", { dateStyle: "medium", timeStyle: "short", timeZone });
 const date = new Intl.DateTimeFormat("es", { dateStyle: "medium", timeZone });
 

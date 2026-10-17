@@ -1,15 +1,1 @@
-export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
-
-type RpcError = { code?: string | null; message?: string | null };
-
-const generic = "No se pudo completar la acción. Inténtalo de nuevo.";
-/** Códigos con los que las funciones de la base de datos devuelven mensajes pensados para el usuario. */
-const friendlyCodes = new Set(["42501", "22023", "P0002", "23505", "28000"]);
-
-export function failure(error: RpcError | null | undefined): ActionResult {
-  if (error?.code && friendlyCodes.has(error.code) && error.message) return { ok: false, error: error.message };
-  console.error("[acción de consola]", error?.code, error?.message);
-  return { ok: false, error: generic };
-}
-
-export const invalidInput: ActionResult = { ok: false, error: "Revisa los datos e inténtalo de nuevo." };
+export { failure, invalidInput, isSessionExpired, type ActionResult } from "@rapitrip/supabase";

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { failure } from "./action-error";
+import { failure, isSessionExpired } from "./action-error";
 
 beforeEach(() => vi.spyOn(console, "error").mockImplementation(() => {}));
 afterEach(() => vi.restoreAllMocks());
@@ -18,5 +18,17 @@ describe("failure", () => {
 
   it("oculta errores sin código", () => {
     expect(failure(null)).toMatchObject({ ok: false, error: expect.not.stringContaining("relation") });
+  });
+});
+
+describe("isSessionExpired", () => {
+  it("reconoce el error de sesión vencida de la base de datos", () => {
+    expect(isSessionExpired({ code: "42501", message: "tu sesión venció: inicia sesión de nuevo" })).toBe(true);
+  });
+
+  it("no confunde otros errores de permiso con la sesión vencida", () => {
+    expect(isSessionExpired({ code: "42501", message: "no tienes permiso para esto" })).toBe(false);
+    expect(isSessionExpired({ code: "22023", message: "tu sesión venció" })).toBe(false);
+    expect(isSessionExpired(null)).toBe(false);
   });
 });

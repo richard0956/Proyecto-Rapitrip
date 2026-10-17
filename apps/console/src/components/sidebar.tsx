@@ -1,11 +1,10 @@
 "use client";
 
 import { Activity, Banknote, Clock, FileText, House, Layers, ClipboardList, Lock, LogOut, Menu, ReceiptText, ShieldCheck, SlidersHorizontal, Store, TriangleAlert, Truck, UserRound, Users, X, type LucideIcon } from "lucide-react";
-import { Avatar, cn } from "@rapitrip/ui";
+import { Avatar, cn, Logo } from "@rapitrip/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Logo } from "./logo";
 import { accountItem, type NavIcon, type NavItem, type NavSection } from "@/lib/nav";
 
 const icons: Record<NavIcon, LucideIcon> = {
@@ -62,7 +61,7 @@ export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: 
   return (
     <>
       <header className="flex items-center justify-between bg-selva px-4 py-3 lg:hidden">
-        <Logo />
+        <Logo subtitle="Consola de operación" />
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
@@ -81,7 +80,7 @@ export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: 
           open ? "fixed inset-x-0 bottom-0 top-[68px] z-40 flex" : "hidden",
         )}
       >
-        <Logo className="mb-3.5 hidden lg:flex" />
+        <Logo subtitle="Consola de operación" className="mb-3.5 hidden lg:flex" />
         <div className="flex items-center gap-2.5 rounded-panel bg-selva-panel px-3 py-2.5">
           <Avatar name={name} tone="dark" size="sm" />
           <div className="min-w-0 leading-[1.4]">
