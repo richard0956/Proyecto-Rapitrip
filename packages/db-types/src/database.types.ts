@@ -30,6 +30,20 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"commerces_list": {
+                  Row: {
+                    "created_at": string | null,"id": string | null,"name": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"id"?: string | null,"name"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"id"?: string | null,"name"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"couriers_list": {
                   Row: {
                     "created_at": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_type": string | null
@@ -100,6 +114,9 @@ export type Database = {
             "approve_commerce_request":
 { Args: { "p_convenio_confirmed": boolean,"p_request": string }; Returns: string
                            },
+"audit_events_page":
+{ Args: { "p_action"?: string,"p_actor"?: string,"p_before"?: number,"p_from"?: string,"p_limit"?: number,"p_target_type"?: string,"p_to"?: string }; Returns: Json
+                           },
 "audit_script_action":
 { Args: { "p_action": string,"p_reason": string,"p_target": string }; Returns: undefined
                            },
@@ -137,6 +154,9 @@ export type Database = {
                            },
 "list_anonymization_candidates":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"login_events_page":
+{ Args: { "p_before"?: number,"p_from"?: string,"p_limit"?: number,"p_result"?: string,"p_to"?: string,"p_user"?: string }; Returns: Json
                            },
 "lookup_auth_user":
 { Args: { "p_email": string }; Returns: Json
