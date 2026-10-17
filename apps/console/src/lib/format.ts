@@ -14,3 +14,14 @@ export const roleLabel: Record<string, string> = {
   comercio: "Comercio",
   cliente: "Cliente",
 };
+
+const relative = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
+
+/** «hace 2 días», «hace 5 h». Se calcula en el servidor para que no cambie al hidratar. */
+export function timeAgo(value: string | null | undefined, now = Date.now()): string {
+  if (!value) return "—";
+  const seconds = Math.round((new Date(value).getTime() - now) / 1000);
+  const steps: [Intl.RelativeTimeFormatUnit, number][] = [["day", 86400], ["hour", 3600], ["minute", 60]];
+  for (const [unit, size] of steps) if (Math.abs(seconds) >= size) return relative.format(Math.round(seconds / size), unit);
+  return "hace un momento";
+}

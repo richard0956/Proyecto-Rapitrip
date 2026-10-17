@@ -1,7 +1,11 @@
-import { Alert, Badge, Button, DataTable, Field, SelectField } from "@rapitrip/ui";
+import { Alert, Button, Card, DataTable, Field, SelectField } from "@rapitrip/ui";
+import { Filter } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";
+import { AuditTabs } from "@/components/audit-tabs";
+import { Pager } from "@/components/pager";
 import { PageHeader } from "@/components/shell";
+import { auditLabel, auditLabels } from "@/lib/audit-labels";
 import { dayEndExclusive, dayStart, first, optionalCursor, optionalDay, optionalText, optionalUuid, queryString, type SearchParams } from "@/lib/filters";
 import { formatDateTime, roleLabel } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
@@ -58,40 +62,51 @@ export default async function AuditoriaPage({ searchParams }: { searchParams: Se
 
   return (
     <>
-      <PageHeader title="Auditoría" description="Registro de las acciones del sistema. Consultarlo también queda registrado." />
-      <form method="get" className="mb-6 grid gap-4 rounded-tarjeta border border-borde bg-papel p-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Field label="Acción" name="accion" defaultValue={filters.accion} placeholder="role.suspended" />
-        <SelectField label="Persona" name="actor" defaultValue={filters.actor ?? ""}>
-          <option value="">Todas</option>
-          {staff.people.map((person) => (
-            <option key={person.id} value={person.id}>
-              {person.label}
-            </option>
-          ))}
-        </SelectField>
-        <Field label="Objeto" name="objeto" defaultValue={filters.objeto} placeholder="profile" />
-        <Field label="Desde" name="desde" type="date" defaultValue={filters.desde} />
-        <Field label="Hasta" name="hasta" type="date" defaultValue={filters.hasta} />
-        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-5">
-          <Button variant="secondary" type="submit">
-            Filtrar
-          </Button>
-          <Link href="/admin/auditoria" className="inline-flex min-h-11 items-center px-3 text-sm font-bold text-hoja underline">
-            Limpiar filtros
-          </Link>
-        </div>
-      </form>
+      <PageHeader title="Auditoría y accesos" description="Registro inmutable de acciones e inicios de sesión. Consultarlo también queda registrado." />
+      <AuditTabs active="/admin/auditoria" />
+      <Card className="mb-5">
+        <form method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <SelectField label="Persona" name="actor" defaultValue={filters.actor ?? ""}>
+            <option value="">Todas</option>
+            {staff.people.map((person) => (
+              <option key={person.id} value={person.id}>
+                {person.label}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Acción" name="accion" defaultValue={filters.accion ?? ""}>
+            <option value="">Todas</option>
+            {Object.entries(auditLabels).map(([code, label]) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </SelectField>
+          <Field label="Desde" name="desde" type="date" defaultValue={filters.desde} />
+          <Field label="Hasta" name="hasta" type="date" defaultValue={filters.hasta} />
+          <Field label="Objeto" name="objeto" defaultValue={filters.objeto} placeholder="user_role, courier, profile…" />
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-3">
+            <Button variant="secondary" type="submit">
+              <Filter className="size-4" aria-hidden="true" />
+              Filtrar
+            </Button>
+            <Link href="/admin/auditoria" className="inline-flex min-h-11 items-center px-3 text-[13px] font-bold text-hoja underline underline-offset-2">
+              Limpiar filtros
+            </Link>
+          </div>
+        </form>
+      </Card>
 
-      {failed ? <Alert tone="error" className="mb-6">No pudimos cargar la auditoría. Recarga la página.</Alert> : null}
+      {failed ? <Alert tone="error" className="mb-5">No pudimos cargar la auditoría. Recarga la página.</Alert> : null}
       <DataTable
         caption="Eventos de auditoría"
         rows={page.rows}
         rowKey={(row) => row.id}
         emptyTitle="No hay eventos con esos filtros"
         columns={[
-          { header: "Fecha", cell: (row) => formatDateTime(row.occurred_at) },
+          { header: "Fecha y hora", cell: (row) => <span className="whitespace-nowrap tabular-nums">{formatDateTime(row.occurred_at)}</span> },
           {
-            header: "Persona",
+            header: "Actor",
             cell: (row) => (
               <span>
                 {staff.label(row.actor_id)}
@@ -99,32 +114,25 @@ export default async function AuditoriaPage({ searchParams }: { searchParams: Se
               </span>
             ),
           },
-          { header: "Acción", cell: (row) => <Badge>{row.action}</Badge> },
-          { header: "Objeto", cell: (row) => (row.target_type ? `${row.target_type}${row.target_id ? ` · ${row.target_id.slice(0, 8)}` : ""}` : "—") },
           {
-            header: "Detalle",
+            header: "Acción",
             cell: (row) => (
               <details>
-                <summary className="cursor-pointer font-bold text-hoja">{row.reason ? row.reason.slice(0, 40) : "Ver"}</summary>
-                {row.reason ? <p className="mt-1 max-w-sm">{row.reason}</p> : null}
-                <pre className="mt-1 max-w-sm overflow-x-auto text-xs">{JSON.stringify(row.metadata ?? {}, null, 1)}</pre>
+                <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-hoja" title={row.action}>
+                  {auditLabel(row.action, row.metadata)}
+                </summary>
+                {row.reason ? <p className="mt-1 max-w-sm text-xs text-tinta-suave">Motivo: {row.reason}</p> : null}
+                <pre className="mt-1 max-w-sm overflow-x-auto rounded-campo bg-calido p-2 text-[11px]">{JSON.stringify(row.metadata ?? {}, null, 1)}</pre>
               </details>
             ),
           },
+          { header: "Objeto", cell: (row) => (row.target_type ? `${row.target_type}${row.target_id ? ` · ${row.target_id.slice(0, 8)}` : ""}` : "—") },
         ]}
       />
-      <nav aria-label="Paginación" className="mt-4 flex gap-4 text-sm font-bold">
-        {before ? (
-          <Link href={`/admin/auditoria${queryString({ ...filters })}`} className="text-hoja underline">
-            Volver a los más recientes
-          </Link>
-        ) : null}
-        {page.has_more && lastId ? (
-          <Link href={`/admin/auditoria${queryString({ ...filters, antes: lastId })}`} className="text-hoja underline">
-            Ver más antiguos
-          </Link>
-        ) : null}
-      </nav>
+      <Pager
+        newerHref={before ? `/admin/auditoria${queryString({ ...filters })}` : undefined}
+        olderHref={page.has_more && lastId ? `/admin/auditoria${queryString({ ...filters, antes: lastId })}` : undefined}
+      />
     </>
   );
 }

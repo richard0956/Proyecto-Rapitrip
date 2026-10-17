@@ -1,4 +1,4 @@
-import { Alert, Badge, DataTable } from "@rapitrip/ui";
+import { Alert, Avatar, Badge, DataTable } from "@rapitrip/ui";
 import { PageHeader } from "@/components/shell";
 import { formatDate } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
@@ -22,7 +22,7 @@ export default async function ComerciosPage() {
   return (
     <>
       <PageHeader title="Comercios y tiendas" description="Comercios aprobados en Rapitrip. Las tiendas y su catálogo llegan con las siguientes fases." />
-      {failed ? <Alert tone="error" className="mb-6">No pudimos cargar los comercios. Recarga la página.</Alert> : null}
+      {failed ? <Alert tone="error" className="mb-5">No pudimos cargar los comercios. Recarga la página.</Alert> : null}
       <DataTable
         caption="Comercios"
         rows={commerces.data ?? []}
@@ -30,9 +30,17 @@ export default async function ComerciosPage() {
         emptyTitle="Todavía no hay comercios"
         emptyHint="Aparecen aquí cuando apruebas una solicitud de comercio."
         columns={[
-          { header: "Comercio", cell: (row) => <span className="font-bold">{row.name}</span> },
-          { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "alert"}>{row.status}</Badge> },
-          { header: "Cuentas activas", cell: (row) => activeUsers.get(row.id ?? "") ?? 0 },
+          {
+            header: "Comercio",
+            cell: (row) => (
+              <span className="flex items-center gap-2.5">
+                <Avatar name={row.name} size="sm" />
+                <span className="font-bold">{row.name}</span>
+              </span>
+            ),
+          },
+          { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "danger"}>{row.status === "activo" ? "Activo" : "Suspendido"}</Badge> },
+          { header: "Cuentas activas", cell: (row) => <span className="tabular-nums">{activeUsers.get(row.id ?? "") ?? 0}</span> },
           { header: "Alta", cell: (row) => formatDate(row.created_at) },
         ]}
       />

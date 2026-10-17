@@ -1,6 +1,9 @@
-import { Alert, Badge, Button, DataTable, Field, SelectField } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, DataTable, Field, SelectField } from "@rapitrip/ui";
+import { Filter, Lock } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";
+import { AuditTabs } from "@/components/audit-tabs";
+import { Pager } from "@/components/pager";
 import { PageHeader } from "@/components/shell";
 import { dayEndExclusive, dayStart, first, optionalCursor, optionalDay, optionalUuid, queryString, type SearchParams } from "@/lib/filters";
 import { formatDateTime } from "@/lib/format";
@@ -54,60 +57,59 @@ export default async function AccesosPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHeader title="Inicios de sesión" description="Intentos de ingreso exitosos y fallidos. Incluyen la dirección IP, por eso cada consulta queda registrada." />
-      <form method="get" className="mb-6 grid gap-4 rounded-tarjeta border border-borde bg-papel p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <SelectField label="Cuenta del equipo" name="cuenta" defaultValue={filters.cuenta ?? ""}>
-          <option value="">Todas</option>
-          {staff.people.map((person) => (
-            <option key={person.id} value={person.id}>
-              {person.label}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField label="Resultado" name="resultado" defaultValue={filters.resultado ?? ""}>
-          <option value="">Todos</option>
-          <option value="exitoso">Exitoso</option>
-          <option value="fallido">Fallido</option>
-        </SelectField>
-        <Field label="Desde" name="desde" type="date" defaultValue={filters.desde} />
-        <Field label="Hasta" name="hasta" type="date" defaultValue={filters.hasta} />
-        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
-          <Button variant="secondary" type="submit">
-            Filtrar
-          </Button>
-          <Link href="/admin/accesos" className="inline-flex min-h-11 items-center px-3 text-sm font-bold text-hoja underline">
-            Limpiar filtros
-          </Link>
-        </div>
-      </form>
+      <PageHeader title="Auditoría y accesos" description="Intentos de ingreso exitosos y fallidos. Incluyen la dirección IP, por eso cada consulta queda registrada." />
+      <AuditTabs active="/admin/accesos" />
+      <Card className="mb-5">
+        <form method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <SelectField label="Cuenta del equipo" name="cuenta" defaultValue={filters.cuenta ?? ""}>
+            <option value="">Todas</option>
+            {staff.people.map((person) => (
+              <option key={person.id} value={person.id}>
+                {person.label}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label="Resultado" name="resultado" defaultValue={filters.resultado ?? ""}>
+            <option value="">Todos</option>
+            <option value="exitoso">Exitoso</option>
+            <option value="fallido">Fallido</option>
+          </SelectField>
+          <Field label="Desde" name="desde" type="date" defaultValue={filters.desde} />
+          <Field label="Hasta" name="hasta" type="date" defaultValue={filters.hasta} />
+          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
+            <Button variant="secondary" type="submit">
+              <Filter className="size-4" aria-hidden="true" />
+              Filtrar
+            </Button>
+            <Link href="/admin/accesos" className="inline-flex min-h-11 items-center px-3 text-[13px] font-bold text-hoja underline underline-offset-2">
+              Limpiar filtros
+            </Link>
+          </div>
+        </form>
+      </Card>
 
-      {failed ? <Alert tone="error" className="mb-6">No pudimos cargar los inicios de sesión. Recarga la página.</Alert> : null}
+      {failed ? <Alert tone="error" className="mb-5">No pudimos cargar los inicios de sesión. Recarga la página.</Alert> : null}
       <DataTable
         caption="Inicios de sesión"
         rows={page.rows}
         rowKey={(row) => row.id}
         emptyTitle="No hay inicios de sesión con esos filtros"
         columns={[
-          { header: "Fecha", cell: (row) => formatDateTime(row.occurred_at) },
-          { header: "Cuenta", cell: (row) => staff.label(row.user_id) },
-          { header: "Resultado", cell: (row) => <Badge tone={row.result === "exitoso" ? "positive" : "alert"}>{row.result}</Badge> },
+          { header: "Cuenta", cell: (row) => <span className="font-medium">{staff.label(row.user_id)}</span> },
+          { header: "Fecha y hora", cell: (row) => <span className="whitespace-nowrap tabular-nums">{formatDateTime(row.occurred_at)}</span> },
           { header: "Método", cell: (row) => row.provider ?? "—" },
-          { header: "IP", cell: (row) => row.ip_address ?? "—" },
-          { header: "Navegador", cell: (row) => <span className="line-clamp-1 max-w-xs" title={row.user_agent ?? undefined}>{row.user_agent ?? "—"}</span> },
+          { header: "IP", cell: (row) => <span className="tabular-nums">{row.ip_address ?? "—"}</span> },
+          { header: "Dispositivo", cell: (row) => <span className="line-clamp-1 max-w-xs" title={row.user_agent ?? undefined}>{row.user_agent ?? "—"}</span> },
+          { header: "Resultado", cell: (row) => <Badge tone={row.result === "exitoso" ? "positive" : "danger"}>{row.result === "exitoso" ? "Exitoso" : "Fallido"}</Badge> },
         ]}
       />
-      <nav aria-label="Paginación" className="mt-4 flex gap-4 text-sm font-bold">
-        {before ? (
-          <Link href={`/admin/accesos${queryString({ ...filters })}`} className="text-hoja underline">
-            Volver a los más recientes
-          </Link>
-        ) : null}
-        {page.has_more && lastId ? (
-          <Link href={`/admin/accesos${queryString({ ...filters, antes: lastId })}`} className="text-hoja underline">
-            Ver más antiguos
-          </Link>
-        ) : null}
-      </nav>
+      <Pager
+        newerHref={before ? `/admin/accesos${queryString({ ...filters })}` : undefined}
+        olderHref={page.has_more && lastId ? `/admin/accesos${queryString({ ...filters, antes: lastId })}` : undefined}
+      />
+      <Alert className="mt-5" icon={<Lock className="size-[18px]" />}>
+        Ningún rol puede modificar ni borrar un registro de auditoría.
+      </Alert>
     </>
   );
 }

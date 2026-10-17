@@ -4,6 +4,7 @@ import { getSessionInfo, homePathForRole, requiresMfa } from "@rapitrip/supabase
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
 import { emailSchema } from "@rapitrip/validation";
 import { Alert, Button, Field } from "@rapitrip/ui";
+import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, type FormEvent } from "react";
 import { Turnstile } from "@/components/turnstile";
@@ -51,12 +52,12 @@ export function LoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <Field label="Correo" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldError ?? undefined} required />
-      <Field label="Contraseña" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <Field label="Correo" icon={<Mail className="size-4" />} type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldError ?? undefined} required />
+      <Field label="Contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       <Turnstile onToken={onToken} resetKey={resetKey} />
       {error ? <Alert tone="error">{error}</Alert> : null}
-      <Button variant="primary" type="submit" disabled={busy || !email || !password}>
-        {busy ? "Ingresando…" : "Ingresar"}
+      <Button variant="primary" type="submit" className="w-full" disabled={busy || !email || !password}>
+        {busy ? "Ingresando…" : "Ingresar a la consola"}
       </Button>
     </form>
   );

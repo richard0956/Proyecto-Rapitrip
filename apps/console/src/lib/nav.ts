@@ -1,26 +1,61 @@
 import type { AppRole } from "@rapitrip/validation";
 
-export type NavItem = { href: string; label: string; roles?: AppRole[] };
+export type NavIcon =
+  | "home" | "users" | "file" | "store" | "layers" | "truck" | "settings" | "orders" | "activity" | "alert" | "cash" | "receipt" | "clock" | "shield" | "lock" | "user";
 
-export const adminNav: NavItem[] = [
-  { href: "/admin", label: "Inicio" },
-  { href: "/admin/usuarios", label: "Usuarios y roles" },
-  { href: "/admin/solicitudes", label: "Solicitudes de comercio" },
-  { href: "/admin/repartidores", label: "Repartidores" },
-  { href: "/admin/incidentes", label: "Incidentes de TI" },
-  { href: "/admin/comercios", label: "Comercios y tiendas" },
-  { href: "/admin/auditoria", label: "Auditoría" },
-  { href: "/admin/accesos", label: "Inicios de sesión" },
-  { href: "/admin/datos-personales", label: "Datos personales", roles: ["superadmin"] },
-  { href: "/cuenta", label: "Mi cuenta" },
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: NavIcon;
+  /** Rutas adicionales que también marcan este ítem como activo. */
+  also?: string[];
+  roles?: AppRole[];
+  /** Pantallas de fases posteriores: se muestran, pero todavía no llevan a ninguna parte. */
+  soon?: boolean;
+};
+
+export type NavSection = { label?: string; items: NavItem[] };
+
+export const adminNav: NavSection[] = [
+  { label: "Resumen", items: [{ href: "/admin", label: "Inicio", icon: "home" }] },
+  {
+    label: "Administración",
+    items: [
+      { href: "/admin/usuarios", label: "Usuarios y roles", icon: "users" },
+      { href: "/admin/solicitudes", label: "Solicitudes de comercio", icon: "file" },
+      { href: "/admin/comercios", label: "Comercios y tiendas", icon: "store" },
+      { href: "/admin/catalogo", label: "Catálogo maestro", icon: "layers", soon: true },
+      { href: "/admin/repartidores", label: "Repartidores", icon: "truck" },
+      { href: "/admin/configuracion", label: "Configuración", icon: "settings", soon: true },
+    ],
+  },
+  {
+    label: "Operaciones",
+    items: [
+      { href: "/admin/pedidos", label: "Pedidos", icon: "orders", soon: true },
+      { href: "/admin/tablero", label: "Tablero en vivo", icon: "activity", soon: true },
+      { href: "/admin/excepciones", label: "Excepciones", icon: "alert", soon: true },
+    ],
+  },
+  {
+    label: "Finanzas",
+    items: [
+      { href: "/admin/caja", label: "Caja y venta", icon: "cash", soon: true },
+      { href: "/admin/liquidaciones", label: "Liquidaciones", icon: "receipt", soon: true },
+    ],
+  },
+  {
+    label: "Control",
+    items: [
+      { href: "/admin/auditoria", label: "Auditoría y accesos", icon: "clock", also: ["/admin/accesos"] },
+      { href: "/admin/incidentes", label: "Incidentes de TI", icon: "shield" },
+      { href: "/admin/datos-personales", label: "Datos personales", icon: "lock", roles: ["superadmin"] },
+    ],
+  },
 ];
 
-export const operationsNav: NavItem[] = [
-  { href: "/operations", label: "Inicio" },
-  { href: "/cuenta", label: "Mi cuenta" },
-];
+export const operationsNav: NavSection[] = [{ items: [{ href: "/operations", label: "Inicio", icon: "home" }] }];
+export const comercioNav: NavSection[] = [{ items: [{ href: "/comercio", label: "Inicio", icon: "home" }] }];
 
-export const comercioNav: NavItem[] = [
-  { href: "/comercio", label: "Inicio" },
-  { href: "/cuenta", label: "Mi cuenta" },
-];
+/** Los enlaces de cuenta van al pie de la barra, separados del resto. */
+export const accountItem: NavItem = { href: "/cuenta", label: "Mi cuenta", icon: "user" };

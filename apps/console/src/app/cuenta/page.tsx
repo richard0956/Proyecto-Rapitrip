@@ -1,4 +1,4 @@
-import { Alert, Badge, Card, DataTable } from "@rapitrip/ui";
+import { Alert, Avatar, Badge, Card, CardHeader, DataTable } from "@rapitrip/ui";
 import { PageHeader } from "@/components/shell";
 import { formatDate, formatDateTime, roleLabel } from "@/lib/format";
 import { requireAnyConsoleSession } from "@/lib/guard";
@@ -18,30 +18,32 @@ export default async function CuentaPage() {
       {profile.error || !profile.data ? (
         <Alert tone="error">No pudimos cargar tu perfil. Recarga la página o vuelve a ingresar.</Alert>
       ) : (
-        <div className="flex flex-col gap-8">
-          <Card>
-            <h2 className="mb-1 font-titulo text-xl text-selva">Datos personales</h2>
-            <p className="mb-4 text-sm text-tinta-suave">
-              Correo: <strong className="text-tinta">{profile.data.email}</strong>. Último ingreso: {formatDateTime(profile.data.last_sign_in_at)}.
-            </p>
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+          <Card className="p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <Avatar name={profile.data.full_name} />
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-bold text-tinta">{profile.data.full_name ?? "Sin nombre"}</h2>
+                <p className="truncate text-xs text-tinta-suave">{profile.data.email}</p>
+              </div>
+            </div>
             <ProfileForm fullName={profile.data.full_name ?? ""} phone={profile.data.phone ?? ""} save={updateProfile} />
+            <p className="mt-4 text-xs text-tinta-suave">Último ingreso: {formatDateTime(profile.data.last_sign_in_at)}</p>
           </Card>
-          <section aria-labelledby="mis-roles">
-            <h2 id="mis-roles" className="mb-3 font-titulo text-xl text-selva">
-              Mis roles
-            </h2>
+          <Card>
+            <CardHeader title="Mis roles" subtitle="Lo que puedes hacer en la consola" />
             <DataTable
               caption="Mis roles"
               rows={roles.data ?? []}
               rowKey={(row) => row.id ?? ""}
               emptyTitle="No tienes roles asignados"
               columns={[
-                { header: "Rol", cell: (row) => roleLabel[row.role ?? ""] ?? row.role },
-                { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "neutral"}>{row.status}</Badge> },
+                { header: "Rol", cell: (row) => <span className="font-bold">{roleLabel[row.role ?? ""] ?? row.role}</span> },
+                { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : row.status === "suspendido" ? "danger" : "neutral"}>{row.status === "activo" ? "Activo" : row.status === "suspendido" ? "Suspendido" : "Revocado"}</Badge> },
                 { header: "Desde", cell: (row) => formatDate(row.granted_at) },
               ]}
             />
-          </section>
+          </Card>
         </div>
       )}
     </>
