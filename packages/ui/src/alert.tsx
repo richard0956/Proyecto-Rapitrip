@@ -14,7 +14,7 @@ const tones = {
 export function Alert({ tone = "info", icon, className, children, ...props }: AlertProps) {
   const { box, Icon } = tones[tone];
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={cn("flex items-start gap-2.5 rounded-boton px-3.5 py-3 text-[12.5px] font-medium", box, className)} {...props}>
+    <div role={tone === "error" ? "alert" : "status"} className={cn("flex items-start gap-2.5 rounded-2xl px-4 py-3 text-[12.5px] font-medium", box, className)} {...props}>
       <span aria-hidden="true" className="mt-px shrink-0">
         {icon ?? <Icon className="size-[18px]" />}
       </span>

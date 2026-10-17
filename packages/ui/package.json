@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css",
-    "./tailwind-preset": "./tailwind-preset.cjs"
+    "./tailwind-preset": "./tailwind-preset.cjs",
+    "./motion.css": "./src/motion.css"
   },
   "scripts": {
     "test": "vitest run",

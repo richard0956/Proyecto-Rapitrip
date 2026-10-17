@@ -1,11 +1,17 @@
-/* Tokens del sistema "Ruta", tomados del prototipo de Figma. Ningún componente usa colores fuera de estos. */
+/*
+ * Tokens del sistema "Ruta". La identidad sale del logo: azul marino #0c4e67 y verde esmeralda #24c08e, sobre papel cálido.
+ * Los nombres se conservaron al cambiar la paleta (selva = superficie oscura, hoja = acción principal) para no tocar cada componente.
+ */
 :root {
-  --selva: #00352f;
-  --selva-panel: #0d4a42;
-  --hoja: #006c5f;
-  --menta: #d6f5ec;
-  --menta-borde: #8fd1bd;
-  --nav-texto: #eaf8f2;
+  --selva: #072b3b;
+  --selva-panel: #0e3f55;
+  --hoja: #0c4e67;
+  --esmeralda: #24c08e;
+  --exito: #0b6b4b;
+  --menta: #dcf6ec;
+  --menta-borde: #a9e4cd;
+  --bruma: #b7dbe8;
+  --nav-texto: #e6f1f6;
   --crema: #fff7ed;
   --papel: #fffdf8;
   --borde: #f1e6d6;

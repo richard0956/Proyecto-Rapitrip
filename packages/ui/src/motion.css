@@ -1,0 +1,222 @@
+/*
+ * Movimiento del sistema. Todo se anima con transform y opacity (más desenfoque en entradas puntuales) y con una sola curva,
+ * que simula masa y resorte: nada usa linear ni ease-in-out. Con "reducir movimiento" no se anima nada.
+ */
+:root {
+  --ease-fluido: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Capas del sistema: no se inventan z-index sueltos. */
+  --z-nav: 30;
+  --z-cajon: 40;
+  --z-grano: 70;
+  --z-intro: 80;
+}
+
+/* Íconos de trazo fino en todo el sistema (lucide trae 2 por defecto). */
+.lucide {
+  stroke-width: 1.5;
+}
+
+/* Grano muy leve sobre toda la página: rompe la planitud digital. Fijo y sin eventos, nunca dentro de un contenedor con scroll. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-grano);
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 180px;
+}
+
+/* ───────── Entrada de cada página ───────── */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+.page-enter {
+  animation: page-in 0.85s var(--ease-fluido) both;
+}
+
+/* En la primera carga de la sesión, la página espera a que termine la introducción. */
+html[data-intro="playing"] .page-enter {
+  animation-delay: 1.6s;
+}
+
+/* ───────── Introducción de marca (una vez por sesión) ─────────
+ * El script del <head> pone data-intro="playing" antes del primer pintado: sin JavaScript, o con "reducir movimiento",
+ * la introducción no existe y la página aparece directamente. */
+.intro-root {
+  display: none;
+}
+
+html[data-intro="playing"] .intro-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-intro);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  overflow: hidden;
+  background: var(--selva);
+  pointer-events: none;
+  animation: intro-out 0.95s var(--ease-fluido) 1.65s both;
+}
+
+.intro-glow {
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 40% at 28% 30%, color-mix(in srgb, var(--esmeralda) 26%, transparent), transparent 70%),
+    radial-gradient(45% 45% at 74% 72%, color-mix(in srgb, var(--hoja) 70%, transparent), transparent 70%);
+  animation: intro-glow 2.4s var(--ease-fluido) both;
+}
+
+.intro-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 32px;
+  background: var(--papel);
+  box-shadow:
+    0 40px 80px -24px rgb(0 0 0 / 0.55),
+    inset 0 1px 1px rgb(255 255 255 / 0.9);
+  animation: intro-pop 0.95s var(--ease-fluido) 0.15s both;
+}
+
+.intro-word,
+.intro-tag {
+  position: relative;
+}
+
+.intro-word {
+  animation: intro-rise 0.85s var(--ease-fluido) 0.55s both;
+}
+
+.intro-tag {
+  animation: intro-rise 0.85s var(--ease-fluido) 0.78s both;
+}
+
+.intro-line {
+  position: relative;
+  width: 132px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.intro-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: var(--esmeralda);
+  animation: intro-bar 1.5s var(--ease-fluido) 0.2s both;
+}
+
+@keyframes intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes intro-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes intro-glow {
+  from {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* La cortina sube y deja ver la página que ya está debajo. */
+@keyframes intro-out {
+  to {
+    transform: translate3d(0, -100%, 0);
+  }
+}
+
+/* ───────── Aparición al hacer scroll ─────────
+ * Solo se oculta si hay JavaScript (para poder mostrarlo) y el usuario no pidió reducir el movimiento. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+    filter: blur(8px);
+    transition:
+      opacity 0.9s var(--ease-fluido),
+      transform 0.9s var(--ease-fluido),
+      filter 0.9s var(--ease-fluido);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+
+  .reveal[data-visible="true"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .page-enter {
+    animation: none;
+  }
+
+  .intro-root {
+    display: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+}

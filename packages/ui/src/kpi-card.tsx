@@ -7,9 +7,9 @@ const bubbles = { menta: "bg-menta text-hoja", lavanda: "bg-lavanda text-tinta",
 /** Tarjeta de indicador: icono en burbuja, etiqueta, cifra grande y nota. */
 export function KpiCard({ icon, tone = "menta", label, value, hint }: { icon: ReactNode; tone?: keyof typeof bubbles; label: string; value: ReactNode; hint?: string }) {
   return (
-    <Card className="flex h-full flex-col gap-2 p-[18px] transition-colors duration-200 group-hover:border-menta-borde">
+    <Card outerClassName="h-full transition-[box-shadow,transform] duration-500 ease-fluido group-hover:-translate-y-0.5 group-hover:shadow-flota" className="flex flex-col gap-2 p-[18px]">
       <div className="flex items-center gap-2.5">
-        <span aria-hidden="true" className={cn("flex rounded-campo p-2", bubbles[tone])}>
+        <span aria-hidden="true" className={cn("flex rounded-full p-2.5", bubbles[tone])}>
           {icon}
         </span>
         <p className="text-[12.5px] font-semibold text-tinta-suave">{label}</p>
