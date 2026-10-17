@@ -64,3 +64,18 @@ export function decideConsoleAccess(input: {
   if (!canAccessArea(input.role, input.area)) return { kind: "redirect", to: "/sin-acceso" };
   return { kind: "allow" };
 }
+
+const managedBy: Partial<Record<AppRole, readonly AppRole[]>> = {
+  superadmin: ["admin", "cajero", "coordinador", "comercio", "cliente"],
+  admin: ["cajero", "coordinador", "comercio", "cliente"],
+};
+
+/** Espejo de `private.role_management`. Solo decide qué botones mostrar: la base de datos vuelve a comprobarlo. */
+export function canManageRole(manager: AppRole | null, target: AppRole | null): boolean {
+  return Boolean(manager && target && managedBy[manager]?.includes(target));
+}
+
+/** Roles que `manager` puede asignar por invitación (el backend solo invita admin, cajero y coordinador). */
+export function invitableRoles(manager: AppRole | null): AppRole[] {
+  return (["admin", "cajero", "coordinador"] as const).filter((role) => canManageRole(manager, role));
+}

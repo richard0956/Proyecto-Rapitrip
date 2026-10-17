@@ -10,12 +10,19 @@
     "./server": "./src/server.ts",
     "./browser": "./src/browser.ts"
   },
-  "scripts": { "test": "vitest run", "typecheck": "tsc -p tsconfig.json" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "@rapitrip/db-types": "workspace:*",
     "@rapitrip/validation": "workspace:*",
-    "@supabase/ssr": "^0.6.1",
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3"
   },
-  "devDependencies": { "@types/node": "^22.0.0", "typescript": "^5.6.0", "vitest": "^2.1.9" }
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.9"
+  }
 }
