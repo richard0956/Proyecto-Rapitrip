@@ -20,6 +20,8 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
   test.skip(!hasBackend, backendHint);
 
   test("el comercio crea su tienda con horario, publica un producto con imagen y controla su inventario", async ({ page }) => {
+    // Recorre cinco pantallas y sube un archivo; en `next dev` la primera visita de cada ruta compila.
+    test.setTimeout(180_000);
     const account = await createCommerceAccount("Café E2E");
     await signInAndEnroll(page, account.email, account.password);
     await expect(page).toHaveURL(/\/comercio$/);
@@ -160,5 +162,40 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await owner.getByRole("button", { name: "Crear producto" }).click();
     await expect(owner.getByLabel("Categoría")).toContainText(categoria);
     await context.close();
+  });
+
+  test("el director ve las tiendas de un comercio y lo suspende: el comercio pierde el acceso", async ({ page }) => {
+    test.setTimeout(120_000);
+    const businessName = `Comercio Suspendible ${Date.now()}`;
+    const account = await createCommerceAccount(businessName);
+    const owner = await consoleSession(account.email, account.password);
+    const { data: role } = await owner.client.from("my_roles").select("commerce_id").eq("role", "comercio").single();
+    const { error: createError } = await owner.client.rpc("create_store", { p_commerce: role!.commerce_id!, p_name: "Tienda a suspender" });
+    expect(createError).toBeNull();
+
+    const director = await createSuperadmin();
+    await signInAndEnroll(page, director.email, director.password);
+    await expect(page).toHaveURL(/\/admin$/);
+    await page.goto(`${CONSOLE_URL}/admin/comercios`);
+    await page.getByRole("link", { name: businessName }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(businessName, { timeout: 30_000 });
+    await expect(page.getByText("Tienda a suspender")).toBeVisible();
+    await expectNoViolations(page);
+
+    await page.getByRole("button", { name: "Suspender comercio" }).click();
+    await page.getByLabel("Motivo").fill("incumplimiento del convenio");
+    await page.getByRole("button", { name: "Suspender", exact: true }).click();
+    await expect(page.getByText("Suspendido", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reactivar comercio" })).toBeVisible();
+
+    // El comercio suspendido deja de ver sus tiendas y no puede crear otras.
+    const { data: stores } = await owner.client.from("stores_list").select("id");
+    expect(stores).toEqual([]);
+    const { error: denied } = await owner.client.rpc("create_store", { p_commerce: role!.commerce_id!, p_name: "Otra tienda" });
+    expect(denied?.code).toBe("42501");
+
+    // La acción queda en la auditoría con su etiqueta legible.
+    await page.goto(`${CONSOLE_URL}/admin/auditoria`);
+    await expect(page.locator("summary", { hasText: "Cambió el estado de un comercio" }).first()).toBeVisible({ timeout: 30_000 });
   });
 });

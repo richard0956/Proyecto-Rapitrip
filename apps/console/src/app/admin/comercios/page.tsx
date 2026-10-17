@@ -1,4 +1,5 @@
 import { Alert, Avatar, Badge, DataTable } from "@rapitrip/ui";
+import Link from "next/link";
 import { PageHeader } from "@/components/shell";
 import { formatDate } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
@@ -38,10 +39,10 @@ export default async function ComerciosPage() {
           {
             header: "Comercio",
             cell: (row) => (
-              <span className="flex items-center gap-2.5">
+              <Link href={`/admin/comercios/${row.id}`} className="flex items-center gap-2.5 rounded-campo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
                 <Avatar name={row.name} size="sm" />
-                <span className="font-bold">{row.name}</span>
-              </span>
+                <span className="font-bold underline-offset-2 hover:underline">{row.name}</span>
+              </Link>
             ),
           },
           { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "danger"}>{row.status === "activo" ? "Activo" : "Suspendido"}</Badge> },

@@ -337,6 +337,9 @@ export type Database = {
 "revoke_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
                            },
+"set_commerce_status":
+{ Args: { "p_commerce": string,"p_reason": string,"p_status": string }; Returns: undefined
+                           },
 "set_courier_status":
 { Args: { "p_id": string,"p_reason": string,"p_status": string }; Returns: undefined
                            },

@@ -310,3 +310,13 @@ Estado al 17 de octubre de 2026.
 - Recorrido manual con ojos humanos del área de comercio (los E2E cubren funcionamiento y accesibilidad, no criterio visual).
 - Que el trabajo `e2e-comercio` pase por primera vez en GitHub Actions (no se pudo ejecutar localmente).
 - La suite pgTAP completa falla en las pruebas 050, 070 y 130 sobre la base local actual (tiene 33 cuentas reales que alteran los conteos). Hay que correr `pnpm db:reset` antes de `pnpm db:test` para confirmar que pasan en limpio; el archivo 190 pasa solo.
+
+### Cierre de la Fase 2 en `main`
+
+Con todo integrado en `main`, se añadió lo que faltaba del alcance:
+- **Gestión de comercios (admin):** migración 23 con `set_commerce_status` (suspender o reactivar con motivo, auditado y pgTAP `230`). Un comercio suspendido pierde el acceso de su cuenta y sus tiendas figuran cerradas; al reactivar todo vuelve igual. Pantalla `admin/comercios/[id]` con tiendas, productos por tienda, cuenta del comercio y el control de estado.
+- **Auditoría legible:** etiquetas en español para todas las acciones nuevas (tiendas, catálogo maestro, productos, variantes, inventario y estado de comercio).
+- **Accesibilidad:** las tablas con desplazamiento horizontal ahora son una región enfocable por teclado (axe lo marcó en la pantalla de detalle).
+- **E2E:** cuarto flujo (director revisa tiendas, suspende el comercio y verifica la pérdida de acceso y la auditoría).
+
+**Fuera de la Fase 2:** pedidos por confirmar y métricas del comercio (F3), catálogo público con carrito y checkout (F4).

@@ -9,9 +9,10 @@ describe("Logo", () => {
     expect(img).toHaveAttribute("src", "/brand/logo-completo.webp");
   });
 
-  it("sobre fondo oscuro usa el nombre en blanco y el emblema decorativo en baldosa clara", () => {
+  it("sobre fondo oscuro usa el nombre en texto blanco y el emblema decorativo en baldosa clara", () => {
     const { container } = render(<Logo tone="dark" subtitle="Consola de operación" />);
-    expect(screen.getByRole("img", { name: "Rapitrip" })).toHaveAttribute("src", "/brand/wordmark-blanco.webp");
+    expect(screen.getByText("Rapitrip")).toHaveClass("text-white");
+    expect(screen.queryByRole("img", { name: "Rapitrip" })).toBeNull();
     const emblem = container.querySelector('img[src="/brand/emblema-192.webp"]');
     expect(emblem).toHaveAttribute("alt", "");
     expect(emblem?.parentElement).toHaveClass("bg-papel");

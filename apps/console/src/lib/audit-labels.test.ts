@@ -7,6 +7,12 @@ describe("auditLabel", () => {
     expect(auditLabel("export")).toBe("Exportó datos cifrados");
   });
 
+  it("traduce las acciones de la Fase 2", () => {
+    expect(auditLabel("store.hours_changed")).toBe("Cambió el horario de una tienda");
+    expect(auditLabel("inventory.conteo")).toBe("Registró un conteo de stock");
+    expect(auditLabel("commerce.status_changed")).toBe("Cambió el estado de un comercio");
+  });
+
   it("detalla qué lectura sensible fue", () => {
     expect(auditLabel("read_sensitive", { resource: "login_events" })).toBe("Consultó los inicios de sesión");
     expect(auditLabel("read_sensitive", { resource: "otra_cosa" })).toBe("Consultó información sensible");
