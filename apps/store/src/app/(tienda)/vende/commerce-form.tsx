@@ -24,6 +24,8 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
   useEffect(() => {
     const draft = takeDraft<Values>(DRAFT_KEY);
     if (draft) {
+    // Leer el borrador de sessionStorage solo es posible tras hidratar: es sincronizar con un sistema externo del navegador.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
       setValues(draft);
       setRestored(true);
     }

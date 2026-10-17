@@ -18,8 +18,9 @@ export async function Shell({ nav, name, role, children }: { nav: NavSection[]; 
       <SessionActivity />
       <Sidebar sections={sections} name={name} roleLabel={role ? (roleLabel[role] ?? role) : ""} sessionMinutes={SESSION_INACTIVITY_MINUTES} signOut={signOut} />
       <div className="relative">
-        <Link href="/cuenta" aria-label="Ir a mi cuenta" className="absolute right-4 top-6 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja sm:right-8 lg:top-7">
+        <Link href="/cuenta" className="absolute right-4 top-6 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja sm:right-8 lg:top-7">
           <Avatar name={name} />
+          <span className="sr-only">Ir a mi cuenta</span>
         </Link>
         <main className="mx-auto w-full max-w-[1176px] px-4 pb-10 pt-6 sm:px-8 lg:pt-7">{children}</main>
       </div>

@@ -9,6 +9,6 @@ type CookieAdapter = {
 
 /** El llamador pasa el adaptador de cookies de Next (`cookies()`), que este paquete no importa. */
 export function createServerSupabase(cookies: CookieAdapter) {
-  const { url, anonKey } = publicEnv();
-  return createServerClient<Database>(url, anonKey, { cookies });
+  const { url, anonKey, cookieName } = publicEnv();
+  return createServerClient<Database>(url, anonKey, { cookies, ...(cookieName ? { cookieOptions: { name: cookieName } } : {}) });
 }

@@ -77,7 +77,6 @@ export function MfaForm() {
       {state.phase === "enroll" ? (
         <>
           <p className="text-[13.5px] text-tinta-suave">Escanea el código con tu aplicación de autenticación y escribe el código de seis dígitos que muestra.</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={state.enrollment.qr} alt="Código QR para configurar la verificación en dos pasos" width={176} height={176} className="self-center rounded-panel border border-borde bg-white p-2" />
           <p className="text-sm text-tinta-suave">
             ¿No puedes escanear? Clave manual: <code className="break-all font-bold text-tinta">{state.enrollment.secret}</code>

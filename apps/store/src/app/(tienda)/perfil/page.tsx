@@ -9,7 +9,7 @@ import { ProfileForm } from "./profile-form";
 
 export const metadata = { title: "Mi perfil", robots: { index: false } };
 
-const fecha = new Intl.DateTimeFormat("es", { dateStyle: "long", timeZone: process.env.NEXT_PUBLIC_TIMEZONE ?? "America/Managua" });
+const fecha = new Intl.DateTimeFormat("es", { dateStyle: "long", timeZone: process.env.NEXT_PUBLIC_TIMEZONE || "America/Managua" });
 
 export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ clave?: string }> }) {
   const { clave } = await searchParams;

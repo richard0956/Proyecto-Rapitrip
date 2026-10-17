@@ -7,14 +7,16 @@ import { Lock, Mail, MailCheck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState, type FormEvent } from "react";
 import { Turnstile } from "@/components/turnstile";
+import { LEGAL_VERSION } from "@/lib/legal";
 
-type Errors = Partial<Record<"name" | "email" | "password" | "confirm", string>>;
+type Errors = Partial<Record<"name" | "email" | "password" | "confirm" | "terms", string>>;
 
 export function SignupForm({ next }: { next: string }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [token, setToken] = useState<string | null>(null);
   const [resetKey, setResetKey] = useState(0);
@@ -37,6 +39,7 @@ export function SignupForm({ next }: { next: string }) {
     if (!parsed.email.success) next_errors.email = "Escribe un correo válido.";
     if (!parsed.password.success) next_errors.password = "La contraseña debe tener entre 8 y 72 caracteres.";
     else if (password !== confirm) next_errors.confirm = "Las contraseñas no coinciden.";
+    if (!accepted) next_errors.terms = "Acepta los términos y la política de privacidad para crear tu cuenta.";
     setErrors(next_errors);
     if (Object.keys(next_errors).length > 0 || !parsed.name.success || !parsed.email.success || !parsed.password.success) return;
     if (captchaRequired && !token) return setError("Completa la verificación de seguridad.");
@@ -47,7 +50,7 @@ export function SignupForm({ next }: { next: string }) {
       email: parsed.email.data,
       password,
       options: {
-        data: { full_name: parsed.name.data },
+        data: { full_name: parsed.name.data, terms_version: LEGAL_VERSION, terms_accepted_at: new Date().toISOString() },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         captchaToken: token ?? undefined,
       },
@@ -82,6 +85,34 @@ export function SignupForm({ next }: { next: string }) {
       <Field label="Correo" icon={<Mail className="size-4" />} type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} required />
       <Field label="Contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} hint="Entre 8 y 72 caracteres." required />
       <Field label="Repite la contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} error={errors.confirm} required />
+      <div className="flex flex-col gap-1.5">
+        <label className="flex items-start gap-2.5 text-[13.5px] leading-snug text-tinta">
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            aria-invalid={errors.terms ? true : undefined}
+            aria-describedby={errors.terms ? "terms-error" : undefined}
+            className="mt-0.5 size-[18px] shrink-0 accent-hoja"
+          />
+          <span>
+            Acepto los{" "}
+            <Link href="/terminos" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+              términos y condiciones
+            </Link>{" "}
+            y la{" "}
+            <Link href="/privacidad" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+              política de privacidad
+            </Link>
+            .
+          </span>
+        </label>
+        {errors.terms ? (
+          <p id="terms-error" className="text-[12.5px] font-semibold text-rojo">
+            {errors.terms}
+          </p>
+        ) : null}
+      </div>
       <Turnstile onToken={onToken} resetKey={resetKey} />
       {error ? <Alert tone="error">{error}</Alert> : null}
       <Button variant="primary" type="submit" className="w-full" disabled={busy || !name || !email || !password || !confirm}>

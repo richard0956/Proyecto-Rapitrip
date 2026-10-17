@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { GoogleButton } from "@/components/google-button";
+import { googleEnabled } from "@/lib/google";
 import { OrDivider } from "@/components/or-divider";
 import { safeNext } from "@/lib/safe-next";
 import { serverSupabase } from "@/lib/supabase";
@@ -23,8 +24,12 @@ export default async function RegistroPage({ searchParams }: { searchParams: Pro
           <h1 className="text-[26px] font-extrabold leading-tight text-tinta">Crear cuenta</h1>
           <p className="mt-1 text-[13.5px] text-tinta-suave">Te toma un minuto. Confirmamos tu correo para proteger tu cuenta.</p>
         </div>
-        <GoogleButton next={next} />
-        <OrDivider />
+        {googleEnabled() ? (
+          <>
+            <GoogleButton next={next} />
+            <OrDivider />
+          </>
+        ) : null}
         <SignupForm next={next} />
         <p className="text-center text-[13px] text-tinta-suave">
           ¿Ya tienes cuenta?{" "}

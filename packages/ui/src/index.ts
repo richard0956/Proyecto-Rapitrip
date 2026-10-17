@@ -1,10 +1,10 @@
 export { cn } from "./cn";
-export { Button, buttonStyles, type ButtonProps } from "./button";
+export { Button, ButtonIsland, buttonStyles, type ButtonProps } from "./button";
 export { Field, type FieldProps } from "./field";
 export { SelectField, type SelectFieldProps } from "./select-field";
 export { TextareaField, type TextareaFieldProps } from "./textarea-field";
 export { Alert, type AlertProps } from "./alert";
-export { Badge, type BadgeProps } from "./badge";
+export { Badge, Eyebrow, type BadgeProps } from "./badge";
 export { Card, CardHeader } from "./card";
 export { Avatar, initials } from "./avatar";
 export { KpiCard } from "./kpi-card";
@@ -17,3 +17,5 @@ export { EmptyState } from "./empty-state";
 export { Logo } from "./logo";
 export { AuthLayout, type AuthLayoutProps } from "./auth-layout";
 export { Turnstile, type TurnstileProps } from "./turnstile";
+export { IntroSplash, introScript } from "./intro-splash";
+export { Reveal } from "./reveal";

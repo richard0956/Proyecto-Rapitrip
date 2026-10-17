@@ -16,7 +16,8 @@ describe("roles", () => {
 
   it("mapea rol a ruta de inicio", () => {
     expect(homePathForRole("superadmin")).toBe("/admin");
-    expect(homePathForRole("cajero")).toBe("/operations");
+    expect(homePathForRole("cajero")).toBe("/caja");
+    expect(homePathForRole("coordinador")).toBe("/coordinacion");
     expect(homePathForRole("comercio")).toBe("/comercio");
     expect(homePathForRole("cliente")).toBe("/sin-acceso");
     expect(homePathForRole(null)).toBe("/sin-acceso");
@@ -29,6 +30,14 @@ describe("roles", () => {
     expect(decideConsoleAccess({ ...base, aal: "aal1" })).toEqual({ kind: "redirect", to: "/mfa" });
     expect(decideConsoleAccess({ ...base, role: "cliente" })).toEqual({ kind: "redirect", to: "/sin-acceso" });
     expect(decideConsoleAccess({ ...base, role: "cajero" })).toEqual({ kind: "redirect", to: "/sin-acceso" });
+  });
+
+  it("cajero y coordinador no ven el área del otro", () => {
+    const base = { signedIn: true, aal: "aal2" } as const;
+    expect(decideConsoleAccess({ ...base, role: "cajero", area: "caja" })).toEqual({ kind: "allow" });
+    expect(decideConsoleAccess({ ...base, role: "cajero", area: "coordinacion" })).toEqual({ kind: "redirect", to: "/sin-acceso" });
+    expect(decideConsoleAccess({ ...base, role: "coordinador", area: "coordinacion" })).toEqual({ kind: "allow" });
+    expect(decideConsoleAccess({ ...base, role: "coordinador", area: "caja" })).toEqual({ kind: "redirect", to: "/sin-acceso" });
   });
 });
 

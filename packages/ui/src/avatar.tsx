@@ -12,7 +12,7 @@ export function Avatar({ name, size = "md", tone = "light", className }: { name:
   return (
     <span
       aria-hidden="true"
-      className={cn("flex shrink-0 items-center justify-center rounded-full font-bold", sizes[size], tone === "dark" ? "bg-menta-borde text-selva" : "bg-menta text-hoja", className)}
+      className={cn("flex shrink-0 items-center justify-center rounded-full font-bold", sizes[size], tone === "dark" ? "bg-esmeralda text-selva" : "bg-menta text-hoja", className)}
     >
       {initials(name)}
     </span>
