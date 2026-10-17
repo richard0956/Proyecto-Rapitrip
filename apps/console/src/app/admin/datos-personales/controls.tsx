@@ -55,7 +55,7 @@ export function CandidateActions({ userId, detail, anonymize }: CandidateProps) 
               <dd>{data.status}</dd>
             </dl>
           ) : null}
-          <Button variant="secondary" onClick={() => setShowDetail(false)}>
+          <Button variant="primary" onClick={() => setShowDetail(false)}>
             Cerrar
           </Button>
         </div>
@@ -89,7 +89,7 @@ export function ExportForm({ request }: { request: (input: { dataset: string; re
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-md flex-col gap-4">
+    <form onSubmit={submit} className="flex flex-col gap-3.5">
       <SelectField label="Conjunto de datos" value={dataset} onChange={(e) => setDataset(e.target.value)}>
         <option value="accounts">Cuentas</option>
         <option value="couriers">Repartidores</option>
@@ -115,7 +115,7 @@ export function ExportForm({ request }: { request: (input: { dataset: string; re
           </a>
         </Alert>
       ) : null}
-      <Button variant="secondary" type="submit" disabled={pending || reason.trim().length < 10} className="self-start">
+      <Button variant="primary" type="submit" disabled={pending || reason.trim().length < 10} className="self-start">
         {pending ? "Generando…" : "Exportar"}
       </Button>
     </form>

@@ -1,7 +1,8 @@
 import type { ConsoleArea } from "@rapitrip/supabase";
-import { Card } from "@rapitrip/ui";
+import { Alert } from "@rapitrip/ui";
 import { requireConsoleAccess } from "@/lib/guard";
 import { comercioNav, operationsNav } from "@/lib/nav";
+import { displayName } from "@/lib/profile";
 import { PageHeader, Shell } from "./shell";
 
 const titles = { operations: "Operaciones", comercio: "Mi comercio" } as const;
@@ -10,11 +11,9 @@ const titles = { operations: "Operaciones", comercio: "Mi comercio" } as const;
 export async function AreaHome({ area }: { area: Exclude<ConsoleArea, "admin"> }) {
   const session = await requireConsoleAccess(area);
   return (
-    <Shell nav={area === "operations" ? operationsNav : comercioNav} email={session.email} role={session.role}>
-      <PageHeader title={titles[area]} />
-      <Card>
-        <p className="text-tinta">Las pantallas de esta área se construyen en las siguientes fases.</p>
-      </Card>
+    <Shell nav={area === "operations" ? operationsNav : comercioNav} name={await displayName()} role={session.role}>
+      <PageHeader title={titles[area]} description="Las pantallas de esta área se construyen en las siguientes fases." />
+      <Alert tone="warning">Aquí vivirán los pedidos, el catálogo y las métricas de tu área.</Alert>
     </Shell>
   );
 }

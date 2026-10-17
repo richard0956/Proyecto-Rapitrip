@@ -3,9 +3,9 @@
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { SESSION_INACTIVITY_MINUTES } from "@/lib/session-config";
 
-/** Debe coincidir con `[auth.sessions] inactivity_timeout` de supabase/config.toml. */
-const INACTIVITY_MS = 10 * 60 * 1000;
+const INACTIVITY_MS = SESSION_INACTIVITY_MINUTES * 60 * 1000;
 const HEARTBEAT_MS = 60 * 1000;
 const events = ["pointerdown", "keydown", "scroll", "visibilitychange"] as const;
 

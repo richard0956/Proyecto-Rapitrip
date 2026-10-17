@@ -14,7 +14,7 @@ async function fill() {
   const user = userEvent.setup();
   await user.type(screen.getByLabelText("Correo"), "ana@rapitrip.test");
   await user.type(screen.getByLabelText("Contraseña"), "clave-segura");
-  await user.click(screen.getByRole("button", { name: "Ingresar" }));
+  await user.click(screen.getByRole("button", { name: "Ingresar a la consola" }));
 }
 
 beforeEach(() => vi.clearAllMocks());
@@ -42,7 +42,7 @@ describe("LoginForm", () => {
     render(<LoginForm />);
     await user.type(screen.getByLabelText("Correo"), "no-es-correo");
     await user.type(screen.getByLabelText("Contraseña"), "x");
-    await user.click(screen.getByRole("button", { name: "Ingresar" }));
+    await user.click(screen.getByRole("button", { name: "Ingresar a la consola" }));
     expect(screen.getByText("Escribe un correo válido.")).toBeInTheDocument();
     expect(signInWithPassword).not.toHaveBeenCalled();
   });

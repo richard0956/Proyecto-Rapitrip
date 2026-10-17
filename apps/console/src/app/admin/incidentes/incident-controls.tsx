@@ -54,7 +54,7 @@ export function ReportIncident({ report }: { report: (input: { type: string; sev
             <Button variant="ghost" onClick={close} disabled={pending}>
               Cancelar
             </Button>
-            <Button variant="secondary" type="submit" disabled={pending || description.trim().length < 5}>
+            <Button variant="primary" type="submit" disabled={pending || description.trim().length < 5}>
               {pending ? "Enviando…" : "Reportar"}
             </Button>
           </div>

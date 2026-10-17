@@ -41,7 +41,7 @@ export async function updateCourier(input: unknown): Promise<ActionResult> {
   return { ok: true };
 }
 
-/** Variante con `id` fijo para usarla con `.bind` desde un Server Component. */
+/** Variante pensada para llamarse desde el cliente con el id como primer argumento. */
 export async function updateCourierById(id: string, values: unknown): Promise<ActionResult> {
   return updateCourier({ ...(values as object), id });
 }

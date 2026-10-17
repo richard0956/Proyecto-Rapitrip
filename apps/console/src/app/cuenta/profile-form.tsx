@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Button, Field } from "@rapitrip/ui";
+import { Smartphone, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import type { ActionResult } from "@/lib/action-error";
@@ -25,11 +26,11 @@ export function ProfileForm({ fullName: initialName, phone: initialPhone, save }
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-md flex-col gap-4" noValidate>
-      <Field label="Nombre completo" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-      <Field label="Teléfono" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+    <form onSubmit={submit} className="flex flex-col gap-3.5" noValidate>
+      <Field label="Nombre completo" icon={<UserRound className="size-4" />} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+      <Field label="Teléfono" icon={<Smartphone className="size-4" />} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
       {result ? <Alert tone={result.ok ? "info" : "error"}>{result.ok ? (result.message ?? "Listo.") : result.error}</Alert> : null}
-      <Button variant="secondary" type="submit" disabled={pending} className="self-start">
+      <Button variant="primary" type="submit" disabled={pending} className="self-start">
         {pending ? "Guardando…" : "Guardar cambios"}
       </Button>
     </form>

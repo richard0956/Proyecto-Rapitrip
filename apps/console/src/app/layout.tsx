@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const titulo = Bricolage_Grotesque({ subsets: ["latin"], weight: "800", variable: "--font-titulo" });
-const texto = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "700", "800"], variable: "--font-texto" });
+const texto = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-texto" });
 
-export const metadata: Metadata = { title: "Rapitrip · Consola" };
+export const metadata: Metadata = { title: { default: "Rapitrip · Consola", template: "%s · Rapitrip" }, description: "Consola de operación de Rapitrip." };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${titulo.variable} ${texto.variable}`}>
+    <html lang="es" className={texto.variable}>
       <body>{children}</body>
     </html>
   );
