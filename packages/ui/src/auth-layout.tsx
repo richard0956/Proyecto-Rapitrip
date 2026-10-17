@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import type { ReactNode } from "react";
+import { Lema } from "./lema";
 import { Logo } from "./logo";
 
 export type AuthLayoutProps = {
@@ -11,23 +12,26 @@ export type AuthLayoutProps = {
   children: ReactNode;
 };
 
-/** Pantalla partida: panel de marca a la izquierda (solo en escritorio) y la tarjeta del formulario a la derecha. */
+/**
+ * Pantalla partida compacta: panel de marca en verde (con un toque del azul secundario) a la izquierda, solo en escritorio,
+ * y el formulario en una tarjeta de doble bisel a la derecha. Las medidas se ajustan a la altura para que todo quepa en un portátil.
+ */
 export function AuthLayout({ subtitle, headline, text, points, footer, children }: AuthLayoutProps) {
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <aside className="relative hidden overflow-hidden bg-hoja px-14 pb-10 pt-12 text-white lg:flex lg:flex-col">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-48 size-[520px] rounded-full bg-esmeralda/15 blur-[2px]" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-56 -left-24 size-[460px] rounded-full bg-selva/60" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 right-[-140px] size-[360px] rounded-full bg-white/[0.06]" />
+    <div className="min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+      <aside className="relative hidden overflow-hidden bg-selva px-10 py-8 text-white lg:flex lg:flex-col xl:px-14">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 size-[460px] rounded-full bg-esmeralda/20 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-32 size-[420px] rounded-full bg-marino/60 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-white/15 to-transparent" />
         <Logo tone="dark" subtitle={subtitle} priority className="relative" />
-        <div className="relative my-auto max-w-[500px]">
-          <h2 className="max-w-[480px] text-[40px] font-extrabold leading-[1.12] tracking-tight [text-wrap:wrap]">{headline}</h2>
-          <p className="mt-6 text-base text-menta">{text}</p>
-          <ul className="mt-9 flex flex-col gap-4">
+        <div className="relative my-auto max-w-[460px] py-8">
+          <h2 className="text-[clamp(26px,3.2vw,36px)] font-bold leading-[1.1] tracking-tight [text-wrap:balance]">{headline}</h2>
+          <p className="mt-4 text-[14.5px] leading-relaxed text-nav-texto/80">{text}</p>
+          <ul className="mt-7 flex flex-col gap-2.5">
             {points.map((point) => (
-              <li key={point} className="flex items-center gap-3 text-[15px]">
-                <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center rounded-full bg-esmeralda text-selva">
-                  <Check className="size-3.5" strokeWidth={2.5} />
+              <li key={point} className="flex items-center gap-3 rounded-2xl bg-white/[0.05] p-2.5 pr-4 text-[13.5px] leading-snug text-nav-texto ring-1 ring-white/10">
+                <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-esmeralda text-selva">
+                  <Check className="size-3.5" strokeWidth={2.25} />
                 </span>
                 {point}
               </li>
@@ -35,14 +39,14 @@ export function AuthLayout({ subtitle, headline, text, points, footer, children 
           </ul>
         </div>
         <div className="relative flex items-end justify-between gap-4">
-          <img src="/brand/lema-blanco.webp" width={720} height={65} alt="Seguridad y Confianza" className="h-5 w-auto opacity-90" />
-          {footer ? <p className="text-xs font-bold text-bruma">{footer}</p> : null}
+          <Lema tone="dark" />
+          {footer ? <p className="text-xs font-medium text-bruma">{footer}</p> : null}
         </div>
       </aside>
-      <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 overflow-hidden px-4 py-10">
-        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 size-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-menta/60 blur-3xl" />
-        <Logo tone="light" subtitle={subtitle} priority className="relative lg:hidden [&_img]:h-10" />
-        <div className="relative w-full max-w-[460px]">{children}</div>
+      <main className="relative flex min-h-dvh flex-col items-center justify-center gap-6 overflow-hidden px-4 py-8">
+        <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-menta/70 blur-3xl" />
+        <Logo tone="light" subtitle={subtitle} priority className="relative lg:hidden [&_img]:h-9" />
+        <div className="relative w-full max-w-[420px]">{children}</div>
       </main>
     </div>
   );

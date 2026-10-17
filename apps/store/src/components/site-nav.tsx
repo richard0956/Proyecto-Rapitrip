@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, buttonStyles, ButtonIsland, cn, Logo } from "@rapitrip/ui";
+import { Avatar, buttonStyles, ButtonIsland, cn, Lema, Logo } from "@rapitrip/ui";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -122,7 +122,7 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
             </button>
           </form>
         ) : null}
-        <img src="/brand/lema-blanco.webp" width={720} height={65} alt="Seguridad y Confianza" className="mt-10 h-4 w-auto opacity-70" />
+        <Lema tone="dark" className="mt-10" />
       </nav>
     </header>
   );

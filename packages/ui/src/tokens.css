@@ -1,23 +1,25 @@
 /*
- * Tokens del sistema "Ruta". La identidad sale del logo: azul marino #0c4e67 y verde esmeralda #24c08e, sobre papel cálido.
- * Los nombres se conservaron al cambiar la paleta (selva = superficie oscura, hoja = acción principal) para no tocar cada componente.
+ * Tokens del sistema "Ruta". La identidad sale del logo: verde esmeralda #24c08e como color principal y azul marino #0c4e67 como
+ * secundario, sobre un fondo claro y fresco. Los nombres se conservaron (selva = superficie oscura, hoja = acción principal)
+ * para no tocar cada componente; `marino` es el azul secundario de la marca.
  */
 :root {
-  --selva: #072b3b;
-  --selva-panel: #0e3f55;
-  --hoja: #0c4e67;
+  --selva: #06362a;
+  --selva-panel: #0a4a39;
+  --hoja: #0b7a57;
   --esmeralda: #24c08e;
+  --marino: #0c4e67;
   --exito: #0b6b4b;
   --menta: #dcf6ec;
   --menta-borde: #a9e4cd;
-  --bruma: #b7dbe8;
-  --nav-texto: #e6f1f6;
-  --crema: #fff7ed;
-  --papel: #fffdf8;
-  --borde: #f1e6d6;
-  --borde-campo: #d9cdbe;
-  --tinta: #1f2937;
-  --tinta-suave: #5f6d69;
+  --bruma: #b4e6d2;
+  --nav-texto: #e4f5ee;
+  --crema: #f4f8f5;
+  --papel: #fcfdfb;
+  --borde: #e2ebe5;
+  --borde-campo: #ccd8d0;
+  --tinta: #14231d;
+  --tinta-suave: #55645d;
   --calido: #fff4e6;
   --durazno: #ffe9d6;
   --durazno-texto: #9e4300;

@@ -3,14 +3,13 @@ import { cn } from "./cn";
 /** Los archivos salen de `brand/source` con `scripts/build-brand-assets.py` y cada app los sirve desde `/brand`. */
 const files = {
   lockup: { src: "/brand/logo-completo.webp", width: 960, height: 419 },
-  wordmarkWhite: { src: "/brand/wordmark-blanco.webp", width: 720, height: 189 },
   emblem: { src: "/brand/emblema-192.webp", width: 163, height: 192 },
 };
 
 /**
  * Marca de Rapitrip con los logos oficiales.
  * - `light` (fondos claros): el logo completo, con la R y «apitrip» en verde.
- * - `dark` (fondos azules): el emblema sobre una baldosa clara —el marino del emblema no se distingue del fondo— y el nombre en blanco.
+ * - `dark` (fondos azules): el emblema sobre una baldosa clara y el nombre en texto vivo, en blanco.
  */
 export function Logo({ tone = "light", subtitle, className, priority }: { tone?: "dark" | "light"; subtitle?: string; className?: string; priority?: boolean }) {
   const loading = priority ? "eager" : "lazy";
@@ -28,8 +27,8 @@ export function Logo({ tone = "light", subtitle, className, priority }: { tone?:
         <img src={files.emblem.src} width={files.emblem.width} height={files.emblem.height} alt="" loading={loading} decoding="async" className="h-6 w-auto" />
       </span>
       <div className="flex flex-col gap-1">
-        <img src={files.wordmarkWhite.src} width={files.wordmarkWhite.width} height={files.wordmarkWhite.height} alt="Rapitrip" loading={loading} decoding="async" className="h-[15px] w-auto" />
-        {subtitle ? <p className="text-[10.5px] leading-none text-bruma">{subtitle}</p> : null}
+        <p className="font-titulo text-[19px] font-bold leading-none tracking-tight text-white">Rapitrip</p>
+        {subtitle ? <p className="text-[10.5px] font-medium leading-none text-bruma">{subtitle}</p> : null}
       </div>
     </div>
   );

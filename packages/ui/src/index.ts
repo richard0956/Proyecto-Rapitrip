@@ -15,6 +15,7 @@ export { DataTable, type Column, type DataTableProps } from "./data-table";
 export { Dialog, type DialogProps } from "./dialog";
 export { EmptyState } from "./empty-state";
 export { Logo } from "./logo";
+export { Lema } from "./lema";
 export { AuthLayout, type AuthLayoutProps } from "./auth-layout";
 export { Turnstile, type TurnstileProps } from "./turnstile";
 export { IntroSplash, introScript } from "./intro-splash";

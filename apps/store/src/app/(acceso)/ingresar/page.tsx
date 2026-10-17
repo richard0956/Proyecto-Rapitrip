@@ -22,9 +22,9 @@ export default async function IngresarPage({ searchParams }: { searchParams: Par
 
   return (
     <AuthShell>
-      <Card className="flex flex-col gap-4 p-6 sm:p-8">
+      <Card className="flex flex-col gap-4 p-6 sm:p-7">
         <div>
-          <h1 className="text-[26px] font-extrabold leading-tight text-tinta">Ingresar</h1>
+          <h1 className="text-[24px] font-bold leading-tight tracking-tight text-tinta">Ingresar</h1>
           <p className="mt-1 text-[13.5px] text-tinta-suave">Entra para ver tu perfil y afiliar tu comercio.</p>
         </div>
         {params.expirada ? <Alert tone="warning">Tu sesión venció por seguridad. Ingresa de nuevo y seguimos donde ibas.</Alert> : null}

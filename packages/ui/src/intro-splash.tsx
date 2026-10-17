@@ -11,8 +11,8 @@ export function IntroSplash() {
       <div className="intro-tile">
         <img src="/brand/emblema-192.webp" width={163} height={192} alt="" className="h-16 w-auto" />
       </div>
-      <img className="intro-word h-6 w-auto" src="/brand/wordmark-blanco.webp" width={720} height={189} alt="" />
-      <img className="intro-tag h-[18px] w-auto" src="/brand/lema-blanco.webp" width={720} height={65} alt="" />
+      <p className="intro-word font-titulo text-[28px] font-bold leading-none tracking-tight text-white">Rapitrip</p>
+      <p className="intro-tag text-[10.5px] font-bold uppercase tracking-[0.22em] text-bruma">Seguridad y Confianza</p>
       <div className="intro-line" />
     </div>
   );
