@@ -15,3 +15,11 @@ describe("Field", () => {
     expect(input).toHaveAccessibleDescription("correo inválido");
   });
 });
+
+describe("Field con etiqueta oculta", () => {
+  it("mantiene la etiqueta para lectores de pantalla", () => {
+    render(<Field label="Buscar" hideLabel />);
+    expect(screen.getByLabelText("Buscar")).toBeInTheDocument();
+    expect(screen.getByText("Buscar")).toHaveClass("sr-only");
+  });
+});

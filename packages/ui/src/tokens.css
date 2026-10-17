@@ -1,16 +1,22 @@
-/* Tokens del sistema "Ruta". Ningún componente usa colores fuera de estos. */
+/* Tokens del sistema "Ruta", tomados del prototipo de Figma. Ningún componente usa colores fuera de estos. */
 :root {
-  --selva: #0b4f45;
+  --selva: #00352f;
+  --selva-panel: #0d4a42;
   --hoja: #006c5f;
   --menta: #d6f5ec;
   --menta-borde: #8fd1bd;
+  --nav-texto: #eaf8f2;
   --crema: #fff7ed;
   --papel: #fffdf8;
   --borde: #f1e6d6;
   --borde-campo: #d9cdbe;
   --tinta: #1f2937;
   --tinta-suave: #5f6d69;
-  --mango: #f59e2b;
-  --guayaba: #e8604c;
   --calido: #fff4e6;
+  --durazno: #ffe9d6;
+  --durazno-texto: #9e4300;
+  --lavanda: #e3e8ff;
+  --rosa: #fde7e4;
+  --rojo: #a53b3b;
+  --naranja: #d96c2a;
 }

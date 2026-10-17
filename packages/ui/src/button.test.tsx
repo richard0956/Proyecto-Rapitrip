@@ -8,8 +8,13 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Guardar" })).toHaveAttribute("type", "button");
   });
 
-  it("aplica la variante primaria con Mango", () => {
-    render(<Button variant="primary">Pagar</Button>);
-    expect(screen.getByRole("button")).toHaveClass("bg-mango");
+  it("la variante primaria es verde hoja", () => {
+    render(<Button>Pagar</Button>);
+    expect(screen.getByRole("button")).toHaveClass("bg-hoja");
+  });
+
+  it("la variante de peligro usa el rosa suave", () => {
+    render(<Button variant="danger">Revocar</Button>);
+    expect(screen.getByRole("button")).toHaveClass("bg-rosa");
   });
 });
