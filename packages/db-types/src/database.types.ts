@@ -122,6 +122,42 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"store_exceptions_list": {
+                  Row: {
+                    "closed": boolean | null,"closes": string | null,"id": string | null,"note": string | null,"on_date": string | null,"opens": string | null,"store_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "closed"?: boolean | null,"closes"?: never,"id"?: string | null,"note"?: string | null,"on_date"?: string | null,"opens"?: never,"store_id"?: string | null
+                         }
+                        Update: {
+                           "closed"?: boolean | null,"closes"?: never,"id"?: string | null,"note"?: string | null,"on_date"?: string | null,"opens"?: never,"store_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"store_hours_list": {
+                  Row: {
+                    "closes": string | null,"id": string | null,"opens": string | null,"store_id": string | null,"weekday": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "closes"?: never,"id"?: string | null,"opens"?: never,"store_id"?: string | null,"weekday"?: number | null
+                         }
+                        Update: {
+                           "closes"?: never,"id"?: string | null,"opens"?: never,"store_id"?: string | null,"weekday"?: number | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"stores_list": {
+                  Row: {
+                    "address": string | null,"closed_reason": string | null,"closed_until": string | null,"commerce_id": string | null,"commerce_name": string | null,"contact_phone": string | null,"created_at": string | null,"hour_ranges": number | null,"id": string | null,"name": string | null,"open_now": boolean | null,"status": string | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Functions: {
@@ -148,6 +184,9 @@ export type Database = {
               "attempts": number,"data": Json,"id": string,"template": string,"to_email": string
             }[]
                            },
+"close_store_temporarily":
+{ Args: { "p_reason"?: string,"p_store": string,"p_until": string }; Returns: undefined
+                           },
 "confirm_anonymization":
 { Args: { "p_holder_request"?: boolean,"p_reason": string,"p_user": string }; Returns: undefined
                            },
@@ -156,6 +195,12 @@ export type Database = {
                            },
 "create_invitation":
 { Args: { "p_email": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_token_hash": string }; Returns: Json
+                           },
+"create_store":
+{ Args: { "p_address"?: string,"p_commerce": string,"p_name": string,"p_phone"?: string }; Returns: string
+                           },
+"delete_store_exception":
+{ Args: { "p_date": string,"p_store": string }; Returns: undefined
                            },
 "export_dataset":
 { Args: { "p_dataset": string,"p_from"?: string,"p_reason": string,"p_to"?: string }; Returns: Json
@@ -187,6 +232,9 @@ export type Database = {
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
                            },
+"reopen_store":
+{ Args: { "p_store": string }; Returns: undefined
+                           },
 "report_incident":
 { Args: { "p_description": string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion" }; Returns: string
                            },
@@ -202,6 +250,15 @@ export type Database = {
 "set_incident_status":
 { Args: { "p_id": string,"p_resolution"?: string,"p_status": "abierto"|"en_atencion"|"resuelto" }; Returns: undefined
                            },
+"set_store_exception":
+{ Args: { "p_closed": boolean,"p_closes"?: string,"p_date": string,"p_note"?: string,"p_opens"?: string,"p_store": string }; Returns: undefined
+                           },
+"set_store_hours":
+{ Args: { "p_hours": Json,"p_store": string }; Returns: undefined
+                           },
+"set_store_status":
+{ Args: { "p_reason"?: string,"p_status": string,"p_store": string }; Returns: undefined
+                           },
 "submit_commerce_request":
 { Args: { "p_business_name": string,"p_details"?: Json }; Returns: string
                            },
@@ -216,6 +273,9 @@ export type Database = {
                            },
 "update_my_profile":
 { Args: { "p_full_name": string,"p_phone": string }; Returns: undefined
+                           },
+"update_store":
+{ Args: { "p_address"?: string,"p_name": string,"p_phone"?: string,"p_store": string }; Returns: undefined
                            }
           }
           Enums: {
