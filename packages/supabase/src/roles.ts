@@ -11,10 +11,19 @@ const areaByRole: Record<AppRole, ConsoleArea | null> = {
   cliente: null,
 };
 
-/** Lee el rol del claim `app_role` que añade el hook `custom_access_token`. */
+/** Prioridad cuando una cuenta tiene varios roles activos. */
+const rolePriority: AppRole[] = ["superadmin", "admin", "coordinador", "cajero", "comercio", "cliente"];
+
+/** Lee los roles del claim `app_roles` que añade el hook `custom_access_token` y devuelve el de mayor prioridad. */
 export function roleFromClaims(claims: Record<string, unknown> | null | undefined): AppRole | null {
-  const parsed = appRoleSchema.safeParse(claims?.app_role);
-  return parsed.success ? parsed.data : null;
+  const raw = claims?.app_roles;
+  if (!Array.isArray(raw)) return null;
+  const found = new Set<AppRole>();
+  for (const entry of raw) {
+    const parsed = appRoleSchema.safeParse((entry as { role?: unknown } | null)?.role);
+    if (parsed.success) found.add(parsed.data);
+  }
+  return rolePriority.find((role) => found.has(role)) ?? null;
 }
 
 export function isConsoleRole(role: AppRole | null): role is (typeof consoleRoles)[number] {

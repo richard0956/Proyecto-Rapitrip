@@ -10,7 +10,7 @@ export const buttonStyles = cva(
         primary: "bg-mango text-tinta hover:brightness-95",
         secondary: "bg-hoja text-papel hover:bg-selva",
         ghost: "bg-transparent text-hoja hover:bg-menta",
-        danger: "bg-guayaba text-tinta hover:brightness-95",
+        danger: "border-2 border-guayaba bg-papel text-tinta hover:bg-calido",
       },
     },
     defaultVariants: { variant: "secondary" },

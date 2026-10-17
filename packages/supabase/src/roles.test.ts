@@ -3,9 +3,15 @@ import { decideConsoleAccess, homePathForRole, roleFromClaims } from "./roles";
 
 describe("roles", () => {
   it("lee el rol del claim y rechaza valores desconocidos", () => {
-    expect(roleFromClaims({ app_role: "admin" })).toBe("admin");
-    expect(roleFromClaims({ app_role: "root" })).toBeNull();
+    expect(roleFromClaims({ app_roles: [{ role: "admin", commerce_id: null }] })).toBe("admin");
+    expect(roleFromClaims({ app_roles: [{ role: "root" }] })).toBeNull();
+    expect(roleFromClaims({ app_roles: [] })).toBeNull();
+    expect(roleFromClaims({})).toBeNull();
     expect(roleFromClaims(null)).toBeNull();
+  });
+
+  it("elige el rol de mayor prioridad", () => {
+    expect(roleFromClaims({ app_roles: [{ role: "cliente" }, { role: "admin" }, { role: "cajero" }] })).toBe("admin");
   });
 
   it("mapea rol a ruta de inicio", () => {
