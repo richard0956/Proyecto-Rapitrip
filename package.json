@@ -10,7 +10,12 @@
     "db:lint": "supabase db lint --level warning",
     "db:types": "supabase gen types typescript --local > packages/db-types/src/database.types.ts",
     "fn:test": "deno test --allow-env --allow-net --allow-read supabase/functions",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "dev:console": "pnpm --filter @rapitrip/console dev",
+    "dev:store": "pnpm --filter @rapitrip/store dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.117.3",

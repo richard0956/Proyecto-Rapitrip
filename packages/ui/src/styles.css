@@ -1,0 +1,28 @@
+/* Tokens del sistema de diseño "Ruta". Ningún componente usa colores fuera de estos. */
+@theme {
+  --color-selva: #0b4f45;
+  --color-hoja: #006c5f;
+  --color-menta: #d6f5ec;
+  --color-menta-borde: #8fd1bd;
+  --color-crema: #fff7ed;
+  --color-papel: #fffdf8;
+  --color-borde: #f1e6d6;
+  --color-borde-campo: #d9cdbe;
+  --color-tinta: #1f2937;
+  --color-tinta-suave: #5f6d69;
+  --color-mango: #f59e2b;
+  --color-guayaba: #e8604c;
+  --color-calido: #fff4e6;
+
+  --radius-campo: 12px;
+  --radius-tarjeta: 24px;
+
+  --font-titulo: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-texto: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-crema);
+  color: var(--color-tinta);
+  font-family: var(--font-texto);
+}
