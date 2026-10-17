@@ -14,6 +14,7 @@ export type RequestRow = {
   receivedAt: string;
   decisionReason: string | null;
   reviewedAt: string | null;
+  details: { contactName: string; phone: string; address: string; category: string };
 };
 
 type Props = {
@@ -111,7 +112,21 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
               <Badge tone={statusTone[selected.status]}>{statusText[selected.status]}</Badge>
             </div>
 
-            <Alert tone="warning">El contacto y los documentos de quien solicita aparecerán aquí cuando el backend los exponga a la consola.</Alert>
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-panel border border-borde bg-white p-4 text-cuerpo sm:grid-cols-2">
+              {(
+                [
+                  ["Representante", selected.details.contactName],
+                  ["Teléfono", selected.details.phone],
+                  ["Dirección del negocio", selected.details.address],
+                  ["Categoría", selected.details.category],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-micro font-bold uppercase text-tinta-suave">{label}</dt>
+                  <dd className="mt-0.5 font-medium text-tinta">{value || "—"}</dd>
+                </div>
+              ))}
+            </dl>
 
             {selected.status === "pendiente" ? (
               <>

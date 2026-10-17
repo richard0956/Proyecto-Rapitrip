@@ -18,14 +18,14 @@ export type Database = {
                   ]
                 },"commerce_requests_list": {
                   Row: {
-                    "business_name": string | null,"commerce_id": string | null,"created_at": string | null,"decision_reason": string | null,"id": string | null,"requester_id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
+                    "business_name": string | null,"commerce_id": string | null,"created_at": string | null,"decision_reason": string | null,"details": Json | null,"id": string | null,"requester_id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "business_name"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"id"?: string | null,"requester_id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
+                           "business_name"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"details"?: Json | null,"id"?: string | null,"requester_id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
                          }
                         Update: {
-                           "business_name"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"id"?: string | null,"requester_id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
+                           "business_name"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"details"?: Json | null,"id"?: string | null,"requester_id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
                          }
                         Relationships: [
                     
@@ -82,6 +82,20 @@ export type Database = {
                          }
                         Update: {
                            "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"my_commerce_requests": {
+                  Row: {
+                    "business_name": string | null,"created_at": string | null,"decision_reason": string | null,"id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "business_name"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
+                         }
+                        Update: {
+                           "business_name"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
                          }
                         Relationships: [
                     
