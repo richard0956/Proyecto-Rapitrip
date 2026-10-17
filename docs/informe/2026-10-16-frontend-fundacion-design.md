@@ -292,8 +292,8 @@ Estado al 17 de octubre de 2026.
 |---|---|---|
 | 1. Tiendas, horarios y cierres (backend) | Hecha | Migración 19 (`commerce.stores`, `store_hours`, `store_exceptions`), RLS por comercio, funciones auditadas (`create_store`, `update_store`, `set_store_status`, `set_store_hours`, `set_store_exception`, `close_store_temporarily`, `reopen_store`), vistas `stores_list`, `store_hours_list`, `store_exceptions_list` y pruebas pgTAP (`190_stores`) |
 | 2. Mis tiendas (frontend) | Hecha | Área `comercio` con su propio diseño, inicio con indicadores, lista de tiendas, detalle con datos, horario semanal por tramos, excepciones por fecha, cierre temporal y activación; columna "Tiendas activas" en Comercios (admin) |
-| 3. Catálogo maestro | Pendiente | Requiere decidir si es obligatorio para publicar |
-| 4. Productos y variantes | Pendiente | Incluye Storage de imágenes |
+| 3. Catálogo maestro | Hecha | Migración 20 (`commerce.master_items`: categorías con un nivel de subcategorías, marcas, tipos de producto y atributos), funciones auditadas, pruebas pgTAP (`200`) y pantalla `admin/catalogo`. **Decidido: orientativo**, publicar un producto no lo exige |
+| 4. Productos y variantes | Pendiente | Incluye Storage de imágenes; el comercio elige del catálogo maestro de forma opcional |
 | 5. Inventario con alertas | Pendiente | |
 | 6. E2E del área de comercio y CI | Pendiente | |
 

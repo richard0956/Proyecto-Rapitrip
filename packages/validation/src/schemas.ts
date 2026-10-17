@@ -108,3 +108,12 @@ export const temporaryClosureSchema = z.object({
   until: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/, "fecha inválida"),
   reason: optionalText(200),
 });
+
+/** Catálogo maestro (orientativo): clases de elementos y sus reglas. */
+export const masterKindSchema = z.enum(["categoria", "marca", "tipo_producto", "atributo"]);
+export type MasterKind = z.infer<typeof masterKindSchema>;
+export const masterItemSchema = z.object({
+  kind: masterKindSchema,
+  name: z.string().trim().min(2, "mínimo 2 caracteres").max(80, "máximo 80 caracteres"),
+  parent_id: z.string().uuid().nullable().optional(),
+});

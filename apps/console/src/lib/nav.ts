@@ -24,7 +24,7 @@ export const adminNav: NavSection[] = [
       { href: "/admin/usuarios", label: "Usuarios y roles", icon: "users" },
       { href: "/admin/solicitudes", label: "Solicitudes de comercio", icon: "file" },
       { href: "/admin/comercios", label: "Comercios y tiendas", icon: "store" },
-      { href: "/admin/catalogo", label: "Catálogo maestro", icon: "layers", soon: true },
+      { href: "/admin/catalogo", label: "Catálogo maestro", icon: "layers" },
       { href: "/admin/repartidores", label: "Repartidores", icon: "truck" },
       { href: "/admin/configuracion", label: "Configuración", icon: "settings", soon: true },
     ],

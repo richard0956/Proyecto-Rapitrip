@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   acceptInvitationSchema,
+  masterItemSchema,
   storeExceptionSchema,
   storeHoursSchema,
   storeSchema,
@@ -101,5 +102,13 @@ describe("tiendas", () => {
     expect(storeExceptionSchema.safeParse({ on_date: "2026-12-25", closed: true }).success).toBe(true);
     expect(storeExceptionSchema.safeParse({ on_date: "2026-12-24", closed: false }).success).toBe(false);
     expect(storeExceptionSchema.safeParse({ on_date: "2026-12-24", closed: false, opens: "08:00", closes: "12:00" }).success).toBe(true);
+  });
+});
+
+describe("catálogo maestro", () => {
+  it("valida clase y nombre", () => {
+    expect(masterItemSchema.safeParse({ kind: "marca", name: " Marca " }).success).toBe(true);
+    expect(masterItemSchema.safeParse({ kind: "otra", name: "Marca" }).success).toBe(false);
+    expect(masterItemSchema.safeParse({ kind: "marca", name: "M" }).success).toBe(false);
   });
 });

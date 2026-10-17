@@ -86,6 +86,14 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"master_items_list": {
+                  Row: {
+                    "created_at": string | null,"id": string | null,"kind": string | null,"name": string | null,"parent_id": string | null,"parent_name": string | null,"status": string | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"my_commerce_requests": {
                   Row: {
                     "business_name": string | null,"created_at": string | null,"decision_reason": string | null,"id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
@@ -196,6 +204,9 @@ export type Database = {
 "create_invitation":
 { Args: { "p_email": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_token_hash": string }; Returns: Json
                            },
+"create_master_item":
+{ Args: { "p_kind": string,"p_name": string,"p_parent"?: string }; Returns: string
+                           },
 "create_store":
 { Args: { "p_address"?: string,"p_commerce": string,"p_name": string,"p_phone"?: string }; Returns: string
                            },
@@ -232,6 +243,9 @@ export type Database = {
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
                            },
+"rename_master_item":
+{ Args: { "p_id": string,"p_name": string }; Returns: undefined
+                           },
 "reopen_store":
 { Args: { "p_store": string }; Returns: undefined
                            },
@@ -249,6 +263,9 @@ export type Database = {
                            },
 "set_incident_status":
 { Args: { "p_id": string,"p_resolution"?: string,"p_status": "abierto"|"en_atencion"|"resuelto" }; Returns: undefined
+                           },
+"set_master_item_status":
+{ Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
 "set_store_exception":
 { Args: { "p_closed": boolean,"p_closes"?: string,"p_date": string,"p_note"?: string,"p_opens"?: string,"p_store": string }; Returns: undefined
