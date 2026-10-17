@@ -283,3 +283,26 @@ Regla de terminado: una tarea está terminada cuando las pruebas pasan, el CI es
 6. Pruebas de extremo a extremo del área de comercio y ampliación del CI.
 
 Cada etapa sigue el flujo del proyecto: diseño aprobado, plan de implementación y ejecución con verificación.
+
+## 15. Avance de la Fase 2 (rama `fase-2-comercio`)
+
+Estado al 17 de octubre de 2026.
+
+| Etapa | Estado | Qué incluye |
+|---|---|---|
+| 1. Tiendas, horarios y cierres (backend) | Hecha | Migración 19 (`commerce.stores`, `store_hours`, `store_exceptions`), RLS por comercio, funciones auditadas (`create_store`, `update_store`, `set_store_status`, `set_store_hours`, `set_store_exception`, `close_store_temporarily`, `reopen_store`), vistas `stores_list`, `store_hours_list`, `store_exceptions_list` y pruebas pgTAP (`190_stores`) |
+| 2. Mis tiendas (frontend) | Hecha | Área `comercio` con su propio diseño, inicio con indicadores, lista de tiendas, detalle con datos, horario semanal por tramos, excepciones por fecha, cierre temporal y activación; columna "Tiendas activas" en Comercios (admin) |
+| 3. Catálogo maestro | Pendiente | Requiere decidir si es obligatorio para publicar |
+| 4. Productos y variantes | Pendiente | Incluye Storage de imágenes |
+| 5. Inventario con alertas | Pendiente | |
+| 6. E2E del área de comercio y CI | Pendiente | |
+
+**Decisiones tomadas en las etapas 1 y 2**
+- Los horarios son por tienda, con varios tramos por día y excepciones por fecha (que mandan sobre el horario semanal).
+- La hora de evaluación es la de Costa Rica (`America/Costa_Rica`); el cierre temporal admite hasta 90 días y se puede reabrir a mano.
+- Una tienda sin horario nunca aparece abierta. Desactivar una tienda exige motivo y conserva su historial.
+- Un comercio gestiona solo sus tiendas; administración y dirección ven todas. Toda escritura exige sesión de consola con segundo factor.
+
+**Pendiente de verificar**
+- Recorrido manual en el navegador del área de comercio con una cuenta con segundo factor.
+- La suite pgTAP completa falla en las pruebas 050, 070 y 130 sobre la base local actual (tiene 33 cuentas reales que alteran los conteos). Hay que correr `pnpm db:reset` antes de `pnpm db:test` para confirmar que pasan en limpio; el archivo 190 pasa solo.
