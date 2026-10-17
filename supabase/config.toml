@@ -53,7 +53,7 @@ verify_enabled = true
 # Ingreso con Google (tienda). Para activarlo: crea el cliente OAuth en Google Cloud, define
 # SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID y SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET y pon enabled = true.
 [auth.external.google]
-enabled = false
+enabled = true
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 skip_nonce_check = false

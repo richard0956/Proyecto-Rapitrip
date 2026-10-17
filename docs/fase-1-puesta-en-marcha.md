@@ -32,11 +32,11 @@ Con `MAIL_MODE=log` las Edge Functions imprimen el correo en lugar de enviarlo: 
 
 ## 2. Google (ingreso en la tienda)
 
-Hecho en código: botón condicionado por `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED`, callback PKCE en `/auth/callback`, bloque `[auth.external.google]` en `supabase/config.toml` (apagado). Lo que falta lo haces tú:
+Hecho en código: botón condicionado por `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED`, callback PKCE en `/auth/callback`, bloque `[auth.external.google]` en `supabase/config.toml` (**activado**; exige las credenciales en `supabase/.env` o `supabase start` falla). Pasos:
 
 1. Google Cloud Console → *APIs y servicios → Credenciales → ID de cliente OAuth* (tipo **Aplicación web**).
 2. URI de redirección autorizado: local `http://127.0.0.1:54321/auth/v1/callback`; producción `https://<proyecto>.supabase.co/auth/v1/callback`.
-3. Local: copia `supabase/.env.example` a `supabase/.env`, rellena `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` y `..._SECRET`, cambia `enabled = true` en `[auth.external.google]` y reinicia (`pnpm db:stop && pnpm db:start`).
+3. Local: copia `supabase/.env.example` a `supabase/.env`, rellena `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID` y `..._SECRET`, reinicia (`pnpm db:stop && pnpm db:start`).
 4. En `apps/store/.env.local` pon `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true`.
 5. Producción: Supabase → Authentication → Providers → Google (mismos datos) y la variable en Vercel. En *URL Configuration* agrega `https://<dominio-tienda>/auth/callback` a Redirect URLs.
 
