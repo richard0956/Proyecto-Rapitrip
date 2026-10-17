@@ -58,6 +58,14 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"inventory_list": {
+                  Row: {
+                    "available": boolean | null,"commerce_id": string | null,"low_stock_threshold": number | null,"product_id": string | null,"product_name": string | null,"product_status": string | null,"quantity": number | null,"sku": string | null,"stock_state": string | null,"store_id": string | null,"store_name": string | null,"track_stock": boolean | null,"updated_at": string | null,"variant_id": string | null,"variant_name": string | null,"variant_status": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"invitations_list": {
                   Row: {
                     "accepted_at": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"invited_by": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
@@ -130,6 +138,56 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"product_images_list": {
+                  Row: {
+                    "id": string | null,"path": string | null,"position": number | null,"product_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "id"?: string | null,"path"?: string | null,"position"?: number | null,"product_id"?: string | null
+                         }
+                        Update: {
+                           "id"?: string | null,"path"?: string | null,"position"?: number | null,"product_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"product_variants_list": {
+                  Row: {
+                    "id": string | null,"name": string | null,"price": number | null,"product_id": string | null,"sku": string | null,"status": string | null,"store_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
+                         }
+                        Update: {
+                           "id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"products_list": {
+                  Row: {
+                    "active_variants": number | null,"brand_id": string | null,"category_id": string | null,"commerce_id": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"id": string | null,"min_price": number | null,"name": string | null,"product_type_id": string | null,"status": string | null,"store_id": string | null,"store_name": string | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                },"stock_movements_list": {
+                  Row: {
+                    "created_at": string | null,"delta": number | null,"id": number | null,"kind": string | null,"quantity_after": number | null,"reason": string | null,"store_id": string | null,"variant_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"delta"?: number | null,"id"?: number | null,"kind"?: string | null,"quantity_after"?: number | null,"reason"?: string | null,"store_id"?: string | null,"variant_id"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"delta"?: number | null,"id"?: number | null,"kind"?: string | null,"quantity_after"?: number | null,"reason"?: string | null,"store_id"?: string | null,"variant_id"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"store_exceptions_list": {
                   Row: {
                     "closed": boolean | null,"closes": string | null,"id": string | null,"note": string | null,"on_date": string | null,"opens": string | null,"store_id": string | null
@@ -169,7 +227,13 @@ export type Database = {
                 }
           }
           Functions: {
-            "approve_commerce_request":
+            "add_product_image":
+{ Args: { "p_path": string,"p_product": string }; Returns: string
+                           },
+"add_stock":
+{ Args: { "p_amount": number,"p_reason": string,"p_variant": string }; Returns: number
+                           },
+"approve_commerce_request":
 { Args: { "p_convenio_confirmed": boolean,"p_request": string }; Returns: string
                            },
 "audit_events_page":
@@ -198,6 +262,9 @@ export type Database = {
 "confirm_anonymization":
 { Args: { "p_holder_request"?: boolean,"p_reason": string,"p_user": string }; Returns: undefined
                            },
+"count_stock":
+{ Args: { "p_quantity": number,"p_reason": string,"p_variant": string }; Returns: number
+                           },
 "create_courier":
 { Args: { "p_document_path"?: string,"p_full_name": string,"p_phone": string,"p_vehicle_type": string }; Returns: string
                            },
@@ -207,8 +274,14 @@ export type Database = {
 "create_master_item":
 { Args: { "p_kind": string,"p_name": string,"p_parent"?: string }; Returns: string
                            },
+"create_product":
+{ Args: { "p_brand"?: string,"p_category"?: string,"p_description"?: string,"p_name": string,"p_store": string,"p_type"?: string }; Returns: string
+                           },
 "create_store":
 { Args: { "p_address"?: string,"p_commerce": string,"p_name": string,"p_phone"?: string }; Returns: string
+                           },
+"create_variant":
+{ Args: { "p_name": string,"p_price": number,"p_product": string,"p_sku": string }; Returns: string
                            },
 "delete_store_exception":
 { Args: { "p_date": string,"p_store": string }; Returns: undefined
@@ -243,6 +316,12 @@ export type Database = {
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
                            },
+"remove_product_image":
+{ Args: { "p_image": string }; Returns: string
+                           },
+"remove_stock":
+{ Args: { "p_amount": number,"p_reason": string,"p_variant": string }; Returns: number
+                           },
 "rename_master_item":
 { Args: { "p_id": string,"p_name": string }; Returns: undefined
                            },
@@ -267,6 +346,12 @@ export type Database = {
 "set_master_item_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
+"set_product_status":
+{ Args: { "p_product": string,"p_reason"?: string,"p_status": string }; Returns: undefined
+                           },
+"set_stock_tracking":
+{ Args: { "p_threshold"?: number,"p_track": boolean,"p_variant": string }; Returns: undefined
+                           },
 "set_store_exception":
 { Args: { "p_closed": boolean,"p_closes"?: string,"p_date": string,"p_note"?: string,"p_opens"?: string,"p_store": string }; Returns: undefined
                            },
@@ -275,6 +360,9 @@ export type Database = {
                            },
 "set_store_status":
 { Args: { "p_reason"?: string,"p_status": string,"p_store": string }; Returns: undefined
+                           },
+"set_variant_status":
+{ Args: { "p_status": string,"p_variant": string }; Returns: undefined
                            },
 "submit_commerce_request":
 { Args: { "p_business_name": string,"p_details"?: Json }; Returns: string
@@ -291,8 +379,14 @@ export type Database = {
 "update_my_profile":
 { Args: { "p_full_name": string,"p_phone": string }; Returns: undefined
                            },
+"update_product":
+{ Args: { "p_brand"?: string,"p_category"?: string,"p_description"?: string,"p_name": string,"p_product": string,"p_type"?: string }; Returns: undefined
+                           },
 "update_store":
 { Args: { "p_address"?: string,"p_name": string,"p_phone"?: string,"p_store": string }; Returns: undefined
+                           },
+"update_variant":
+{ Args: { "p_name": string,"p_price": number,"p_sku": string,"p_variant": string }; Returns: undefined
                            }
           }
           Enums: {

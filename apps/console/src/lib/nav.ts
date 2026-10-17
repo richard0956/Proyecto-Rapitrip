@@ -61,8 +61,8 @@ export const comercioNav: NavSection[] = [
     items: [
       { href: "/comercio", label: "Inicio", icon: "home" },
       { href: "/comercio/tiendas", label: "Mis tiendas", icon: "store" },
-      { href: "/comercio/catalogo", label: "Catálogo", icon: "layers", soon: true },
-      { href: "/comercio/inventario", label: "Inventario", icon: "orders", soon: true },
+      { href: "/comercio/catalogo", label: "Catálogo", icon: "layers"},
+      { href: "/comercio/inventario", label: "Inventario", icon: "orders" },
     ],
   },
 ];

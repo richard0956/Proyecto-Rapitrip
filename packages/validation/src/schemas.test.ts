@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   acceptInvitationSchema,
   masterItemSchema,
+  productSchema,
+  variantSchema,
+  stockChangeSchema,
   storeExceptionSchema,
   storeHoursSchema,
   storeSchema,
@@ -110,5 +113,28 @@ describe("catálogo maestro", () => {
     expect(masterItemSchema.safeParse({ kind: "marca", name: " Marca " }).success).toBe(true);
     expect(masterItemSchema.safeParse({ kind: "otra", name: "Marca" }).success).toBe(false);
     expect(masterItemSchema.safeParse({ kind: "marca", name: "M" }).success).toBe(false);
+  });
+});
+
+describe("productos", () => {
+  it("normaliza vacíos y valida clasificación", () => {
+    expect(productSchema.parse({ name: " Café ", description: "" })).toEqual({ name: "Café", description: null, category_id: null, brand_id: null, product_type_id: null });
+    expect(productSchema.safeParse({ name: "Café", category_id: "no-uuid" }).success).toBe(false);
+  });
+
+  it("valida SKU y precio", () => {
+    expect(variantSchema.safeParse({ name: "500 g", sku: "CAFE-500", price: 4500.5 }).success).toBe(true);
+    expect(variantSchema.safeParse({ name: "500 g", sku: "X", price: 10 }).success).toBe(false);
+    expect(variantSchema.safeParse({ name: "500 g", sku: "CAFE-500", price: -1 }).success).toBe(false);
+    expect(variantSchema.safeParse({ name: "500 g", sku: "CAFE-500", price: 1.234 }).success).toBe(false);
+  });
+});
+
+describe("inventario", () => {
+  it("exige cantidad positiva salvo en un conteo", () => {
+    expect(stockChangeSchema.safeParse({ kind: "entrada", amount: 0, reason: "compra inicial" }).success).toBe(false);
+    expect(stockChangeSchema.safeParse({ kind: "conteo", amount: 0, reason: "conteo físico" }).success).toBe(true);
+    expect(stockChangeSchema.safeParse({ kind: "salida", amount: 2.5, reason: "venta de mostrador" }).success).toBe(false);
+    expect(stockChangeSchema.safeParse({ kind: "salida", amount: 2, reason: "abc" }).success).toBe(false);
   });
 });
