@@ -1,34 +1,20 @@
 import type { ConsoleArea } from "@rapitrip/supabase";
-import { Button, Card } from "@rapitrip/ui";
+import { Card } from "@rapitrip/ui";
 import { requireConsoleAccess } from "@/lib/guard";
-import { signOut } from "@/lib/actions";
-import { SessionActivity } from "./session-activity";
+import { comercioNav, operationsNav } from "@/lib/nav";
+import { PageHeader, Shell } from "./shell";
 
-const titles: Record<ConsoleArea, string> = {
-  admin: "Administración",
-  operations: "Operaciones",
-  comercio: "Mi comercio",
-};
+const titles = { operations: "Operaciones", comercio: "Mi comercio" } as const;
 
-export async function AreaHome({ area }: { area: ConsoleArea }) {
+/** Inicio provisional de las áreas cuyas pantallas llegan en fases posteriores (F3 a F6). */
+export async function AreaHome({ area }: { area: Exclude<ConsoleArea, "admin"> }) {
   const session = await requireConsoleAccess(area);
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6">
-      <SessionActivity />
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="font-titulo text-3xl text-selva">{titles[area]}</h1>
-        <form action={signOut}>
-          <Button variant="ghost" type="submit">
-            Cerrar sesión
-          </Button>
-        </form>
-      </header>
+    <Shell nav={area === "operations" ? operationsNav : comercioNav} email={session.email} role={session.role}>
+      <PageHeader title={titles[area]} />
       <Card>
-        <p className="text-tinta">
-          Sesión iniciada como <strong>{session.email}</strong> ({session.role}).
-        </p>
-        <p className="mt-2 text-tinta-suave">Las pantallas de esta área se construyen en los siguientes pasos.</p>
+        <p className="text-tinta">Las pantallas de esta área se construyen en las siguientes fases.</p>
       </Card>
-    </main>
+    </Shell>
   );
 }
