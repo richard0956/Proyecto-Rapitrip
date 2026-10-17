@@ -1,11 +1,8 @@
-import { Button } from "@rapitrip/ui";
+import { getSessionInfo, homePathForRole } from "@rapitrip/supabase";
+import { redirect } from "next/navigation";
+import { serverSupabase } from "@/lib/supabase";
 
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
-      <h1 className="font-titulo text-4xl text-selva">Rapitrip · Consola</h1>
-      <p className="text-tinta-suave">Gestión interna de Rapitrip.</p>
-      <Button variant="primary">Iniciar sesión</Button>
-    </main>
-  );
+export default async function Home() {
+  const session = await getSessionInfo(await serverSupabase());
+  redirect(session.signedIn ? homePathForRole(session.role) : "/login");
 }
