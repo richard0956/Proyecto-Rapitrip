@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { GoogleButton } from "@/components/google-button";
+import { googleEnabled } from "@/lib/google";
 import { OrDivider } from "@/components/or-divider";
 import { safeNext } from "@/lib/safe-next";
 import { serverSupabase } from "@/lib/supabase";
@@ -28,8 +29,12 @@ export default async function IngresarPage({ searchParams }: { searchParams: Par
         </div>
         {params.expirada ? <Alert tone="warning">Tu sesión venció por seguridad. Ingresa de nuevo y seguimos donde ibas.</Alert> : null}
         {params.error ? <Alert tone="error">El enlace no es válido o ya venció. Vuelve a intentarlo.</Alert> : null}
-        <GoogleButton next={next} />
-        <OrDivider />
+        {googleEnabled() ? (
+          <>
+            <GoogleButton next={next} />
+            <OrDivider />
+          </>
+        ) : null}
         <LoginForm next={next} />
         <p className="text-center text-[13px] text-tinta-suave">
           ¿Primera vez?{" "}

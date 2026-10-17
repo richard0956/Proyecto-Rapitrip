@@ -58,6 +58,13 @@ client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 skip_nonce_check = false
 
+# CAPTCHA (Cloudflare Turnstile). Desactivado hasta tener la clave secreta; ver docs/fase-1-puesta-en-marcha.md.
+# Al activarlo, Supabase exige el token en login, registro y recuperación; los formularios ya lo envían.
+[auth.captcha]
+enabled = false
+provider = "turnstile"
+secret = "env(SUPABASE_AUTH_CAPTCHA_SECRET)"
+
 [auth.sessions]
 inactivity_timeout = "10m"
 
