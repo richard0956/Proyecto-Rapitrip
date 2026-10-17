@@ -50,6 +50,14 @@ otp_expiry = 3600
 enroll_enabled = true
 verify_enabled = true
 
+# Ingreso con Google (tienda). Para activarlo: crea el cliente OAuth en Google Cloud, define
+# SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID y SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET y pon enabled = true.
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = false
+
 [auth.sessions]
 inactivity_timeout = "10m"
 
