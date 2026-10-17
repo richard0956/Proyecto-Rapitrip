@@ -77,4 +77,4 @@ La consola no debería indexarse ni anunciarse; el dominio de la tienda sí.
 - [ ] `pnpm e2e:backend` con el stack local arriba.
 
 ## 7. Fuera de esta fase
-Textos legales definitivos (términos, privacidad, Ley 787), decisión de si `cajero` y `coordinador` comparten `operations`, y las credenciales reales de Google/Cloudflare.
+Textos legales definitivos (términos, privacidad, Ley 787), y las credenciales reales de Google/Cloudflare.

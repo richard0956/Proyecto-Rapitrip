@@ -1,12 +1,12 @@
 import { appRoleSchema, consoleRoles, type AppRole } from "@rapitrip/validation";
 
-export type ConsoleArea = "admin" | "operations" | "comercio";
+export type ConsoleArea = "admin" | "caja" | "coordinacion" | "comercio";
 
 const areaByRole: Record<AppRole, ConsoleArea | null> = {
   superadmin: "admin",
   admin: "admin",
-  cajero: "operations",
-  coordinador: "operations",
+  cajero: "caja",
+  coordinador: "coordinacion",
   comercio: "comercio",
   cliente: null,
 };

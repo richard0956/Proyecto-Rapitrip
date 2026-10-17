@@ -77,8 +77,8 @@ El backend define seis roles (`identity.app_role`):
 |---|---|---|
 | `superadmin` | Director | `admin` completa |
 | `admin` | Administrador | `admin` sin acciones de director |
-| `cajero` | Encargado de ventas (caja) | `operations` (caja y venta, F3) |
-| `coordinador` | Encargado de ventas (coordinación) | `operations` (pedidos, F3 y F6) |
+| `cajero` | Encargado de ventas (caja) | `caja` (caja y venta, F3) |
+| `coordinador` | Encargado de ventas (coordinación) | `coordinacion` (pedidos, F3 y F6) |
 | `comercio` | Comercio | `comercio` |
 | `cliente` | Cliente | Solo tienda |
 
@@ -193,4 +193,4 @@ Cada app tiene su `.env.local` (ignorado por git) y un `.env.example` sin valore
 - **Cookies y puertos distintos.** Tienda y consola corren en puertos diferentes en local. Las cookies de Supabase están separadas por origen, lo que es lo deseado; hay que confirmarlo.
 - **Fuentes.** Dos familias aumentan el peso inicial de la tienda. Se mitiga con `next/font` y subconjuntos latinos.
 - **shadcn/ui y Tailwind.** Conviene fijar versiones exactas desde el inicio para que el sistema de diseño no cambie sin aviso.
-- **Decisión pendiente:** si el rol `cajero` y el `coordinador` comparten el área `operations` o tienen vistas separadas.
+- **Decidido:** `cajero` y `coordinador` tienen áreas separadas (`/caja` y `/coordinacion`); ninguno ve ni accede a lo del otro.

@@ -54,7 +54,8 @@ export const adminNav: NavSection[] = [
   },
 ];
 
-export const operationsNav: NavSection[] = [{ items: [{ href: "/operations", label: "Inicio", icon: "home" }] }];
+export const cajaNav: NavSection[] = [{ items: [{ href: "/caja", label: "Inicio", icon: "home" }] }];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Inicio", icon: "home" }] }];
 export const comercioNav: NavSection[] = [{ items: [{ href: "/comercio", label: "Inicio", icon: "home" }] }];
 
 /** Los enlaces de cuenta van al pie de la barra, separados del resto. */

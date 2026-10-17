@@ -9,7 +9,7 @@ test.describe("@backend consola · acceso y roles", () => {
   test.skip(!hasBackend, backendHint);
 
   test("sin sesión, las rutas protegidas llevan a /login", async ({ page }) => {
-    for (const path of ["/admin", "/admin/usuarios", "/operations", "/comercio", "/cuenta"]) {
+    for (const path of ["/admin", "/admin/usuarios", "/caja", "/coordinacion", "/comercio", "/cuenta"]) {
       await page.goto(`${CONSOLE_URL}${path}`);
       await expect(page).toHaveURL(/\/login$/);
     }
@@ -63,7 +63,7 @@ test.describe("@backend consola · acceso y roles", () => {
     await expect(page.getByRole("status").first()).toContainText("Tu acceso está listo");
 
     await signInAndEnroll(page, email, PASSWORD);
-    await expect(page).toHaveURL(/\/operations$/);
+    await expect(page).toHaveURL(/\/caja$/);
 
     await page.goto(`${CONSOLE_URL}/admin`);
     await expect(page).toHaveURL(/\/sin-acceso$/);
