@@ -8,6 +8,9 @@ export const adminNav: NavItem[] = [
   { href: "/admin/solicitudes", label: "Solicitudes de comercio" },
   { href: "/admin/repartidores", label: "Repartidores" },
   { href: "/admin/incidentes", label: "Incidentes de TI" },
+  { href: "/admin/comercios", label: "Comercios y tiendas" },
+  { href: "/admin/auditoria", label: "Auditoría" },
+  { href: "/admin/accesos", label: "Inicios de sesión" },
   { href: "/admin/datos-personales", label: "Datos personales", roles: ["superadmin"] },
   { href: "/cuenta", label: "Mi cuenta" },
 ];
