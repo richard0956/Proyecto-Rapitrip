@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   acceptInvitationSchema,
+  storeExceptionSchema,
+  storeHoursSchema,
+  storeSchema,
   appRoleSchema,
   commerceRequestSchema,
   consoleRoles,
@@ -78,5 +81,25 @@ describe("commerceRequestSchema y courierSchema", () => {
     expect(commerceRequestSchema.parse({ business_name: "Tienda Uno" }).details).toEqual({});
     expect(courierSchema.safeParse({ full_name: "Rep Uno", phone: "88887777", vehicle_type: "moto" }).success).toBe(true);
     expect(courierSchema.safeParse({ full_name: "Rep Uno", phone: "abc", vehicle_type: "moto" }).success).toBe(false);
+  });
+});
+describe("tiendas", () => {
+  it("normaliza vacíos y valida el teléfono", () => {
+    expect(storeSchema.parse({ name: " Centro ", address: "", phone: "" })).toEqual({ name: "Centro", address: null, phone: null });
+    expect(storeSchema.safeParse({ name: "Centro", phone: "abc" }).success).toBe(false);
+    expect(storeSchema.safeParse({ name: "C" }).success).toBe(false);
+  });
+
+  it("rechaza tramos invertidos y traslapados", () => {
+    expect(storeHoursSchema.safeParse([{ weekday: 1, opens: "08:00", closes: "12:00" }, { weekday: 1, opens: "13:00", closes: "18:00" }]).success).toBe(true);
+    expect(storeHoursSchema.safeParse([{ weekday: 1, opens: "10:00", closes: "09:00" }]).success).toBe(false);
+    expect(storeHoursSchema.safeParse([{ weekday: 1, opens: "08:00", closes: "12:00" }, { weekday: 1, opens: "11:00", closes: "14:00" }]).success).toBe(false);
+    expect(storeHoursSchema.safeParse([{ weekday: 1, opens: "08:00", closes: "12:00" }, { weekday: 2, opens: "11:00", closes: "14:00" }]).success).toBe(true);
+  });
+
+  it("exige horario cuando la excepción no es un cierre", () => {
+    expect(storeExceptionSchema.safeParse({ on_date: "2026-12-25", closed: true }).success).toBe(true);
+    expect(storeExceptionSchema.safeParse({ on_date: "2026-12-24", closed: false }).success).toBe(false);
+    expect(storeExceptionSchema.safeParse({ on_date: "2026-12-24", closed: false, opens: "08:00", closes: "12:00" }).success).toBe(true);
   });
 });
