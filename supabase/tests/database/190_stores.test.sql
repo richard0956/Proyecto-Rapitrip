@@ -59,7 +59,7 @@ select is((select open_now from public.stores_list where id = current_setting('t
 select throws_ok(format($$select public.close_store_temporarily(%L, now() - interval '1 day')$$, current_setting('t.store')),
   '22023', null::text, 'la reapertura debe ser futura');
 select lives_ok(format($$select public.reopen_store(%L)$$, current_setting('t.store')), 'se reabre a mano');
-select lives_ok(format($$select public.set_store_exception(%L, current_date, true, null, null, 'feriado')$$, current_setting('t.store')),
+select lives_ok(format($$select public.set_store_exception(%L, (now() at time zone 'America/Managua')::date, true, null, null, 'feriado')$$, current_setting('t.store')),
   'excepción de cierre para hoy');
 select is((select open_now from public.stores_list where id = current_setting('t.store')::uuid), false,
   'la excepción de hoy manda sobre el horario');

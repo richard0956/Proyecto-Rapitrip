@@ -138,6 +138,62 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"order_delivery_list": {
+                  Row: {
+                    "address": string | null,"notes": string | null,"order_id": string | null,"phone": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "address"?: string | null,"notes"?: string | null,"order_id"?: string | null,"phone"?: string | null
+                         }
+                        Update: {
+                           "address"?: string | null,"notes"?: string | null,"order_id"?: string | null,"phone"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"order_events_list": {
+                  Row: {
+                    "created_at": string | null,"from_status": string | null,"id": number | null,"order_id": string | null,"reason": string | null,"to_status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"from_status"?: string | null,"id"?: number | null,"order_id"?: string | null,"reason"?: string | null,"to_status"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"from_status"?: string | null,"id"?: number | null,"order_id"?: string | null,"reason"?: string | null,"to_status"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"order_items_list": {
+                  Row: {
+                    "id": string | null,"line_total": number | null,"order_id": string | null,"product_name": string | null,"quantity": number | null,"sku": string | null,"unit_price": number | null,"variant_id": string | null,"variant_name": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "id"?: string | null,"line_total"?: number | null,"order_id"?: string | null,"product_name"?: string | null,"quantity"?: number | null,"sku"?: string | null,"unit_price"?: number | null,"variant_id"?: string | null,"variant_name"?: string | null
+                         }
+                        Update: {
+                           "id"?: string | null,"line_total"?: number | null,"order_id"?: string | null,"product_name"?: string | null,"quantity"?: number | null,"sku"?: string | null,"unit_price"?: number | null,"variant_id"?: string | null,"variant_name"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"orders_list": {
+                  Row: {
+                    "client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_fee": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"payment_method": string | null,"payment_status": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_fee"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"payment_method"?: string | null,"payment_status"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                         }
+                        Update: {
+                           "client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_fee"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"payment_method"?: string | null,"payment_status"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"product_images_list": {
                   Row: {
                     "id": string | null,"path": string | null,"position": number | null,"product_id": string | null
@@ -218,7 +274,7 @@ export type Database = {
                   ]
                 },"stores_list": {
                   Row: {
-                    "address": string | null,"closed_reason": string | null,"closed_until": string | null,"commerce_id": string | null,"commerce_name": string | null,"contact_phone": string | null,"created_at": string | null,"hour_ranges": number | null,"id": string | null,"name": string | null,"open_now": boolean | null,"status": string | null,"updated_at": string | null
+                    "address": string | null,"closed_reason": string | null,"closed_until": string | null,"commerce_id": string | null,"commerce_name": string | null,"contact_phone": string | null,"created_at": string | null,"delivery_fee": number | null,"hour_ranges": number | null,"id": string | null,"name": string | null,"open_now": boolean | null,"status": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -235,6 +291,9 @@ export type Database = {
                            },
 "approve_commerce_request":
 { Args: { "p_convenio_confirmed": boolean,"p_request": string }; Returns: string
+                           },
+"assign_order_courier":
+{ Args: { "p_courier": string,"p_order": string }; Returns: undefined
                            },
 "audit_events_page":
 { Args: { "p_action"?: string,"p_actor"?: string,"p_before"?: number,"p_from"?: string,"p_limit"?: number,"p_target_type"?: string,"p_to"?: string }; Returns: Json
@@ -274,6 +333,9 @@ export type Database = {
 "create_master_item":
 { Args: { "p_kind": string,"p_name": string,"p_parent"?: string }; Returns: string
                            },
+"create_order":
+{ Args: { "p_address": string,"p_items": Json,"p_notes"?: string,"p_payment_method": string,"p_phone": string,"p_store": string }; Returns: string
+                           },
 "create_product":
 { Args: { "p_brand"?: string,"p_category"?: string,"p_description"?: string,"p_name": string,"p_store": string,"p_type"?: string }; Returns: string
                            },
@@ -303,6 +365,9 @@ export type Database = {
                            },
 "lookup_auth_user":
 { Args: { "p_email": string }; Returns: Json
+                           },
+"mark_order_paid":
+{ Args: { "p_order": string }; Returns: undefined
                            },
 "mark_outbox":
 { Args: { "p_error"?: string,"p_id": string,"p_ok": boolean }; Returns: undefined
@@ -349,11 +414,17 @@ export type Database = {
 "set_master_item_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
+"set_order_status":
+{ Args: { "p_order": string,"p_reason"?: string,"p_to": string }; Returns: undefined
+                           },
 "set_product_status":
 { Args: { "p_product": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
 "set_stock_tracking":
 { Args: { "p_threshold"?: number,"p_track": boolean,"p_variant": string }; Returns: undefined
+                           },
+"set_store_delivery_fee":
+{ Args: { "p_fee": number,"p_store": string }; Returns: undefined
                            },
 "set_store_exception":
 { Args: { "p_closed": boolean,"p_closes"?: string,"p_date": string,"p_note"?: string,"p_opens"?: string,"p_store": string }; Returns: undefined

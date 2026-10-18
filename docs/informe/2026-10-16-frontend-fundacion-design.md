@@ -328,3 +328,78 @@ Con todo integrado en `main`, se añadió lo que faltaba del alcance:
 - **E2E:** cuarto flujo (director revisa tiendas, suspende el comercio y verifica la pérdida de acceso y la auditoría).
 
 **Fuera de la Fase 2:** pedidos por confirmar y métricas del comercio (F3), catálogo público con carrito y checkout (F4).
+
+## 16. Traspaso a la Fase 3: pedidos, cobros, caja y venta
+
+Estado al 17 de octubre de 2026. Análisis contra el código de `main`; todavía no hay código de F3.
+
+**Alcance según la propuesta (Tabla 6 del informe del backend):** motor de pedidos, cobros con Tilopay, caja y venta. El checkout público y el carrito son de F4; F3 deja listo el motor que F4 consume.
+
+**Lo que ya existe y F3 reutiliza**
+- Catálogo, variantes con precio e inventario con `track_stock`, `stock_state` y `available` (migraciones 21 y 22). La migración 22 deja anotado que la reserva de stock en el checkout llega con F3.
+- Tiendas con `open_now` en hora de Nicaragua y cierre temporal: un pedido solo se acepta en una tienda abierta.
+- Roles `cajero` y `coordinador` con áreas `/caja` y `/coordinacion` ya protegidas por MFA y sesión de 15 minutos, pero con un inicio provisional (`AreaHome`).
+- Entradas de menú marcadas como "Pronto": `/admin/pedidos`, `/admin/tablero`, `/admin/excepciones`, `/admin/caja`.
+- Repartidores (`identity.couriers`) para asignar entregas, y el patrón de auditoría (`private.write_audit`) y de funciones `security definer` con motivo.
+- Edge Functions y bandeja de correos (`email_outbox`) para avisos al cliente.
+
+**Lo que falta**
+
+| Capa | Pieza |
+|---|---|
+| Backend | Esquema `orders`: `orders`, `order_items` (con copia del nombre y del precio al momento de la compra), `order_events` (historial de estados) y `payments` |
+| Backend | Máquina de estados del pedido (propuesta: `pendiente_pago` → `por_confirmar` → `confirmado` → `preparando` → `listo` → `en_camino` → `entregado`, y `cancelado` / `rechazado` con motivo) y funciones auditadas para cada transición, con permisos por rol |
+| Backend | Reserva de stock atómica al crear el pedido (`for update` sobre `inventory`), liberación al cancelar o vencer, y descuento definitivo al confirmar, todo con `stock_movements` |
+| Backend | Pagos: Edge Function para crear el cobro en Tilopay y otra para el webhook (firma verificada, idempotente por referencia), con modo simulado para local y pruebas |
+| Backend | Caja: venta de mostrador, cobro en efectivo o tarjeta, apertura y cierre de caja por cajero con diferencia registrada |
+| Frontend | Área `comercio`: Pedidos por confirmar (CW-M02) y Métricas |
+| Frontend | Área `caja`: nueva venta, cobro, caja del día y cierre |
+| Frontend | Área `coordinacion`: lista de pedidos, asignación de repartidor y seguimiento |
+| Frontend | Área `admin`: Pedidos, Excepciones y Caja y venta (activar los ítems "Pronto") |
+| Pruebas | pgTAP de la máquina de estados, reserva y concurrencia; Deno para el webhook; E2E de un pedido de punta a punta |
+
+**Orden sugerido (cada etapa con diseño aprobado, plan y verificación, como en F2)**
+1. Esquema de pedidos, estados y reserva de stock, con RLS y pgTAP.
+2. Comercio: Pedidos por confirmar (aceptar, rechazar con motivo, marcar listo) y métricas básicas.
+3. Pagos con Tilopay: creación del cobro y webhook, primero en modo simulado.
+4. Caja y venta: venta de mostrador y cierre de caja (`/caja`).
+5. Coordinación: asignación de repartidor y seguimiento (`/coordinacion`).
+6. Administración: Pedidos, Excepciones y Caja y venta.
+7. E2E de punta a punta y ampliación del CI.
+
+**Decisiones a tomar antes de la etapa 1**
+- Estados exactos del pedido y quién puede mover cada uno (comercio, cajero, coordinador, admin).
+- Tiempo máximo de un pedido sin pagar o sin confirmar antes de liberar el stock.
+- Si un pedido con varias tiendas es un solo pedido o uno por tienda.
+- Métodos de pago de la Etapa 1 (tarjeta por Tilopay, efectivo en caja, contra entrega) y si hay comisión que registrar.
+- Cómo se calcula y se muestra el costo de envío (no existe todavía en el esquema).
+- Política de cancelación y reembolso, y quién la ejecuta.
+- Qué ve cada área: el cajero no debe ver datos personales del cliente más allá de lo necesario para la entrega.
+
+**Dependencias externas:** credenciales de Tilopay (sandbox y producción), dominio público para el webhook y revisión legal de las condiciones de cobro.
+
+**Pendiente de verificar en esta revisión:** el recorrido visual con Playwright de ambas apps (consola en `:3001`, tienda en `:3000`). Los servidores corren en la máquina de la persona usuaria y no eran alcanzables desde la sesión en la nube; queda para una sesión local.
+
+## 17. Avance de la Fase 3
+
+Estado al 18 de octubre de 2026.
+
+| Etapa | Estado | Qué incluye |
+|---|---|---|
+| 1. Esquema de pedidos, estados y reserva de stock | Hecha (backend) | Migración 25 (esquema `sales`: `orders`, `order_items`, `order_events`, `order_delivery`), `create_order`, `set_order_status`, `assign_order_courier`, `mark_order_paid` (solo servicio), `set_store_delivery_fee`, vencimiento automático cada 5 minutos, vistas `orders_list`, `order_items_list`, `order_events_list` y `order_delivery_list`, pgTAP `250` (43 pruebas) |
+| 2 a 7 | Pendientes | Ver sección 16 |
+
+**Decisiones tomadas por defecto en la etapa 1** (se pueden cambiar antes de construir las pantallas)
+- **Un pedido por tienda.** Un carrito con productos de varias tiendas se divide en pedidos separados (lo resuelve F4).
+- **Estados:** `pendiente_pago`, `por_confirmar`, `confirmado`, `preparando`, `listo`, `en_camino`, `entregado`, `cancelado`, `rechazado`. Con tarjeta el pedido nace en `pendiente_pago`; en efectivo, en `por_confirmar`.
+- **Quién mueve cada estado:** el cliente cancela mientras no esté confirmado; el comercio confirma, rechaza, prepara y deja listo (y cancela hasta que esté listo); coordinación y administración despachan, entregan y cancelan cualquier pedido abierto. Rechazar y cancelar exigen motivo.
+- **Reserva de stock:** al crear el pedido se descuenta del inventario controlado y queda un movimiento (`Pedido N`). Cancelar, rechazar o vencer lo devuelve.
+- **Vencimiento:** 30 minutos sin pagar con tarjeta, 45 minutos sin que el comercio confirme.
+- **Envío:** costo fijo por tienda (`stores.delivery_fee`, 0 por defecto).
+- **Límite:** un cliente no puede tener más de 5 pedidos sin resolver (evita acaparar stock).
+- **Privacidad:** dirección y teléfono de entrega viven en `order_delivery`; el comercio y el cajero no los leen, y se borran al anonimizar la cuenta (el pedido y sus montos se conservan).
+- **Cajero:** todavía no ve pedidos; su acceso llega con la etapa 4 (venta de mostrador).
+
+**Corrección incluida:** `set_store_exception` comparaba la fecha con la del servidor (UTC); entre las 18:00 y las 24:00 de Managua rechazaba cerrar la tienda "hoy". Ahora usa la fecha de Nicaragua (y la prueba 190 también).
+
+**Cómo se verificó:** en esta sesión no hay Docker ni Supabase CLI; se aplicaron las 25 migraciones sobre un PostgreSQL 16 local con simulaciones mínimas de `auth`, `storage` y `pg_cron`, y se corrieron las pruebas con un sustituto de pgTAP. Pasan `250` (43 de 43) y el resto de la suite que usa las mismas funciones. **Falta** correr `pnpm db:reset && pnpm db:test` en un entorno con Supabase real, y regenerar los tipos con `pnpm db:types` (los de `database.types.ts` se escribieron a mano con el mismo formato; el CI los comparará).
