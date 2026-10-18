@@ -36,6 +36,8 @@ test.describe("@backend consola · acceso y roles", () => {
   });
 
   test("el director ingresa, enrola el segundo factor y recorre la administración sin violaciones de accesibilidad", async ({ page }) => {
+    // Recorre diez pantallas con axe; en `next dev` la primera visita de cada ruta compila.
+    test.setTimeout(180_000);
     const director = await createSuperadmin();
     await signInAndEnroll(page, director.email, director.password);
     await expect(page).toHaveURL(/\/admin$/);

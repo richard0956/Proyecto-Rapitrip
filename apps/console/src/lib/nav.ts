@@ -32,15 +32,15 @@ export const adminNav: NavSection[] = [
   {
     label: "Operaciones",
     items: [
-      { href: "/admin/pedidos", label: "Pedidos", icon: "orders", soon: true },
+      { href: "/admin/pedidos", label: "Pedidos", icon: "orders" },
       { href: "/admin/tablero", label: "Tablero en vivo", icon: "activity", soon: true },
-      { href: "/admin/excepciones", label: "Excepciones", icon: "alert", soon: true },
+      { href: "/admin/excepciones", label: "Excepciones", icon: "alert" },
     ],
   },
   {
     label: "Finanzas",
     items: [
-      { href: "/admin/caja", label: "Caja y venta", icon: "cash", soon: true },
+      { href: "/admin/caja", label: "Caja y venta", icon: "cash" },
       { href: "/admin/liquidaciones", label: "Liquidaciones", icon: "receipt", soon: true },
     ],
   },
@@ -54,12 +54,13 @@ export const adminNav: NavSection[] = [
   },
 ];
 
-export const cajaNav: NavSection[] = [{ items: [{ href: "/caja", label: "Inicio", icon: "home" }] }];
-export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Inicio", icon: "home" }] }];
+export const cajaNav: NavSection[] = [{ items: [{ href: "/caja", label: "Caja y venta", icon: "cash" }] }];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Pedidos", icon: "orders" }] }];
 export const comercioNav: NavSection[] = [
   {
     items: [
       { href: "/comercio", label: "Inicio", icon: "home" },
+      { href: "/comercio/pedidos", label: "Pedidos", icon: "receipt" },
       { href: "/comercio/tiendas", label: "Mis tiendas", icon: "store" },
       { href: "/comercio/catalogo", label: "Catálogo", icon: "layers"},
       { href: "/comercio/inventario", label: "Inventario", icon: "orders" },

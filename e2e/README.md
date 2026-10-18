@@ -34,11 +34,47 @@ Cada ejecución crea cuentas con correos únicos (`*@e2e.test`), así que no hac
 `tests/comercio.spec.ts` recorre el área de comercio con el backend real: crea una cuenta de comercio (solicitud aprobada por un director), define tienda,
 horario y cierre temporal, publica un producto con variante e imagen (sube a Storage con las políticas reales), controla el inventario y comprueba
 que un comercio no ve ni modifica las tiendas de otro. También recorre el catálogo maestro como director. Incluye axe en cada pantalla.
-No necesita las Edge Functions. El CI lo corre en el trabajo `e2e-comercio`.
+No necesita las Edge Functions (los demás flujos de operaciones sí). El CI lo corre dentro del trabajo `e2e-operaciones`.
 
 ```bash
 pnpm e2e:comercio   # con las variables de arriba definidas
 ```
+
+### Operaciones completas (Fase 3, etapa 7)
+
+`tests/pedido-completo.spec.ts` recorre un pedido de punta a punta con cada persona en su propio navegador: el cliente pide (por API, porque el carrito de la tienda es F4), el comercio lo confirma, prepara y deja listo; coordinación asigna repartidor, despacha y entrega; administración lo ve entregado y cobrado.
+
+```bash
+pnpm e2e:operaciones   # comercio, caja, coordinación, administración y pedido de punta a punta
+```
+
+Ese conjunto (todos los flujos de operación con backend real, sin Stripe) es lo que corre el trabajo `e2e-operaciones` del CI: levanta Supabase local, **sirve las Edge Functions** con un secreto interno aleatorio, espera a que `accept-invitation` responda y compila las apps con sus claves. Los E2E de Stripe quedan fuera porque usan claves de prueba personales.
+
+### Caja y venta de mostrador (Fase 3)
+
+`tests/caja.spec.ts` (etiqueta `@backend`) recorre el turno completo del cajero: acepta su invitación, abre caja con 500.00, vende 2 cafés en efectivo con vuelto, vende con tarjeta de terminal y la anula (el stock vuelve) y cierra con una diferencia de 10.00 que exige nota. Necesita las Edge Functions sirviéndose (`supabase functions serve`) porque el cajero acepta su invitación con `accept-invitation`; por eso no corre en el CI.
+
+### Coordinación (Fase 3)
+
+`tests/coordinacion.spec.ts` (etiqueta `@backend`): el comercio deja un pedido listo por API, coordinación (invitada y enrolada por la interfaz) asigna un repartidor, comprueba que no se puede despachar sin él, despacha, marca la entrega (el pedido en efectivo queda pagado) y cancela otro pedido con motivo (el stock vuelve). Necesita las Edge Functions sirviéndose, como `caja.spec.ts`.
+
+### Administración de pedidos y caja (Fase 3)
+
+`tests/admin-operaciones.spec.ts` (etiqueta `@backend`): prepara por API un pedido listo, otro por confirmar y un turno de caja cerrado con diferencia (el cajero acepta su invitación con `accept-invitation`), y el director recorre `/admin/pedidos` (filtros, detalle, cancelar con motivo), `/admin/excepciones` (el pedido listo sin repartidor aparece y enlaza al detalle) y `/admin/caja` (turno con diferencia, nota y ventas). Necesita las Edge Functions sirviéndose.
+
+### Pagos con tarjeta (Stripe, Fase 3)
+
+`tests/pagos.spec.ts` (etiqueta `@stripe`) usa **Stripe en modo prueba de verdad**: crea el pedido, pide la sesión de pago a `stripe-checkout`, paga en la página alojada de Stripe con la tarjeta `4242 4242 4242 4242`, entrega al webhook local el evento firmado con datos reales de esa sesión, comprueba que el pedido pasa a pagado, que reenviar el evento no repite nada, que cancelar un pedido pagado lo reembolsa en Stripe (`process-refunds`) y que un pago que llega con el pedido ya cancelado se reembolsa solo. No corre en el CI (usa tu cuenta de Stripe).
+
+Necesita, además de las variables de Supabase, las de `supabase/functions/.env` en el shell y las Edge Functions sirviéndose:
+
+```bash
+npx supabase functions serve                      # en otra terminal
+set -a; . supabase/functions/.env; set +a         # STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, OUTBOX_SECRET…
+pnpm e2e:stripe
+```
+
+Se omite solo si falta alguna variable o si la clave no es de prueba (`sk_test_`). Cada ejecución crea pagos y reembolsos de prueba en tu cuenta de Stripe, sin dinero real.
 
 ### Cómo funcionan
 

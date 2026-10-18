@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { backendHint, consoleClient, consoleSession, createCommerceAccount, createSuperadmin, hasBackend, totp } from "../support/backend";
 import { expectNoViolations } from "../support/axe";
 import { fillCode, signIn, signInAndEnroll } from "../support/console";
+import { openShop, orderState, placeOrder, signedInClient, stockOf } from "../support/shop";
 import { CONSOLE_URL } from "../support/urls";
 
 /** PNG de 1×1 píxel: suficiente para probar la subida con las políticas reales de Storage. */
@@ -197,5 +198,61 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     // La acción queda en la auditoría con su etiqueta legible.
     await page.goto(`${CONSOLE_URL}/admin/auditoria`);
     await expect(page.locator("summary", { hasText: "Cambió el estado de un comercio" }).first()).toBeVisible({ timeout: 30_000 });
+  });
+
+  test("el comercio recibe pedidos, confirma uno hasta dejarlo listo y rechaza otro con motivo", async ({ page }) => {
+    test.setTimeout(180_000);
+    const shop = await openShop("Comercio de pedidos");
+    const client = await signedInClient();
+    const first = await placeOrder(client, shop.storeId, shop.variantId, 2, "efectivo");
+    const second = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    const numberOf = async (id: string) => String((await client.from("orders_list").select("number").eq("id", id).single()).data!.number);
+    const [n1, n2] = [await numberOf(first), await numberOf(second)];
+    expect(await stockOf(shop.owner, shop.variantId)).toBe(7);
+
+    await signIn(page, shop.account.email, shop.account.password);
+    await fillCode(page, totp(shop.ownerSecret));
+    await expect(page).toHaveURL(/\/comercio$/, { timeout: 30_000 });
+    await expect(page.getByText("Pedidos por confirmar")).toBeVisible();
+
+    await page.goto(`${CONSOLE_URL}/comercio/pedidos`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos", { timeout: 30_000 });
+    await expect(page.getByRole("tab", { name: /Por confirmar\s*2/ })).toBeVisible();
+    await expectNoViolations(page);
+
+    // Confirmar → preparar → listo
+    await page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) }).click();
+    await expect(page.getByText("Café molido · 500 g")).toBeVisible();
+    await expect(page.getByText("Efectivo contra entrega")).toBeVisible();
+    await expect(page.getByText(/Responde antes de/)).toBeVisible();
+    await page.getByRole("button", { name: "Confirmar", exact: true }).click();
+    await expect(page.getByText(`Pedido ${n1}: confirmado.`)).toBeVisible();
+    // Tras responder, la lista pasa sola a «En curso» y el pedido sigue seleccionado.
+    await expect(page.getByRole("tab", { name: /En curso/, selected: true })).toBeVisible();
+    await page.getByRole("button", { name: "Empezar a preparar" }).click();
+    await expect(page.getByText(`Pedido ${n1}: preparando.`)).toBeVisible();
+    await page.getByRole("button", { name: "Marcar como listo" }).click();
+    await expect(page.getByText(`Pedido ${n1}: listo.`)).toBeVisible();
+    await expect(page.getByText("Coordinación se encarga de la entrega.")).toBeVisible();
+    expect(await orderState(client, first)).toBe("listo/pendiente");
+
+    // Rechazar el segundo exige motivo y devuelve el stock
+    await page.getByRole("tab", { name: /Por confirmar/ }).click();
+    await page.getByRole("button", { name: new RegExp(`Pedido ${n2}(?!\\d)`) }).click();
+    await page.getByRole("button", { name: "Rechazar", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("button", { name: "Rechazar", exact: true })).toBeDisabled();
+    await dialog.getByLabel("Motivo").fill("sin existencias reales");
+    await dialog.getByRole("button", { name: "Rechazar", exact: true }).click();
+    await expect.poll(() => orderState(client, second), { timeout: 15_000 }).toBe("rechazado/pendiente");
+    expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
+    await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
+    await expect(page.getByText("Motivo: sin existencias reales")).toBeVisible();
+
+    // Inicio: nada por confirmar y la venta de hoy es la del pedido confirmado (2 × 150)
+    await page.goto(`${CONSOLE_URL}/comercio`);
+    await expect(page.getByText("Ventas de hoy")).toBeVisible();
+    await expect(page.getByText(/300/).first()).toBeVisible();
+    await expectNoViolations(page);
   });
 });

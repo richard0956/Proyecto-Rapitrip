@@ -70,3 +70,10 @@ inactivity_timeout = "15m"
 
 [functions.send-outbox]
 verify_jwt = false
+
+# Pagos con tarjeta: el webhook se autentica con la firma de Stripe y el reembolso con el secreto interno, no con un JWT.
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.process-refunds]
+verify_jwt = false

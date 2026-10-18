@@ -1,0 +1,239 @@
+"use client";
+
+import { Alert, Badge, Button, Card, CardHeader, EmptyState, SelectField, pillStyles } from "@rapitrip/ui";
+import { MapPin, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { ReasonDialog } from "@/components/reason-dialog";
+import type { ActionResult } from "@/lib/action-error";
+import { formatMoney } from "@/lib/money";
+import { coordActions, coordTab, orderStatusLabel, orderStatusTone, paymentLabel, type CoordAction, type CoordTab, type OrderStatus } from "@/lib/orders";
+
+export type Courier = { id: string; name: string; vehicle: string; phone: string };
+export type DispatchOrder = {
+  id: string;
+  number: number;
+  store: string;
+  status: OrderStatus;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  courierId: string | null;
+  reason: string | null;
+  createdAt: string;
+  address: string | null;
+  phone: string | null;
+  notes: string | null;
+  items: { name: string; quantity: number; total: number }[];
+};
+
+const tabs: { key: CoordTab; label: string; empty: string }[] = [
+  { key: "listos", label: "Para despachar", empty: "No hay pedidos listos esperando repartidor." },
+  { key: "camino", label: "En camino", empty: "No hay entregas en camino." },
+  { key: "preparacion", label: "En preparación", empty: "Ningún comercio está preparando pedidos." },
+  { key: "espera", label: "Por confirmar", empty: "No hay pedidos esperando respuesta o pago." },
+  { key: "terminados", label: "Terminados", empty: "Todavía no hay pedidos terminados." },
+];
+
+type Props = {
+  rows: DispatchOrder[];
+  couriers: Courier[];
+  setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>;
+  assign: (id: string, courierId: string) => Promise<ActionResult>;
+};
+
+export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) {
+  const router = useRouter();
+  const [tab, setTab] = useState<CoordTab>("listos");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Los pedidos van cambiando de manos: se refresca cada 30 segundos mientras la pestaña está visible.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, 30_000);
+    return () => window.clearInterval(timer);
+  }, [router]);
+
+  const count = (key: CoordTab) => rows.filter((row) => coordTab(row.status) === key).length;
+  const visible = rows.filter((row) => coordTab(row.status) === tab);
+  const selected = rows.find((row) => row.id === selectedId) ?? null;
+  const courierName = (id: string | null) => couriers.find((c) => c.id === id)?.name ?? null;
+
+  return (
+    <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_400px]">
+      <Card>
+        <div role="tablist" aria-label="Estado de los pedidos" className="mb-4 flex flex-wrap gap-2">
+          {tabs.map((item) => (
+            <button key={item.key} type="button" role="tab" aria-selected={tab === item.key} onClick={() => setTab(item.key)} className={pillStyles(tab === item.key)}>
+              {item.label}
+              <span className="tabular-nums opacity-80">{count(item.key)}</span>
+            </button>
+          ))}
+        </div>
+        {visible.length === 0 ? (
+          <EmptyState title="Sin pedidos">{tabs.find((item) => item.key === tab)?.empty}</EmptyState>
+        ) : (
+          <ul className="flex flex-col divide-y divide-borde">
+            {visible.map((row) => {
+              const active = row.id === selectedId;
+              return (
+                <li key={row.id}>
+                  <button type="button" aria-pressed={active} onClick={() => setSelectedId(active ? null : row.id)} className={`flex w-full flex-wrap items-center justify-between gap-3 rounded-campo px-2 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja ${active ? "bg-menta/50" : "hover:bg-calido/60"}`}>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-bold text-tinta">Pedido {row.number}</span>
+                      <span className="block truncate text-xs text-tinta-suave">
+                        {row.store} · {row.address ?? "Sin dirección"}
+                      </span>
+                      <span className="block text-xs text-tinta-suave">{courierName(row.courierId) ? `Repartidor: ${courierName(row.courierId)}` : "Sin repartidor"}</span>
+                    </span>
+                    <span className="flex items-center gap-3">
+                      <span className="text-sm font-bold tabular-nums text-tinta">{formatMoney(row.total)}</span>
+                      <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+
+      {selected ? (
+        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} onMoved={(to) => setTab(coordTab(to))} />
+      ) : (
+        <Card>
+          <CardHeader title="Detalle del pedido" />
+          <EmptyState title="Ninguno elegido">Selecciona un pedido para asignar repartidor o despacharlo.</EmptyState>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
+  const router = useRouter();
+  const [courier, setCourier] = useState(row.courierId ?? "");
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [asking, setAsking] = useState<CoordAction | null>(null);
+  const [pending, start] = useTransition();
+  const actions = coordActions(row.status);
+  const canAssign = ["confirmado", "preparando", "listo", "en_camino"].includes(row.status);
+  const assigned = row.courierId !== null;
+
+  function saveCourier() {
+    setMessage(null);
+    start(async () => {
+      const result = await assign(row.id, courier);
+      setMessage(result.ok ? { ok: true, text: "Repartidor asignado." } : { ok: false, text: result.error });
+      if (result.ok) router.refresh();
+    });
+  }
+
+  function run(action: CoordAction) {
+    setMessage(null);
+    start(async () => {
+      const result = await setStatus(row.id, { to: action.to });
+      setMessage(result.ok ? { ok: true, text: `Pedido ${row.number}: ${orderStatusLabel[action.to].toLowerCase()}.` } : { ok: false, text: result.error });
+      if (result.ok) {
+        onMoved(action.to);
+        router.refresh();
+      }
+    });
+  }
+
+  return (
+    <Card outerClassName="xl:sticky xl:top-6" className="p-5">
+      <CardHeader title={`Pedido ${row.number}`} subtitle={`${row.store} · ${row.createdAt}`} actions={<Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>} />
+
+      <div className="mb-3.5 rounded-panel bg-calido/50 p-3.5 text-sm">
+        <p className="mb-1 text-xs font-bold text-tinta-suave">Entrega</p>
+        {row.address ? (
+          <>
+            <p className="flex items-start gap-2 text-tinta">
+              <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {row.address}
+            </p>
+            <p className="mt-1 flex items-center gap-2 text-tinta">
+              <Phone className="size-4 shrink-0" aria-hidden="true" />
+              {row.phone}
+            </p>
+            {row.notes ? <p className="mt-1 text-xs text-tinta-suave">Nota: {row.notes}</p> : null}
+          </>
+        ) : (
+          <p className="text-tinta-suave">Sin datos de entrega.</p>
+        )}
+      </div>
+
+      <ul className="mb-3.5 flex flex-col divide-y divide-borde text-sm">
+        {row.items.map((item) => (
+          <li key={item.name} className="flex items-start justify-between gap-3 py-1.5">
+            <span className="min-w-0 truncate">
+              {item.quantity} × {item.name}
+            </span>
+            <span className="tabular-nums text-tinta">{formatMoney(item.total)}</span>
+          </li>
+        ))}
+      </ul>
+      <dl className="mb-3.5 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-sm">
+        <dt className="font-bold text-tinta">Total</dt>
+        <dd className="font-bold tabular-nums text-tinta">{formatMoney(row.total)}</dd>
+        <dt className="text-tinta-suave">Pago</dt>
+        <dd>{paymentLabel(row.paymentMethod, row.paymentStatus)}</dd>
+      </dl>
+      {row.paymentMethod === "efectivo" ? <Alert tone="warning" className="mb-3.5">El repartidor cobra {formatMoney(row.total)} en efectivo al entregar.</Alert> : null}
+      {row.reason ? <Alert tone="warning" className="mb-3.5">Motivo: {row.reason}</Alert> : null}
+
+      {canAssign ? (
+        <div className="mb-3.5 flex flex-col gap-2.5">
+          <SelectField label="Repartidor" value={courier} onChange={(e) => setCourier(e.target.value)}>
+            <option value="">{couriers.length === 0 ? "No hay repartidores activos" : "Elige un repartidor"}</option>
+            {couriers.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+                {item.vehicle ? ` · ${item.vehicle}` : ""}
+              </option>
+            ))}
+          </SelectField>
+          <Button variant="secondary" onClick={saveCourier} disabled={pending || !courier || courier === row.courierId} className="self-start">
+            {assigned ? "Cambiar repartidor" : "Asignar repartidor"}
+          </Button>
+        </div>
+      ) : null}
+
+      {message ? <Alert tone={message.ok ? "info" : "error"} className="mb-3.5">{message.text}</Alert> : null}
+      {actions.length > 0 ? (
+        <div className="flex flex-col gap-2.5">
+          <div className="flex flex-wrap gap-2.5">
+            {actions.map((action, index) => (
+              <Button key={action.to} variant={index === 0 ? "primary" : "danger"} disabled={pending || (action.needsCourier === true && !assigned)} onClick={() => (action.reason ? setAsking(action) : run(action))}>
+                {action.label}
+              </Button>
+            ))}
+          </div>
+          {actions.some((a) => a.needsCourier) && !assigned ? <p className="text-xs text-tinta-suave">Asigna un repartidor para poder despachar.</p> : null}
+        </div>
+      ) : (
+        <p className="text-[12.5px] text-tinta-suave">Este pedido ya terminó.</p>
+      )}
+
+      {asking ? (
+        <ReasonDialog
+          open
+          onClose={() => setAsking(null)}
+          title={`${asking.label} ${row.number}`}
+          description="Se devuelve el stock. Si ya estaba pagado con tarjeta, se le devuelve el dinero al cliente."
+          confirmLabel={asking.label}
+          danger
+          onConfirm={async (reason) => {
+            const result = await setStatus(row.id, { to: asking.to, reason });
+            if (result.ok) onMoved(asking.to);
+            return result;
+          }}
+        />
+      ) : null}
+    </Card>
+  );
+}

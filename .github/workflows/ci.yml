@@ -106,10 +106,12 @@ jobs:
           path: e2e/playwright-report
           retention-days: 7
 
-  # Área de comercio con backend real: tiendas, horarios, catálogo con subida de imágenes a Storage, inventario y aislamiento entre comercios.
-  e2e-comercio:
+  # Operación completa con backend real: comercio (tiendas, catálogo con imágenes en Storage, inventario, pedidos), caja, coordinación,
+  # administración y un pedido de punta a punta entre los cuatro. Necesita las Edge Functions sirviéndose, porque las cuentas de caja,
+  # coordinación y administración se crean aceptando invitaciones (`accept-invitation`). Los E2E de Stripe quedan fuera: usan claves de prueba personales.
+  e2e-operaciones:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
 
@@ -143,6 +145,19 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
           } >> "$GITHUB_ENV"
 
+      - name: Servir las Edge Functions
+        run: |
+          printf 'OUTBOX_SECRET=ci-%s%s\nMAIL_MODE=log\nSTORE_URL=http://127.0.0.1:3000\nCONSOLE_URL=http://127.0.0.1:3001\n' "$RANDOM" "$RANDOM" > supabase/functions/.env
+          nohup supabase functions serve > functions.log 2>&1 &
+          # La primera llamada tarda por la compilación en frío (puede agotar el CPU y fallar): se reintenta hasta que responda 400
+          # (token ausente), que es la respuesta normal de `accept-invitation` a una petición vacía.
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$SUPABASE_URL/functions/v1/accept-invitation" -H "content-type: application/json" -d '{}' || true)
+            if [ "$code" = "400" ]; then echo "Edge Functions listas"; exit 0; fi
+            sleep 3
+          done
+          echo "Las Edge Functions no respondieron a tiempo"; cat functions.log; exit 1
+
       - name: Compilar la consola
         run: pnpm --filter @rapitrip/console build
 
@@ -152,15 +167,17 @@ jobs:
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium
 
-      - name: E2E del área de comercio
-        run: pnpm e2e:comercio
+      - name: E2E de operaciones (comercio, caja, coordinación, administración y pedido de punta a punta)
+        run: pnpm e2e:operaciones
 
-      - name: Informe de Playwright
+      - name: Informe de Playwright y registro de las funciones
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-comercio
-          path: e2e/playwright-report
+          name: playwright-report-operaciones
+          path: |
+            e2e/playwright-report
+            functions.log
           retention-days: 7
 
       - name: Detener Supabase

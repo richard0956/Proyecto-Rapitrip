@@ -19,7 +19,7 @@ Tabla 1. Estado de las fases del frontend
 |---|---|---|---|
 | F1 | Cimientos: monorepo, sistema de diseño, acceso, administración de identidad, tienda con cuenta y solicitud de comercio | **Construida** | 297 pruebas de base de datos al cierre, accesibilidad en CI, flujos con backend |
 | F2 | Área de comercio: tiendas, horarios, catálogo maestro, productos, variantes, imágenes e inventario; gestión de comercios en administración | **Construida** | pgTAP completo (392), 4 E2E de comercio, 35 de accesibilidad |
-| F3 | Pedidos, cobros con Tilopay, caja y venta, coordinación | Planificada | Sin diseño aprobado |
+| F3 | Pedidos, cobros con tarjeta, caja y venta, coordinación | **Construida** (falta la pantalla de pago de la tienda, que es F4): backend de pedidos (25), pagos con Stripe (26), venta de mostrador y turnos de caja (27), y las pantallas de pedidos del comercio, de caja, de coordinación y de administración construidos y probados; y un E2E de punta a punta con el CI ampliado; el flujo de pago de la tienda pasa a F4 | pgTAP `250` y `260`, 3 pruebas de Deno y 2 E2E reales contra Stripe en modo prueba |
 | F4 | Tienda pública con catálogo, carrito y checkout; puesta en marcha de la Etapa 1 | Planificada | Las bases (disponibilidad e imágenes públicas) ya existen |
 | F5 | Aplicación del repartidor (opcional) | Planificada | Sin diseño aprobado |
 | F6 | Tablero de operaciones en vivo y excepciones | Planificada | Sin diseño aprobado |
@@ -341,7 +341,7 @@ Tabla 9. Etapas de la Fase 2
 | 3. Catálogo maestro | Categorías (un nivel de subcategorías), marcas, tipos de producto y atributos; pantalla de administración | 20; pgTAP 200 |
 | 4. Productos | Productos por tienda, variantes con precio y SKU, hasta 5 imágenes, publicación | 21; pgTAP 210 |
 | 5. Inventario | Control opcional por variante, umbral de alerta, entradas, salidas y conteos con motivo, historial | 22; pgTAP 220 |
-| 6. E2E y CI | Flujos con backend real y trabajo `e2e-comercio` en el CI | `e2e/tests/comercio.spec.ts` |
+| 6. E2E y CI | Flujos con backend real y trabajo `e2e-operaciones` en el CI | `e2e/tests/comercio.spec.ts` |
 | Cierre | Suspender y reactivar comercios; detalle de comercio en administración; horario en `America/Managua`; etiquetas de auditoría | 23 y 24; pgTAP 230 |
 
 ### 7.2 Modelo de datos (esquema `commerce`)
@@ -376,6 +376,10 @@ Tabla 10. Pantallas de la Fase 2
 | `/comercio/catalogo` | Comercio | Selección de tienda activa, búsqueda, productos con portada, precio mínimo y estado |
 | `/comercio/catalogo/[id]` | Comercio | Editor: datos, clasificación opcional, variantes (alta, edición, activar), imágenes (subida a Storage), publicar, pasar a borrador y archivar |
 | `/comercio/inventario` | Comercio | Filtros (requieren atención, todos, sin control), control y umbral por variante, movimientos con motivo e historial |
+| `/comercio/pedidos` | Comercio | *(Fase 3)* Pedidos por confirmar, en curso y terminados; confirmar, rechazar con motivo, preparar, marcar listo y cancelar |
+| `/caja` | Cajero | *(Fase 3)* Abrir turno, vender en mostrador, anular con motivo y cerrar caja con diferencia |
+| `/coordinacion` | Coordinación | *(Fase 3)* Lista de pedidos por pestañas, asignar repartidor, despachar, entregar y cancelar con motivo |
+| `/admin/pedidos`, `/admin/excepciones`, `/admin/caja` | Administración | *(Fase 3)* Supervisión de pedidos y ventas, casos atascados o por reembolsar, y turnos de caja con diferencias |
 | `/admin/catalogo` | Administración | Catálogo maestro por clase, con alta, renombrar y activar o desactivar con motivo |
 | `/admin/comercios` y `/admin/comercios/[id]` | Administración | Lista con tiendas activas por comercio; detalle con tiendas y productos, cuenta del comercio, suspender o reactivar con motivo |
 
@@ -422,6 +426,8 @@ El horario y la moneda se habían fijado para Costa Rica por error. Rapitrip ope
 
 ### 8.2 F3: pedidos, cobros, caja y venta
 
+**Estado (18 de octubre de 2026).** Construido y probado el **backend de pedidos** (esquema `sales`, migración 25: un pedido por tienda con precios congelados, estados por rol, reserva de stock, vencimientos de 30 y 45 minutos, privacidad de la dirección) y el **cobro con tarjeta con Stripe Checkout alojado** (migración 26 y funciones de borde `stripe-checkout`, `stripe-webhook` y `process-refunds`). Tilopay se descartó para esta etapa porque solo se prueba en producción con un dominio; Stripe tiene modo de prueba. Detalle y decisiones en la sección 8.2.1. **Frontend de F3 construido hasta ahora (etapa 2):** `/comercio/pedidos` (confirmar, rechazar con motivo, preparar, marcar listo y cancelar; actualización automática cada 30 segundos), con tarjetas de pedidos por confirmar y ventas de hoy en el inicio del comercio. **Etapa 4:** caja y venta de mostrador en `/caja` (migración 27): el cajero abre un turno con el efectivo inicial, registra ventas de mostrador en efectivo (con cálculo de vuelto) o con tarjeta en un terminal externo, puede anular una venta dentro del turno, y cierra contando el efectivo; una diferencia con lo esperado exige una nota y queda auditada. **Etapa 5:** coordinación en `/coordinacion`: pedidos de la tienda web por pestañas (para despachar, en camino, en preparación, por confirmar y terminados), con la dirección y el teléfono de entrega, asignación de repartidor, despachar (que exige repartidor), marcar como entregado y cancelar con motivo; en un pedido en efectivo avisa cuánto debe cobrar el repartidor. **Etapa 6:** administración en `/admin/pedidos` (todos los pedidos y ventas de mostrador, con filtros, detalle y cancelar con motivo), `/admin/excepciones` (listos sin repartidor, comercios que no responden, entregas demoradas, reembolsos pendientes y pagos por reembolsar en Stripe) y `/admin/caja` (turnos de caja con diferencias y las ventas de cada turno). **Etapa 7:** `pedido-completo.spec.ts` recorre un pedido con el cliente, el comercio, coordinación y administración en navegadores separados, y el CI ahora sirve las Edge Functions y corre todo el conjunto de operaciones (trabajo `e2e-operaciones`). **Fase 3 cerrada.** Pasan a F4: el carrito, el checkout y la pantalla de pago de la tienda (con la ruta `/pedidos/<id>` a la que Stripe redirige), y la puesta en marcha (endpoint del webhook de Stripe en producción, programador de `process-refunds` y moneda de liquidación).
+
 Alcance previsto en el frontend:
 
 - **Comercio:** "Pedidos por confirmar" (M02) y métricas; las tarjetas del inicio pasan a mostrar pedidos.
@@ -432,7 +438,21 @@ Alcance previsto en el frontend:
 
 Prerrequisitos y decisiones abiertas: motor de pedidos en el backend; reserva de stock en el checkout (usa `inventory`); modelo de estados del pedido; qué hace cada encargado (caja frente a coordinación); integración de pagos (claves, webhooks y su validación). Riesgo principal: el estado concurrente (un pedido lo tocan varias personas), que puede justificar reevaluar TanStack Query.
 
+#### 8.2.1 Cobro con tarjeta (Stripe)
+
+Flujo: el cliente crea el pedido con tarjeta (`pendiente_pago`, stock reservado) → la tienda llama a `stripe-checkout` con su sesión → Stripe aloja el formulario de pago → Stripe avisa a `stripe-webhook` → el pedido pasa a `por_confirmar` y pagado. Los datos de tarjeta nunca tocan las apps.
+
+- **Monto.** Lo calcula la base de datos (`orders.total`); el navegador solo envía el id del pedido. La sesión registra monto y moneda esperados (`record_order_checkout_session`) y el webhook los compara con lo que cobró Stripe.
+- **Idempotencia.** Cada evento de Stripe se procesa una sola vez (`sales.payment_events`); reenviarlo no repite el cobro ni el reembolso.
+- **Reembolsos.** Un pago que llega tarde (pedido ya cancelado), doble (otra sesión del mismo pedido) o de otro monto se reembolsa automáticamente. Un pedido pagado con tarjeta que se cancela o se rechaza queda `reembolso_pendiente` y `process-refunds` lo devuelve en Stripe y lo marca `reembolsado`.
+- **Eventos del webhook.** `checkout.session.completed` y `checkout.session.expired`. Firma verificada sobre el cuerpo crudo con tolerancia de 5 minutos.
+- **Moneda.** Se cobra en `PAYMENT_CURRENCY` (por defecto `nio`). Con una cuenta de Stripe de México, la sesión y el pago en córdobas funcionan en modo prueba; **hay que confirmar con Stripe qué moneda de liquidación y qué conversión aplican en producción**.
+- **Producción.** Webhook en `https://<proyecto>.supabase.co/functions/v1/stripe-webhook` (desplegado con `verify_jwt = false`); `process-refunds` necesita un programador que lo llame cada minuto con la cabecera `x-outbox-secret`, igual que `send-outbox`. Falta la ruta `/pedidos/<id>` de la tienda, a la que Stripe redirige tras pagar o cancelar (F4).
+- **Pruebas.** pgTAP `260` (40), Deno `_shared/stripe_test.ts` (9) y `e2e/tests/pagos.spec.ts`, que paga de verdad en la página de Stripe con la tarjeta de prueba.
+
 ### 8.3 F4: tienda pública y puesta en marcha de la Etapa 1
+
+> **Guía detallada:** ver `Informe_Fase_4_Tienda_Publica.md` (alcance, backend necesario, pantallas, decisiones, etapas, pruebas y puesta en marcha).
 
 - **Inicio con catálogo:** tiendas abiertas, productos publicados y disponibles, búsqueda y filtros por categoría.
 - **Ficha de producto, carrito y checkout**, con el cliente autenticado y datos de entrega.
@@ -467,8 +487,8 @@ Tabla 12. Rutas de la consola (25 pantallas)
 |---|---|---|
 | Acceso | `/login`, `/mfa`, `/aceptar-invitacion`, `/sesion-expirada`, `/sin-acceso` | Público o de transición |
 | Administración | `/admin`, `/admin/usuarios`, `/admin/solicitudes`, `/admin/comercios`, `/admin/comercios/[id]`, `/admin/catalogo`, `/admin/repartidores`, `/admin/auditoria`, `/admin/accesos`, `/admin/incidentes`, `/admin/datos-personales` | `superadmin` y `admin` (datos personales solo `superadmin`) |
-| Comercio | `/comercio`, `/comercio/tiendas`, `/comercio/tiendas/[id]`, `/comercio/catalogo`, `/comercio/catalogo/[id]`, `/comercio/inventario` | `comercio` |
-| Caja y coordinación | `/caja`, `/coordinacion` | `cajero`, `coordinador` (inicio provisional) |
+| Comercio | `/comercio`, `/comercio/pedidos`, `/comercio/tiendas`, `/comercio/tiendas/[id]`, `/comercio/catalogo`, `/comercio/catalogo/[id]`, `/comercio/inventario` | `comercio` |
+| Caja y coordinación | `/caja` (caja y venta de mostrador), `/coordinacion` (despacho y entrega) | `cajero`; `coordinador` |
 | Común | `/cuenta` | Cualquier rol de consola |
 
 Tabla 13. Rutas de la tienda (9 pantallas y el manejador `/auth/callback`)
@@ -502,7 +522,7 @@ Los E2E de comercio recorren: crear tienda, horario, cierre temporal, producto c
 
 1. **backend:** Supabase local, pgTAP, lint de base de datos, Deno, pruebas de paquetes y comprobación de que los tipos generados están al día.
 2. **frontend:** typecheck, lint, pruebas, compilación de ambas apps y `e2e:front`.
-3. **e2e-comercio:** levanta Supabase local, compila las apps con sus claves, y corre `pnpm e2e:comercio`. Simulado localmente con compilaciones de producción; falta verlo pasar por primera vez en GitHub Actions.
+3. **e2e-operaciones:** levanta Supabase local, compila las apps con sus claves, y corre `pnpm e2e:comercio`. Simulado localmente con compilaciones de producción; falta verlo pasar por primera vez en GitHub Actions.
 
 ### 10.3 Regla de terminado
 
@@ -568,7 +588,7 @@ Tabla 15. Pendientes de la Fase 1 y su estado
 | 5 | Despliegue en Vercel y dominio propio | Abierto: se decide al pasar a producción |
 | 6 | Especificación y plan del backend | Resuelto como referencia en `docs/backend-referencia.md` |
 
-Pendientes de cierre de la Fase 2: confirmar el primer paso del trabajo `e2e-comercio` en GitHub Actions y una revisión visual de las pantallas de comercio por una persona.
+Pendientes de cierre de la Fase 2: confirmar el primer paso del trabajo `e2e-operaciones` en GitHub Actions y una revisión visual de las pantallas de comercio por una persona.
 
 Mejoras técnicas pendientes: migrar la CSP a nonces, advertencias de lint de base de datos por inicializar `v_changed` como `'{}'` (falsos positivos, sin efecto), y evaluar TanStack Query y tiempo real en F3 y F6.
 

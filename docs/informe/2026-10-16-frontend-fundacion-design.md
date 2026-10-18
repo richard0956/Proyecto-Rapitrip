@@ -303,7 +303,7 @@ Estado al 17 de octubre de 2026.
 | 3. Catálogo maestro | Hecha | Migración 20 (`commerce.master_items`: categorías con un nivel de subcategorías, marcas, tipos de producto y atributos), funciones auditadas, pruebas pgTAP (`200`) y pantalla `admin/catalogo`. **Decidido: orientativo**, publicar un producto no lo exige |
 | 4. Productos y variantes | Hecha | Migración 21 (`products`, `product_variants`, `product_images`, bucket público `product-images`), funciones auditadas, pruebas pgTAP (`210`) y pantallas `comercio/catalogo` (selección de tienda, lista, editor con variantes, imágenes y publicación). Imágenes: hasta 5, JPEG/PNG/WebP, 2 MB; publicar exige una variante activa |
 | 5. Inventario con alertas | Hecha | Migración 22 (`inventory`, `stock_movements`), control de stock opcional por variante con umbral, entradas, salidas y conteos con motivo e historial, estado `sin_control`/`agotado`/`bajo`/`disponible` (y `available` para ocultar agotados en F4), pruebas pgTAP (`220`), pantalla `comercio/inventario` y alerta en el inicio del comercio |
-| 6. E2E del área de comercio y CI | Hecha | `e2e/tests/comercio.spec.ts` (3 flujos con backend real y axe en cada pantalla) y trabajo `e2e-comercio` en el CI, que levanta Supabase local, compila las apps y los corre |
+| 6. E2E del área de comercio y CI | Hecha | `e2e/tests/comercio.spec.ts` (3 flujos con backend real y axe en cada pantalla) y trabajo `e2e-operaciones` en el CI, que levanta Supabase local, compila las apps y los corre |
 
 **Decisiones tomadas en las etapas 1 y 2**
 - Los horarios son por tienda, con varios tramos por día y excepciones por fecha (que mandan sobre el horario semanal).
@@ -316,7 +316,7 @@ Estado al 17 de octubre de 2026.
 
 **Pendiente de verificar**
 - Recorrido manual con ojos humanos del área de comercio (los E2E cubren funcionamiento y accesibilidad, no criterio visual).
-- Que el trabajo `e2e-comercio` pase por primera vez en GitHub Actions (no se pudo ejecutar localmente).
+- Que el trabajo `e2e-operaciones` pase por primera vez en GitHub Actions (no se pudo ejecutar localmente).
 - La suite pgTAP completa falla en las pruebas 050, 070 y 130 sobre la base local actual (tiene 33 cuentas reales que alteran los conteos). Hay que correr `pnpm db:reset` antes de `pnpm db:test` para confirmar que pasan en limpio; el archivo 190 pasa solo.
 
 ### Cierre de la Fase 2 en `main`
@@ -327,7 +327,7 @@ Con todo integrado en `main`, se añadió lo que faltaba del alcance:
 - **Accesibilidad:** las tablas con desplazamiento horizontal ahora son una región enfocable por teclado (axe lo marcó en la pantalla de detalle).
 - **E2E:** cuarto flujo (director revisa tiendas, suspende el comercio y verifica la pérdida de acceso y la auditoría).
 
-**Fuera de la Fase 2:** pedidos por confirmar y métricas del comercio (F3), catálogo público con carrito y checkout (F4).
+**Fuera de la Fase 2:** pedidos por confirmar y métricas del comercio (F3), catálogo público con carrito y checkout (F4). *El backend de pedidos y de pagos con Stripe de F3 ya está construido; ver `Informe_Frontend_Completo_Rapitrip.md`, sección 8.2.*
 
 ## 16. Traspaso a la Fase 3: pedidos, cobros, caja y venta
 
@@ -367,7 +367,7 @@ Estado al 17 de octubre de 2026. Análisis contra el código de `main`; todavía
 6. Administración: Pedidos, Excepciones y Caja y venta.
 7. E2E de punta a punta y ampliación del CI.
 
-**Decisiones a tomar antes de la etapa 1**
+**Decisiones a tomar antes de la etapa 1** *(resueltas; ver sección 17)*
 - Estados exactos del pedido y quién puede mover cada uno (comercio, cajero, coordinador, admin).
 - Tiempo máximo de un pedido sin pagar o sin confirmar antes de liberar el stock.
 - Si un pedido con varias tiendas es un solo pedido o uno por tienda.
@@ -387,7 +387,14 @@ Estado al 18 de octubre de 2026.
 | Etapa | Estado | Qué incluye |
 |---|---|---|
 | 1. Esquema de pedidos, estados y reserva de stock | Hecha (backend) | Migración 25 (esquema `sales`: `orders`, `order_items`, `order_events`, `order_delivery`), `create_order`, `set_order_status`, `assign_order_courier`, `mark_order_paid` (solo servicio), `set_store_delivery_fee`, vencimiento automático cada 5 minutos, vistas `orders_list`, `order_items_list`, `order_events_list` y `order_delivery_list`, pgTAP `250` (43 pruebas) |
-| 2 a 7 | Pendientes | Ver sección 16 |
+| 2. Comercio: pedidos por confirmar y métricas | Hecha | Pantalla `/comercio/pedidos` (pestañas Por confirmar, En curso y Terminados; detalle con productos, totales y pago; confirmar, rechazar con motivo, preparar, marcar listo y cancelar con motivo; la lista se actualiza sola cada 30 segundos y salta a la pestaña del nuevo estado), tarjetas «Pedidos por confirmar» y «Ventas de hoy» en el inicio y entrada «Pedidos» en el menú. E2E en `e2e/tests/comercio.spec.ts` |
+| 3. Pagos | Hecha (backend), con **Stripe** en lugar de Tilopay | Migración 26 y funciones de borde `stripe-checkout`, `stripe-webhook` y `process-refunds`; pgTAP `260`, Deno `stripe_test.ts` y E2E reales contra Stripe en modo prueba (`e2e/tests/pagos.spec.ts`). Detalle en `Informe_Frontend_Completo_Rapitrip.md`, sección 8.2.1 |
+| 4. Caja y venta de mostrador | Hecha | Migración 27: turnos de caja (monto inicial, cierre contando el efectivo con diferencia y nota), ventas de mostrador (efectivo o tarjeta en terminal externo, sin cliente ni envío, ya pagadas y entregadas, descuentan stock), anulación dentro del turno abierto, catálogo de mostrador, vistas `cash_sessions_list` y `orders_list` con canal. Pantalla `/caja` (abrir turno, vender con vuelto, anular con motivo, cerrar). pgTAP `270` (36) y E2E `e2e/tests/caja.spec.ts` |
+| 5. Coordinación: repartidor, despacho y entrega | Hecha (solo frontend: el backend ya existía) | Pantalla `/coordinacion` con pestañas Para despachar, En camino, En preparación, Por confirmar y Terminados; detalle con dirección, teléfono y notas de entrega (los lee solo coordinación y administración), productos, pago y aviso de efectivo por cobrar; asignar o cambiar repartidor, despachar (exige repartidor), marcar como entregado y cancelar con motivo; actualización cada 30 segundos y salto de pestaña al responder. Usa `assign_order_courier` y `set_order_status`. E2E `e2e/tests/coordinacion.spec.ts` |
+| 6. Administración: pedidos, excepciones y caja | Hecha | Migración 28 (vista `payment_events_list`: pagos de Stripe por reembolsar, solo administración; pgTAP `280`). Pantallas `/admin/pedidos` (todos los pedidos web y ventas de mostrador, con filtros por estado, canal y número o tienda; detalle con dirección, repartidor, cajero y productos; cancelar con motivo), `/admin/excepciones` (listos sin repartidor, sin respuesta del comercio por más de 20 minutos, en camino por más de 60, reembolsos pendientes y pagos por reembolsar en Stripe; cada caso enlaza al detalle) y `/admin/caja` (turnos de todo el equipo con diferencia y nota, y las ventas de cada turno; filtro «Solo con diferencia»). Se activan los ítems «Pedidos», «Excepciones» y «Caja y venta» del menú. E2E `e2e/tests/admin-operaciones.spec.ts` |
+| 7. E2E de punta a punta y CI | Hecha | `e2e/tests/pedido-completo.spec.ts` (cliente, comercio, coordinación y administración en navegadores separados) y el trabajo `e2e-operaciones` del CI, que ahora sirve las Edge Functions y corre `pnpm e2e:operaciones` (comercio, caja, coordinación, administración y pedido de punta a punta). Los E2E de Stripe siguen manuales |
+
+**Fase 3 cerrada (18 de octubre de 2026)** en backend y en las cuatro áreas de la consola. Quedan fuera, a propósito, y pasan a F4: el carrito, el checkout y la pantalla de pago de la tienda (incluida la ruta `/pedidos/<id>` a la que Stripe redirige), y las acciones de puesta en marcha: endpoint del webhook de Stripe en producción, un programador que llame a `process-refunds` cada minuto y la conversión de moneda con Stripe.
 
 **Decisiones tomadas por defecto en la etapa 1** (se pueden cambiar antes de construir las pantallas)
 - **Un pedido por tienda.** Un carrito con productos de varias tiendas se divide en pedidos separados (lo resuelve F4).
@@ -398,8 +405,11 @@ Estado al 18 de octubre de 2026.
 - **Envío:** costo fijo por tienda (`stores.delivery_fee`, 0 por defecto).
 - **Límite:** un cliente no puede tener más de 5 pedidos sin resolver (evita acaparar stock).
 - **Privacidad:** dirección y teléfono de entrega viven en `order_delivery`; el comercio y el cajero no los leen, y se borran al anonimizar la cuenta (el pedido y sus montos se conservan).
-- **Cajero:** todavía no ve pedidos; su acceso llega con la etapa 4 (venta de mostrador).
+- **Cajero:** solo ve sus propias ventas de mostrador y sus turnos (etapa 4); no ve pedidos de la tienda web ni datos de clientes.
+- **Venta de mostrador (etapa 4, decisiones por defecto):** un turno abierto por cajero; el efectivo esperado es el inicial más las ventas en efectivo no anuladas (las de tarjeta en terminal no cuentan); una diferencia al cerrar exige nota; el cajero puede vender productos de cualquier tienda activa (si cada caja debe atarse a una tienda, se ajusta); anular solo dentro del turno abierto y de la propia venta.
 
 **Corrección incluida:** `set_store_exception` comparaba la fecha con la del servidor (UTC); entre las 18:00 y las 24:00 de Managua rechazaba cerrar la tienda "hoy". Ahora usa la fecha de Nicaragua (y la prueba 190 también).
 
-**Cómo se verificó:** en esta sesión no hay Docker ni Supabase CLI; se aplicaron las 25 migraciones sobre un PostgreSQL 16 local con simulaciones mínimas de `auth`, `storage` y `pg_cron`, y se corrieron las pruebas con un sustituto de pgTAP. Pasan `250` (43 de 43) y el resto de la suite que usa las mismas funciones. **Falta** correr `pnpm db:reset && pnpm db:test` en un entorno con Supabase real, y regenerar los tipos con `pnpm db:types` (los de `database.types.ts` se escribieron a mano con el mismo formato; el CI los comparará).
+**Verificación posterior (18 de octubre de 2026):** sobre Supabase local real, `pnpm db:reset` y la suite pgTAP completa pasan (26 archivos, 483 pruebas), los tipos generados coinciden con los escritos a mano y se corrigió un error de stock encontrado al probar (cancelar un pedido hecho antes de activar el control de stock sumaba unidades que nunca se habían descontado; ahora cada renglón guarda `stock_reserved`).
+
+**Cómo se verificó originalmente:** en esa sesión no había Docker ni Supabase CLI; se aplicaron las 25 migraciones sobre un PostgreSQL 16 local con simulaciones mínimas de `auth`, `storage` y `pg_cron`, y se corrieron las pruebas con un sustituto de pgTAP. Pasan `250` (43 de 43) y el resto de la suite que usa las mismas funciones. **Falta** correr `pnpm db:reset && pnpm db:test` en un entorno con Supabase real, y regenerar los tipos con `pnpm db:types` (los de `database.types.ts` se escribieron a mano con el mismo formato; el CI los comparará).

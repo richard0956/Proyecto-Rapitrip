@@ -1,6 +1,6 @@
 # Referencia del backend de Rapitrip
 
-> **Estado de este documento.** La especificación y el plan originales del backend (`docs/superpowers/specs/2026-10-10-fundacion-backend-design.md` y `docs/superpowers/plans/2026-10-11-fundacion-backend.md`) se perdieron al reemplazar la carpeta del proyecto. Este documento los reemplaza como **referencia técnica**: se reconstruyó el 17 de octubre de 2026 a partir de las migraciones 1 a 24, de la base de datos viva y de `docs/informe/Informe_Backend_Rapitrip.md`. Describe lo que existe, no lo que se planeó; ante una diferencia, manda el código.
+> **Estado de este documento.** La especificación y el plan originales del backend (`docs/superpowers/specs/2026-10-10-fundacion-backend-design.md` y `docs/superpowers/plans/2026-10-11-fundacion-backend.md`) se perdieron al reemplazar la carpeta del proyecto. Este documento los reemplaza como **referencia técnica**: se reconstruyó el 17 de octubre de 2026 a partir de las migraciones 1 a 28, de la base de datos viva y de `docs/informe/Informe_Backend_Rapitrip.md`. Describe lo que existe, no lo que se planeó; ante una diferencia, manda el código.
 
 ## 1. Principios
 
@@ -18,6 +18,7 @@
 | `identity` | Cuentas, datos personales, roles, comercios, solicitudes, invitaciones y repartidores |
 | `audit` | Eventos de auditoría, inicios de sesión e incidentes de TI |
 | `commerce` | Tiendas, horarios, catálogo maestro, productos, variantes, imágenes e inventario (Fase 2) |
+| `sales` | Pedidos (web y de mostrador), renglones, historial de estados, datos de entrega, eventos de pago de Stripe y turnos de caja (Fase 3) |
 | `private` | Funciones internas, bandeja de correos, actividad de sesión y matriz de gestión de roles |
 | `public` | Única superficie expuesta: funciones (RPC) y vistas |
 
@@ -42,7 +43,7 @@ Permisos por área de la consola: `admin` y `superadmin` → `/admin`; `cajero` 
 | `commerce.stock_movements` | id, variant_id, store_id, kind, delta, quantity_after, reason, created_by, created_at | 2 |
 | `commerce.store_exceptions` | id, store_id, on_date, closed, opens, closes, note | 2 |
 | `commerce.store_hours` | id, store_id, weekday, opens, closes | 2 |
-| `commerce.stores` | id, commerce_id, name, address, contact_phone, status, closed_until, closed_reason, created_by, created_at, updated_at | 2 |
+| `commerce.stores` | id, commerce_id, name, address, contact_phone, status, closed_until, closed_reason, created_by, created_at, updated_at, delivery_fee | 2 |
 | `identity.commerce_requests` | id, requester_id, business_name, details, status, decision_reason, reviewed_by, reviewed_at, commerce_id, created_at | 2 |
 | `identity.commerces` | id, name, status, created_at | 2 |
 | `identity.couriers` | id, full_name, phone, vehicle_type, document_path, status, user_id, created_by, created_at, updated_at | 1 |
@@ -53,6 +54,12 @@ Permisos por área de la consola: `admin` y `superadmin` → `/admin`; `cajero` 
 | `private.email_outbox` | id, to_email, template, data, status, attempts, last_error, claimed_at, created_at, sent_at | 0 |
 | `private.role_management` | manager, target | 0 |
 | `private.session_activity` | session_id, user_id, last_activity_at | 0 |
+| `sales.cash_sessions` | id, cashier_id, opened_at, opening_amount, closed_at, expected_amount, counted_amount, difference, note | 2 |
+| `sales.order_delivery` | order_id, address, phone, notes | 2 |
+| `sales.order_events` | id, order_id, from_status, to_status, reason, actor_id, created_at | 1 |
+| `sales.order_items` | id, order_id, variant_id, product_name, variant_name, sku, unit_price, quantity, line_total, stock_reserved | 1 |
+| `sales.orders` | id, number, client_id, store_id, commerce_id, store_name, status, payment_method, payment_status, subtotal, delivery_fee, total, courier_id, status_reason, expires_at, created_at, updated_at, confirmed_at, delivered_at, payment_session_id, payment_intent_id, payment_amount, payment_currency, refund_id, channel, cashier_id, cash_session_id | 4 |
+| `sales.payment_events` | event_id, event_type, order_id, outcome, received_at, updated_at | 1 |
 
 Las políticas de lectura se limitan a: la propia fila (cliente o comercio), el alcance del comercio (`private.has_role('comercio', id)`) o la administración con sesión de consola (`private.is_admin_console()`). `audit.events` no tiene política: solo se lee por `audit_events_page`.
 
@@ -64,6 +71,7 @@ Las políticas de lectura se limitan a: la propia fila (cliente o comercio), el 
 - `create_store(p_commerce uuid, p_name text, p_address text, p_phone text)`
 - `delete_store_exception(p_store uuid, p_date date)`
 - `reopen_store(p_store uuid)`
+- `set_store_delivery_fee(p_store uuid, p_fee numeric)`
 - `set_store_exception(p_store uuid, p_date date, p_closed boolean, p_opens time without time zone, p_closes time without time zone, p_note text)`
 - `set_store_hours(p_store uuid, p_hours jsonb)`
 - `set_store_status(p_store uuid, p_status text, p_reason text)`
@@ -89,6 +97,26 @@ Las políticas de lectura se limitan a: la propia fila (cliente o comercio), el 
 - `count_stock(p_variant uuid, p_quantity integer, p_reason text)`
 - `remove_stock(p_variant uuid, p_amount integer, p_reason text)`
 - `set_stock_tracking(p_variant uuid, p_track boolean, p_threshold integer)`
+
+**Pedidos y pagos**
+
+- `apply_stripe_event(p_event_id text, p_type text, p_order uuid, p_session text, p_intent text, p_amount bigint, p_currency text, p_paid boolean)`
+- `assign_order_courier(p_order uuid, p_courier uuid)`
+- `claim_pending_refunds(p_limit integer)`
+- `create_order(p_store uuid, p_items jsonb, p_payment_method text, p_address text, p_phone text, p_notes text)`
+- `mark_order_paid(p_order uuid)`
+- `mark_order_refunded(p_order uuid, p_refund text)`
+- `record_order_checkout_session(p_order uuid, p_session text, p_currency text)`
+- `set_order_status(p_order uuid, p_to text, p_reason text)`
+- `set_payment_event_outcome(p_event_id text, p_outcome text)`
+
+**Caja y venta de mostrador**
+
+- `close_cash_session(p_counted numeric, p_note text)`
+- `counter_catalog()`
+- `create_counter_sale(p_store uuid, p_items jsonb, p_payment_method text)`
+- `open_cash_session(p_opening numeric)`
+- `void_counter_sale(p_order uuid, p_reason text)`
 
 **Comercios y solicitudes**
 
@@ -135,7 +163,7 @@ Las políticas de lectura se limitan a: la propia fila (cliente o comercio), el 
 
 ## 6. Vistas (lectura para las apps)
 
-`accounts_staff`, `commerce_requests_list`, `commerces_list`, `couriers_list`, `inventory_list`, `invitations_list`, `it_incidents_list`, `master_items_list`, `my_commerce_requests`, `my_profile`, `my_roles`, `product_images_list`, `product_variants_list`, `products_list`, `stock_movements_list`, `store_exceptions_list`, `store_hours_list`, `stores_list`.
+`accounts_staff`, `cash_sessions_list`, `commerce_requests_list`, `commerces_list`, `couriers_list`, `inventory_list`, `invitations_list`, `it_incidents_list`, `master_items_list`, `my_commerce_requests`, `my_profile`, `my_roles`, `order_delivery_list`, `order_events_list`, `order_items_list`, `orders_list`, `payment_events_list`, `product_images_list`, `product_variants_list`, `products_list`, `stock_movements_list`, `store_exceptions_list`, `store_hours_list`, `stores_list`.
 
 Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `stores_list` calcula `open_now` (hora de Nicaragua, `America/Managua`) e `inventory_list` calcula `stock_state` y `available`.
 
@@ -147,6 +175,9 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `export-data`: exportación cifrada de datos, con motivo.
 - `purge-exports`: elimina exportaciones vencidas.
 - `send-outbox`: envía los correos encolados (con `MAIL_MODE=log` solo los imprime).
+- `stripe-checkout`: crea la sesión de pago de Stripe de un pedido propio (el navegador solo envía el id; el monto sale de la base de datos).
+- `stripe-webhook`: recibe los eventos de Stripe (`checkout.session.completed` y `checkout.session.expired`), verifica la firma y aplica el resultado; reembolsa pagos tardíos, dobles o de otro monto. Sin verificación JWT.
+- `process-refunds`: reembolsa en Stripe los pedidos pagados con tarjeta que se cancelaron o rechazaron; lo dispara un programador con `x-outbox-secret`.
 
 ## 8. Almacenamiento
 
@@ -179,7 +210,11 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `20261101000022_inventory.sql`
 - `20261101000023_commerce_status.sql`
 - `20261101000024_store_timezone_nicaragua.sql`
+- `20261101000025_orders.sql`
+- `20261101000026_stripe_payments.sql`
+- `20261101000027_counter_sales.sql`
+- `20261101000028_payment_events_admin.sql`
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`.
