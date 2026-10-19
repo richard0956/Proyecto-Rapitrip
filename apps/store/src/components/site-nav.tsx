@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CartLink } from "./cart-link";
 
 type Props = { signedIn: boolean; email: string | null; signOut: () => Promise<void> };
 
@@ -33,13 +34,16 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
 
   const items = signedIn
     ? [
-        { href: "/vende", label: "Vende en Rapitrip" },
+        { href: "/tiendas", label: "Tiendas" },
+        { href: "/pedidos", label: "Mis pedidos" },
         { href: "/perfil", label: "Mi perfil" },
+        { href: "/vende", label: "Vende en Rapitrip" },
       ]
     : [
-        { href: "/vende", label: "Vende en Rapitrip" },
+        { href: "/tiendas", label: "Tiendas" },
         { href: "/ingresar", label: "Ingresar" },
         { href: "/registro", label: "Crear cuenta" },
+        { href: "/vende", label: "Vende en Rapitrip" },
       ];
 
   return (
@@ -50,11 +54,18 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
         </Link>
 
         <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
+          <Link href="/tiendas" className={linkStyle}>
+            Tiendas
+          </Link>
           <Link href="/vende" className={linkStyle}>
             Vende en Rapitrip
           </Link>
+          <CartLink />
           {signedIn ? (
             <>
+              <Link href="/pedidos" className={linkStyle}>
+                Mis pedidos
+              </Link>
               <Link href="/perfil" aria-label="Mi perfil" className="mx-1 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
                 <Avatar name={email} />
               </Link>
@@ -78,18 +89,21 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
           )}
         </nav>
 
+        <div className="flex items-center gap-1 md:hidden">
+          <CartLink />
         <button
           type="button"
           onClick={() => setOpenFor(open ? null : pathname)}
           aria-expanded={open}
           aria-controls="menu-movil"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          className="relative flex size-11 items-center justify-center rounded-full bg-hoja text-white transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja md:hidden"
+          className="relative flex size-11 items-center justify-center rounded-full bg-hoja text-white transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
         >
           <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-transform duration-500 ease-fluido", open ? "rotate-45" : "-translate-y-[5px]")} />
           <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-[opacity,transform] duration-300 ease-fluido", open ? "scale-x-0 opacity-0" : "opacity-100")} />
           <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-transform duration-500 ease-fluido", open ? "-rotate-45" : "translate-y-[5px]")} />
         </button>
+        </div>
       </div>
 
       <nav

@@ -116,6 +116,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"my_addresses": {
+                  Row: {
+                    "address": string | null,"created_at": string | null,"id": string | null,"is_default": boolean | null,"label": string | null,"latitude": number | null,"longitude": number | null,"phone": string | null,"reference": string | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "address"?: string | null,"created_at"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
+                         }
+                        Update: {
+                           "address"?: string | null,"created_at"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"my_commerce_requests": {
                   Row: {
                     "business_name": string | null,"created_at": string | null,"decision_reason": string | null,"id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
@@ -335,6 +349,27 @@ export type Database = {
 "cancel_invitation":
 { Args: { "p_id": string }; Returns: undefined
                            },
+"catalog_categories":
+{ Args: { "p_store"?: string }; Returns: {
+              "id": string,"name": string,"product_count": number
+            }[]
+                           },
+"catalog_product":
+{ Args: { "p_product": string }; Returns: Json
+                           },
+"catalog_products":
+{ Args: { "p_category"?: string,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_store"?: string }; Returns: {
+              "category_id": string,"category_name": string,"cover_path": string,"id": string,"min_price": number,"name": string,"store_id": string,"store_name": string
+            }[]
+                           },
+"catalog_store":
+{ Args: { "p_store": string }; Returns: Json
+                           },
+"catalog_stores":
+{ Args: { "p_limit"?: number,"p_offset"?: number,"p_open_only"?: boolean }; Returns: {
+              "address": string,"closed_reason": string,"closed_until": string,"delivery_fee": number,"id": string,"name": string,"open_now": boolean,"product_count": number
+            }[]
+                           },
 "claim_outbox":
 { Args: { "p_limit"?: number }; Returns: {
               "attempts": number,"data": Json,"id": string,"template": string,"to_email": string
@@ -375,7 +410,7 @@ export type Database = {
 { Args: { "p_kind": string,"p_name": string,"p_parent"?: string }; Returns: string
                            },
 "create_order":
-{ Args: { "p_address": string,"p_items": Json,"p_notes"?: string,"p_payment_method": string,"p_phone": string,"p_store": string }; Returns: string
+{ Args: { "p_address": string,"p_client_ref"?: string,"p_items": Json,"p_notes"?: string,"p_payment_method": string,"p_phone": string,"p_store": string }; Returns: string
                            },
 "create_product":
 { Args: { "p_brand"?: string,"p_category"?: string,"p_description"?: string,"p_name": string,"p_store": string,"p_type"?: string }; Returns: string
@@ -385,6 +420,9 @@ export type Database = {
                            },
 "create_variant":
 { Args: { "p_name": string,"p_price": number,"p_product": string,"p_sku": string }; Returns: string
+                           },
+"delete_address":
+{ Args: { "p_id": string }; Returns: undefined
                            },
 "delete_store_exception":
 { Args: { "p_date": string,"p_store": string }; Returns: undefined
@@ -419,6 +457,9 @@ export type Database = {
 "open_cash_session":
 { Args: { "p_opening": number }; Returns: string
                            },
+"quote_cart":
+{ Args: { "p_items": Json,"p_store": string }; Returns: Json
+                           },
 "reactivate_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
                            },
@@ -452,11 +493,17 @@ export type Database = {
 "revoke_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
                            },
+"save_address":
+{ Args: { "p_address": string,"p_id": string,"p_label": string,"p_latitude"?: number,"p_longitude"?: number,"p_make_default"?: boolean,"p_phone"?: string,"p_reference"?: string }; Returns: string
+                           },
 "set_commerce_status":
 { Args: { "p_commerce": string,"p_reason": string,"p_status": string }; Returns: undefined
                            },
 "set_courier_status":
 { Args: { "p_id": string,"p_reason": string,"p_status": string }; Returns: undefined
+                           },
+"set_default_address":
+{ Args: { "p_id": string }; Returns: undefined
                            },
 "set_incident_status":
 { Args: { "p_id": string,"p_resolution"?: string,"p_status": "abierto"|"en_atencion"|"resuelto" }; Returns: undefined

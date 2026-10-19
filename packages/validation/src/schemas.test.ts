@@ -138,3 +138,56 @@ describe("inventario", () => {
     expect(stockChangeSchema.safeParse({ kind: "salida", amount: 2, reason: "abc" }).success).toBe(false);
   });
 });
+
+import { checkoutSchema, customerAddressSchema } from "./schemas";
+
+describe("customerAddressSchema", () => {
+  const base = { label: "Casa", address: "Barrio Central, casa 4" };
+  it("acepta una dirección mínima y normaliza los opcionales", () => {
+    const parsed = customerAddressSchema.parse({ ...base, reference: "  ", phone: "" });
+    expect(parsed.reference).toBeNull();
+    expect(parsed.phone).toBeNull();
+    expect(parsed.make_default).toBe(false);
+    expect(parsed.latitude).toBeNull();
+  });
+  it("exige nombre y una dirección de al menos 5 caracteres", () => {
+    expect(customerAddressSchema.safeParse({ ...base, label: " " }).success).toBe(false);
+    expect(customerAddressSchema.safeParse({ ...base, address: "abc" }).success).toBe(false);
+    expect(customerAddressSchema.safeParse({ ...base, address: "x".repeat(241) }).success).toBe(false);
+  });
+  it("valida el teléfono", () => {
+    expect(customerAddressSchema.safeParse({ ...base, phone: "hola" }).success).toBe(false);
+    expect(customerAddressSchema.safeParse({ ...base, phone: "8888-1111" }).success).toBe(true);
+  });
+  it("las coordenadas reservadas para el mapa van juntas o no van", () => {
+    expect(customerAddressSchema.safeParse({ ...base, latitude: 12.13 }).success).toBe(false);
+    expect(customerAddressSchema.safeParse({ ...base, latitude: 12.13, longitude: -86.25 }).success).toBe(true);
+    expect(customerAddressSchema.safeParse({ ...base, latitude: 120, longitude: -86.25 }).success).toBe(false);
+  });
+});
+
+describe("checkoutSchema", () => {
+  const uuid = "11111111-1111-4111-8111-111111111111";
+  const base = {
+    store_id: uuid,
+    items: [{ variant_id: uuid, quantity: 2 }],
+    payment_method: "efectivo",
+    address: "Barrio Central, casa 4",
+    phone: "88881111",
+    client_ref: uuid,
+  };
+  it("acepta un pedido válido", () => {
+    expect(checkoutSchema.safeParse(base).success).toBe(true);
+  });
+  it("rechaza carrito vacío, cantidades fuera de rango y métodos desconocidos", () => {
+    expect(checkoutSchema.safeParse({ ...base, items: [] }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, items: [{ variant_id: uuid, quantity: 100 }] }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, items: [{ variant_id: uuid, quantity: 0 }] }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, payment_method: "trueque" }).success).toBe(false);
+  });
+  it("valida dirección, teléfono y nota", () => {
+    expect(checkoutSchema.safeParse({ ...base, address: "abc" }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, phone: "12" }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, notes: "x".repeat(241) }).success).toBe(false);
+  });
+});

@@ -1,12 +1,16 @@
-import { Alert, buttonStyles, ButtonIsland, Card, Eyebrow, Reveal } from "@rapitrip/ui";
+import { buttonStyles, ButtonIsland, Card, Eyebrow, Reveal } from "@rapitrip/ui";
 import { Check, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { HeroVisual } from "@/components/hero-visual";
+import { StoreCard } from "@/components/store-card";
 import { Steps } from "@/components/steps";
+import { getStores } from "@/lib/catalog";
 
 const guarantees = ["Confirmamos tu correo antes de activar la cuenta", "Ingresas con tu correo o con tu cuenta de Google", "Cada persona ve solo lo que su rol permite"];
 
-export default function Home() {
+export default async function Home() {
+  // Si la lectura falla, la portada sigue mostrándose sin la lista de tiendas.
+  const stores = await getStores(true, 1).catch(() => []);
   return (
     <main className="mx-auto max-w-[1040px] px-4 sm:px-8">
       <section aria-labelledby="titulo" className="grid grid-cols-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:py-6">
@@ -20,15 +24,15 @@ export default function Home() {
             </h1>
           </Reveal>
           <Reveal index={2}>
-            <p className="mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-tinta-suave">Crea tu cuenta para guardar tus datos y hacer tus pedidos cuando el catálogo esté listo.</p>
+            <p className="mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-tinta-suave">Explora las tiendas abiertas, arma tu carrito y paga en efectivo o con tarjeta. Solo necesitas una cuenta para confirmar tu pedido.</p>
           </Reveal>
           <Reveal index={3} className="mt-7 flex flex-wrap items-center gap-3">
-            <Link href="/registro" className={buttonStyles({ variant: "primary", className: "min-h-11 pr-5" })}>
-              Crear cuenta
+            <Link href="/tiendas" className={buttonStyles({ variant: "primary", className: "min-h-11 pr-5" })}>
+              Ver tiendas
               <ButtonIsland />
             </Link>
-            <Link href="/ingresar" className={buttonStyles({ variant: "secondary", className: "min-h-11" })}>
-              Ya tengo cuenta
+            <Link href="/registro" className={buttonStyles({ variant: "secondary", className: "min-h-11" })}>
+              Crear cuenta
             </Link>
           </Reveal>
         </div>
@@ -36,6 +40,24 @@ export default function Home() {
           <HeroVisual />
         </Reveal>
       </section>
+
+      {stores.length > 0 ? (
+        <section aria-labelledby="abiertas" className="py-6 lg:py-10">
+          <div className="flex items-end justify-between gap-4">
+            <h2 id="abiertas" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
+              Abiertas ahora
+            </h2>
+            <Link href="/tiendas" className="text-[13.5px] font-bold text-hoja hover:underline">
+              Ver todas
+            </Link>
+          </div>
+          <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.slice(0, 3).map((store) => (
+              <StoreCard key={store.id} store={store} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section aria-labelledby="vende" className="grid grid-cols-1 gap-5 py-10 lg:grid-cols-12 lg:py-16">
         <Reveal className="lg:col-span-7">
@@ -85,9 +107,6 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-          </Reveal>
-          <Reveal index={2}>
-            <Alert tone="warning">El catálogo de productos llega pronto. Mientras tanto puedes crear tu cuenta o afiliar tu negocio.</Alert>
           </Reveal>
         </div>
       </section>

@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   let failed = 0;
   for (const row of rows ?? []) {
     try {
-      const data = { ...row.data, console_url: Deno.env.get("CONSOLE_URL") ?? "" };
+      const data = { ...row.data, console_url: Deno.env.get("CONSOLE_URL") ?? "", store_url: Deno.env.get("STORE_URL") ?? "" };
       const mail = renderEmail(row.template as TemplateName, data);
       await sendMail({ to: row.to_email, ...mail });
       await admin.rpc("mark_outbox", { p_id: row.id, p_ok: true });

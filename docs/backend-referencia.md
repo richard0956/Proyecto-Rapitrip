@@ -214,7 +214,24 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `20261101000026_stripe_payments.sql`
 - `20261101000027_counter_sales.sql`
 - `20261101000028_payment_events_admin.sql`
+- `20261101000029_public_catalog.sql` (Fase 4: lectura pública del catálogo)
+- `20261101000030_order_idempotency.sql` (Fase 4: `create_order` con `p_client_ref`)
+- `20261101000031_customer_addresses.sql` (Fase 4: libreta de direcciones)
+- `20261101000032_order_emails.sql` (Fase 4: correos «pedido recibido» y «pedido cancelado»)
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql`.
+
+
+## 11. Fase 4: tienda pública
+
+**Superficie pública (`anon` y `authenticated`)**, y la única: `catalog_stores`, `catalog_store`, `catalog_categories`, `catalog_products`, `catalog_product` y `quote_cart`. Son de solo lectura, `security definer`, con paginación y topes (48 por página). Nunca devuelven SKU, existencias exactas (solo el máximo comprable, hasta 99, y solo con control de stock), teléfonos ni datos de cuentas. Una tienda cerrada por horario se ve (con motivo y horario); una inactiva, o de un comercio suspendido, no. Los productos agotados se ocultan de los listados y se muestran como «no disponible» en su ficha. La prueba `010` exige que esta sea exactamente la lista de funciones ejecutables por `anon`.
+
+**`quote_cart(p_store, p_items)`**: `p_items` es `[{variant_id, quantity, seen_price?}]`. Devuelve líneas, totales y `problems` con códigos estables: `tienda_no_disponible`, `tienda_cerrada`, `producto_no_disponible`, `sin_stock`, `precio_cambiado`, `cantidad_invalida`. `seen_price` solo sirve para avisar del cambio; el cobro lo decide `create_order` con el precio vigente.
+
+**`create_order(..., p_client_ref uuid default null)`**: con referencia, un reintento del mismo cliente devuelve el pedido ya creado (índice único `(client_id, client_ref)` y bloqueo de asesoría por cliente). El cuerpo anterior pasó intacto a `private.create_order_core`.
+
+**Libreta de direcciones** (`sales.customer_addresses`, vista `my_addresses`): `save_address`, `set_default_address`, `delete_address`. Hasta 10 por cliente, una predeterminada, nombre único por cliente. Se borra al anonimizar la cuenta. `latitude` y `longitude` están reservadas para el mapa y ninguna pantalla las llena todavía.
+
+**Correos del pedido**: el trigger `enqueue_order_email_after_event` encola `order_received` (el pedido queda «por confirmar») y `order_cancelled` (cancelado o rechazado, con motivo) en la bandeja existente. `send-outbox` agrega `store_url` (variable `STORE_URL`) para el enlace al pedido.

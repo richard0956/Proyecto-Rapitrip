@@ -1,0 +1,181 @@
+"use client";
+
+import { Alert, Button, buttonStyles, ButtonIsland, Card, EmptyState } from "@rapitrip/ui";
+import { Minus, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { ProductImage } from "@/components/product-image";
+import { acceptPrices, emptyCart, removeLine, setQuantity, toQuoteItems } from "@/lib/cart";
+import { setCart, updateCart } from "@/lib/cart-store";
+import type { Quote } from "@/lib/catalog";
+import { formatMoney } from "@/lib/money";
+import { changedPrices, hasBlocking, isBlocking, problemMessage, resolveProblems } from "@/lib/quote-problems";
+import { useCart } from "@/lib/use-cart";
+import type { QuoteResult } from "./actions";
+
+export function CartView({ quoteAction }: { quoteAction: (input: unknown) => Promise<QuoteResult> }) {
+  const cart = useCart();
+  const [hydrated, setHydrated] = useState(false);
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const key = useMemo(() => JSON.stringify(toQuoteItems(cart)) + cart.storeId, [cart]);
+
+  // El carrito vive en el navegador: hasta hidratar no se sabe si está vacío.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || !cart.storeId || cart.lines.length === 0) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      const result = await quoteAction({ storeId: cart.storeId, items: toQuoteItems(cart) });
+      if (cancelled) return;
+      setLoading(false);
+      if (result.ok) {
+        setQuote(result.quote);
+        setError(null);
+        // La primera vez que se ve un precio se recuerda, sin avisar de nada.
+        const unseen = Object.fromEntries(result.quote.lines.filter((q) => cart.lines.find((l) => l.variantId === q.variant_id)?.seenPrice === null).map((q) => [q.variant_id, q.unit_price]));
+        if (Object.keys(unseen).length > 0) updateCart((c) => acceptPrices(c, unseen));
+        if (result.quote.store?.name && cart.storeName !== result.quote.store.name) updateCart((c) => ({ ...c, storeName: result.quote.store!.name }));
+      } else setError(result.error);
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // La clave resume el contenido del carrito; `cart` completo reiniciaría la espera sin necesidad.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, hydrated, quoteAction]);
+
+  if (!hydrated) return <p className="py-10 text-center text-sm text-tinta-suave" aria-live="polite">Cargando tu carrito…</p>;
+
+  if (cart.lines.length === 0) {
+    return (
+      <EmptyState title="Tu carrito está vacío">
+        Explora las tiendas y agrega lo que necesites.
+        <span className="mt-4 block">
+          <Link href="/tiendas" className={buttonStyles({ variant: "primary", className: "pr-5" })}>
+            Ver tiendas
+            <ButtonIsland />
+          </Link>
+        </span>
+      </EmptyState>
+    );
+  }
+
+  const problems = quote?.problems ?? [];
+  const blocked = hasBlocking(quote) || loading || !quote;
+  const priceChanges = problems.filter((p) => p.code === "precio_cambiado");
+  const fixable = problems.some((p) => p.code === "sin_stock" || p.code === "producto_no_disponible" || p.code === "cantidad_invalida");
+
+  return (
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <section aria-label="Productos del carrito" className="flex flex-col gap-3">
+        {problems.length > 0 ? (
+          <Alert tone={problems.some(isBlocking) ? "warning" : "info"}>
+            <p className="font-bold">Revisa tu carrito</p>
+            <ul className="mt-1 list-disc pl-4">
+              {problems.map((problem, index) => (
+                <li key={`${problem.code}-${problem.variant_id ?? index}`}>{problemMessage(problem, quote)}</li>
+              ))}
+            </ul>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {priceChanges.length > 0 ? (
+                <Button variant="secondary" onClick={() => updateCart((c) => acceptPrices(c, changedPrices(problems)))}>
+                  Aceptar los nuevos precios
+                </Button>
+              ) : null}
+              {fixable ? (
+                <Button variant="secondary" onClick={() => updateCart((c) => resolveProblems(c, problems))}>
+                  Ajustar mi carrito
+                </Button>
+              ) : null}
+            </div>
+          </Alert>
+        ) : null}
+        {error ? <Alert tone="error">{error}</Alert> : null}
+
+        <ul className="flex flex-col gap-3">
+          {cart.lines.map((line) => {
+            const q = quote?.lines.find((l) => l.variant_id === line.variantId);
+            const max = q?.max_per_order == null ? 99 : Math.min(99, q.max_per_order);
+            return (
+              <li key={line.variantId} className="flex gap-4 rounded-concha bg-papel p-3 shadow-suave ring-1 ring-selva/[0.07]">
+                <ProductImage path={q?.cover_path} alt={q?.product_name ?? "Producto"} className="size-20 shrink-0 rounded-2xl" />
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      {q ? (
+                        <Link href={`/productos/${q.product_id}`} className="block truncate text-[15px] font-bold text-tinta hover:underline">
+                          {q.product_name}
+                        </Link>
+                      ) : (
+                        <p className="text-[15px] font-bold text-tinta">{quote ? "Producto no disponible" : "Cargando…"}</p>
+                      )}
+                      {q ? <p className="text-xs text-tinta-suave">{q.variant_name} · {formatMoney(q.unit_price)} c/u</p> : null}
+                    </div>
+                    <p className="text-[15px] font-extrabold text-hoja">{q ? formatMoney(q.line_total) : ""}</p>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between gap-2">
+                    <div role="group" aria-label={`Cantidad de ${q?.product_name ?? "producto"}`} className="flex items-center rounded-full border border-borde-campo bg-white">
+                      <button type="button" aria-label="Menos" onClick={() => updateCart((c) => setQuantity(c, line.variantId, line.quantity - 1, max))} className="flex size-11 items-center justify-center rounded-full hover:bg-menta/70 focus-visible:outline-2 focus-visible:outline-hoja">
+                        <Minus aria-hidden="true" className="size-4" />
+                      </button>
+                      <span aria-live="polite" className="min-w-8 text-center text-sm font-bold">
+                        {line.quantity}
+                      </span>
+                      <button type="button" aria-label="Más" disabled={line.quantity >= max} onClick={() => updateCart((c) => setQuantity(c, line.variantId, line.quantity + 1, max))} className="flex size-11 items-center justify-center rounded-full hover:bg-menta/70 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-hoja">
+                        <Plus aria-hidden="true" className="size-4" />
+                      </button>
+                    </div>
+                    <button type="button" onClick={() => updateCart((c) => removeLine(c, line.variantId))} className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold text-rojo hover:bg-rosa focus-visible:outline-2 focus-visible:outline-rojo">
+                      <Trash2 aria-hidden="true" className="size-4" />
+                      Quitar
+                    </button>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <button type="button" onClick={() => setCart(emptyCart)} className="self-start text-[13px] font-bold text-tinta-suave underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-hoja">
+          Vaciar carrito
+        </button>
+      </section>
+
+      <Card outerClassName="lg:sticky lg:top-28" className="flex flex-col gap-3 p-5">
+        <h2 className="text-base font-bold text-tinta">Resumen{quote?.store ? ` · ${quote.store.name}` : ""}</h2>
+        <dl className="flex flex-col gap-1.5 text-[14px]">
+          <div className="flex justify-between">
+            <dt className="text-tinta-suave">Subtotal</dt>
+            <dd className="font-bold">{quote ? formatMoney(quote.subtotal) : "—"}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-tinta-suave">Envío</dt>
+            <dd className="font-bold">{quote ? (quote.delivery_fee > 0 ? formatMoney(quote.delivery_fee) : "Gratis") : "—"}</dd>
+          </div>
+          <div className="mt-1 flex justify-between border-t border-borde pt-2 text-[16px]">
+            <dt className="font-extrabold">Total</dt>
+            <dd className="font-extrabold text-hoja">{quote ? formatMoney(quote.total) : "—"}</dd>
+          </div>
+        </dl>
+        {blocked ? (
+          <Button variant="primary" disabled className="w-full">
+            {loading || !quote ? "Actualizando precios…" : "Resuelve los avisos para pagar"}
+          </Button>
+        ) : (
+          <Link href="/checkout" className={buttonStyles({ variant: "primary", className: "w-full pr-5" })}>
+            Pagar
+            <ButtonIsland />
+          </Link>
+        )}
+        <p className="text-xs text-tinta-suave">Para pagar te pedimos ingresar o crear tu cuenta. Tu carrito se conserva.</p>
+      </Card>
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 begin;
-select plan(4);
+select plan(5);
 
 select is_empty($$
   select schemaname || '.' || tablename from pg_tables
@@ -10,7 +10,15 @@ select is_empty($$
   select p.oid::regprocedure from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
-$$, 'anon no puede ejecutar ninguna función de public');
+    and p.proname not in ('catalog_stores', 'catalog_store', 'catalog_categories', 'catalog_products', 'catalog_product', 'quote_cart')
+$$, 'anon solo ejecuta las funciones públicas del catálogo (lista explícita)');
+
+select results_eq($$
+  select p.proname::text from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute') order by 1
+$$, $$ values ('catalog_categories'), ('catalog_product'), ('catalog_products'), ('catalog_store'), ('catalog_stores'), ('quote_cart') $$,
+  'la lista pública es exactamente la del catálogo: nada más');
 
 select is_empty($$
   select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace

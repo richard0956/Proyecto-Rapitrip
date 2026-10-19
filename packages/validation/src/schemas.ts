@@ -158,3 +158,50 @@ export const stockChangeSchema = z
   .object({ kind: z.enum(["entrada", "salida", "conteo"]), amount: stockInt, reason: z.string().trim().min(5, "el motivo exige al menos 5 caracteres").max(200, "máximo 200 caracteres") })
   .refine((value) => value.kind === "conteo" || value.amount > 0, { message: "la cantidad debe ser mayor que cero", path: ["amount"] });
 export type StockChange = z.infer<typeof stockChangeSchema>;
+
+/** Tienda pública (Fase 4): libreta de direcciones, carrito y checkout. Mismos límites que valida la base de datos. */
+const optionalPhone = z
+  .string()
+  .trim()
+  .transform((value) => (value === "" ? null : value))
+  .nullable()
+  .optional()
+  .transform((value) => value ?? null)
+  .refine((value) => value === null || /^[0-9+() -]{8,20}$/.test(value), "teléfono inválido");
+
+/**
+ * Dirección guardada. `latitude` y `longitude` están reservadas para el mapa (otra fase): hoy ningún formulario las llena,
+ * pero el esquema y la base ya las aceptan, siempre juntas o ninguna.
+ */
+export const customerAddressSchema = z
+  .object({
+    label: z.string().trim().min(1, "escribe un nombre (por ejemplo, Casa)").max(40, "máximo 40 caracteres"),
+    address: z.string().trim().min(5, "la dirección exige al menos 5 caracteres").max(240, "máximo 240 caracteres"),
+    reference: optionalText(240),
+    phone: optionalPhone,
+    make_default: z.boolean().optional().default(false),
+    latitude: z.number().min(-90).max(90).nullable().optional().transform((value) => value ?? null),
+    longitude: z.number().min(-180).max(180).nullable().optional().transform((value) => value ?? null),
+  })
+  .refine((value) => (value.latitude === null) === (value.longitude === null), { message: "las coordenadas van completas o no van", path: ["latitude"] });
+export type CustomerAddressInput = z.infer<typeof customerAddressSchema>;
+
+export const paymentMethodSchema = z.enum(["efectivo", "tarjeta"]);
+export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
+
+export const cartLineSchema = z.object({
+  variant_id: z.string().uuid(),
+  quantity: z.number().int("usa un número entero").min(1, "mínimo 1").max(99, "máximo 99 por producto"),
+});
+
+/** Lo que el checkout envía a `create_order`. Dirección y teléfono se copian al pedido como texto. */
+export const checkoutSchema = z.object({
+  store_id: z.string().uuid(),
+  items: z.array(cartLineSchema).min(1, "el carrito está vacío").max(30, "máximo 30 productos distintos"),
+  payment_method: paymentMethodSchema,
+  address: z.string().trim().min(5, "la dirección exige al menos 5 caracteres").max(240, "máximo 240 caracteres"),
+  phone: phoneSchema,
+  notes: optionalText(240),
+  client_ref: z.string().uuid(),
+});
+export type CheckoutInput = z.infer<typeof checkoutSchema>;

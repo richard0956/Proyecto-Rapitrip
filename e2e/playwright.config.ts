@@ -2,6 +2,9 @@ import { defineConfig, devices } from "@playwright/test";
 
 const ci = Boolean(process.env.CI);
 
+/** Sin Supabase local, las pruebas del catálogo usan un Supabase de mentira (`support/catalog-mock.mjs`) en el puerto por defecto. */
+const useMock = !(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+
 /** Variables públicas de las apps. Sin backend (solo accesibilidad) bastan los valores de relleno. */
 const env = {
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL ?? "http://127.0.0.1:54321",
@@ -25,6 +28,7 @@ export default defineConfig({
   use: { trace: "retain-on-failure", screenshot: "only-on-failure", locale: "es", timezoneId: "America/Managua", contextOptions: { reducedMotion: "reduce" } },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
+    ...(useMock ? [{ command: "node support/catalog-mock.mjs", url: "http://127.0.0.1:54321/health", reuseExistingServer: !ci, timeout: 30_000 }] : []),
     { command: serve("console"), url: "http://localhost:3001/login", env, reuseExistingServer: !ci, timeout: 180_000 },
     { command: serve("store"), url: "http://localhost:3000/ingresar", env, reuseExistingServer: !ci, timeout: 180_000 },
   ],

@@ -1,5 +1,5 @@
 import { Alert, Avatar, buttonStyles, Card } from "@rapitrip/ui";
-import { Store } from "lucide-react";
+import { MapPin, Package, Store } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireCustomer } from "@/lib/session";
@@ -38,6 +38,20 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
           {profile.created_at ? <p className="mt-4 text-xs text-tinta-suave">Cliente desde el {fecha.format(new Date(profile.created_at))}.</p> : null}
         </Card>
 
+        <div className="flex flex-col gap-5">
+        <Card className="p-6">
+          <h2 className="text-base font-bold text-tinta">Mis compras</h2>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Link href="/pedidos" className={buttonStyles({ variant: "secondary" })}>
+              <Package aria-hidden="true" className="size-4" />
+              Mis pedidos
+            </Link>
+            <Link href="/perfil/direcciones" className={buttonStyles({ variant: "secondary" })}>
+              <MapPin aria-hidden="true" className="size-4" />
+              Mis direcciones
+            </Link>
+          </div>
+        </Card>
         <Card className="p-6">
           <span aria-hidden="true" className="mb-3 flex size-11 items-center justify-center rounded-boton bg-lavanda text-tinta">
             <Store className="size-5" />
@@ -52,6 +66,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
             Enviarme un enlace para cambiarla
           </Link>
         </Card>
+        </div>
       </div>
     </main>
   );

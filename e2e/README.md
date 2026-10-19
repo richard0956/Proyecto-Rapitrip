@@ -89,3 +89,8 @@ Se omite solo si falta alguna variable o si la clave no es de prueba (`sk_test_`
 - Ingreso con Google (necesita credenciales de OAuth reales).
 - El enlace de recuperación de contraseña recibido por correo (PKCE exige abrirlo en el mismo navegador que lo pidió).
 - La sesión vencida del cliente (tope de 1 día): está probada en componentes; en e2e haría falta envejecer `auth.sessions`.
+
+### Tienda pública (Fase 4)
+
+- `tests/tienda-catalogo.spec.ts` (sin backend): axe en `/tiendas`, la tienda, el producto y el carrito vacío (escritorio y móvil) y el recorrido catálogo → carrito → «Pagar» pide ingresar. Usa `support/catalog-mock.mjs`, un Supabase de mentira que `playwright.config.ts` levanta en el puerto 54321 cuando no hay `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
+- `tests/tienda-pedido.spec.ts` (`@backend`): el cliente ingresa, confirma un pedido en efectivo, lo ve en «Mis pedidos» y lo cancela; el stock vuelve. El pago con tarjeta queda en `pagos.spec.ts`.

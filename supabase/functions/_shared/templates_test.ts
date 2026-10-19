@@ -38,3 +38,23 @@ Deno.test("una plantilla desconocida lanza error", () => {
   try { renderEmail("no_existe" as never, {}); } catch { failed = true; }
   assertEquals(failed, true);
 });
+
+Deno.test("order_received incluye número, tienda, total y enlace al pedido", () => {
+  const m = renderEmail("order_received", {
+    number: 1042, store_name: "Tienda <A>", total: 446, order_id: "abc", store_url: "https://tienda.test/",
+  });
+  assertStringIncludes(m.subject, "1042");
+  assertStringIncludes(m.html, "Tienda &lt;A&gt;");
+  assertStringIncludes(m.text, "C$ 446.00");
+  assertStringIncludes(m.text, "https://tienda.test/pedidos/abc");
+});
+
+Deno.test("order_cancelled distingue rechazado y menciona el reembolso solo con tarjeta", () => {
+  const rechazado = renderEmail("order_cancelled", { number: 7, store_name: "T", status: "rechazado", reason: "Sin stock", payment_method: "efectivo" });
+  assertStringIncludes(rechazado.subject, "rechazado");
+  assertStringIncludes(rechazado.text, "Sin stock");
+  assertEquals(rechazado.text.includes("reembolso"), false);
+  const tarjeta = renderEmail("order_cancelled", { number: 8, store_name: "T", status: "cancelado", payment_method: "tarjeta" });
+  assertStringIncludes(tarjeta.subject, "cancelado");
+  assertStringIncludes(tarjeta.text, "reembolso");
+});
