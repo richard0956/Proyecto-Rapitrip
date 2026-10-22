@@ -1,6 +1,6 @@
 "use server";
 
-import { locationSchema, reasonSchema, storeExceptionSchema, storeHoursSchema, storeSchema, temporaryClosureSchema } from "@rapitrip/validation";
+import { departmentSchema, locationSchema, reasonSchema, storeExceptionSchema, storeHoursSchema, storeSchema, temporaryClosureSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
@@ -70,6 +70,20 @@ export async function setStoreLocation(id: string, input: unknown): Promise<Acti
     p_latitude: parsed.data.latitude as number,
     p_longitude: parsed.data.longitude as number,
   });
+  if (error) return failure(error);
+  refresh(parsedId.data);
+  return { ok: true };
+}
+
+/** Fija el departamento de la tienda: con él la cotización sabe si un envío a otro departamento es programado. */
+export async function setStoreDepartment(id: string, department: string): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = departmentSchema.safeParse(department);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: "Elige el departamento de la tienda." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("set_store_department", { p_store: parsedId.data, p_department: parsed.data });
   if (error) return failure(error);
   refresh(parsedId.data);
   return { ok: true };

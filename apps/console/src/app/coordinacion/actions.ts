@@ -37,6 +37,18 @@ export async function assignCourier(id: string, courierId: string): Promise<Acti
   return { ok: true };
 }
 
+/** Pasa a programado un pedido express que no cabe en una moto. Quita al repartidor asignado; la base de datos exige motivo y que aún no haya salido. */
+export async function reclassifyOrder(id: string, reason: string): Promise<ActionResult> {
+  const parsed = z.object({ id: z.string().uuid(), reason: reasonSchema }).safeParse({ id, reason });
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("coordinacion");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("reclassify_order", { p_order: parsed.data.id, p_reason: parsed.data.reason });
+  if (error) return failure(error);
+  refresh();
+  return { ok: true };
+}
+
 /** Puntos de la ruta (tienda y destino) de un pedido. La base de datos solo los entrega a coordinación y administración. */
 export async function orderRoute(id: string): Promise<RouteResult> {
   const parsed = z.string().uuid().safeParse(id);

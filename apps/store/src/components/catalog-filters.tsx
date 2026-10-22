@@ -101,12 +101,17 @@ export function CatalogFilters({ base, filters, categories, stores }: Props) {
           Solo tiendas abiertas ahora
         </label>
 
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-full px-3 text-sm font-bold text-tinta hover:bg-menta/60 focus-within:outline-2 focus-within:outline-hoja">
+          <input type="checkbox" name="descuento" value="1" defaultChecked={filters.descuento} className="size-4 accent-[var(--hoja)]" />
+          Solo productos con descuento
+        </label>
+
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" className="inline-flex min-h-11 items-center rounded-full bg-hoja px-6 text-sm font-bold text-white shadow-pulsa transition-colors duration-500 hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
             Aplicar filtros
           </button>
           {count > 0 ? (
-            <Link href={filtersHref(base, { ...filters, q: null, categoria: null, tienda: null, min: null, max: null, tipo: null, abiertas: false, pagina: 1 })} className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-hoja underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-hoja">
+            <Link href={filtersHref(base, { ...filters, q: null, categoria: null, tienda: null, min: null, max: null, tipo: null, abiertas: false, descuento: false, pagina: 1 })} className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-bold text-hoja underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-hoja">
               Limpiar
             </Link>
           ) : null}
@@ -144,6 +149,7 @@ export function ActiveFilters({ base, filters, categories, stores }: Pick<Props,
   }
   if (filters.tipo) chips.push({ key: "k", text: filters.tipo === "empresa" ? "Empresas" : "Vendedores propios", href: remove({ tipo: null }) });
   if (filters.abiertas) chips.push({ key: "a", text: "Abiertas ahora", href: remove({ abiertas: false }) });
+  if (filters.descuento) chips.push({ key: "d", text: "Con descuento", href: remove({ descuento: false }) });
   if (chips.length === 0) return null;
   return (
     <ul aria-label="Filtros activos" className="flex flex-wrap gap-2">

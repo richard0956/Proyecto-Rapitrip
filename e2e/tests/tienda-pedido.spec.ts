@@ -25,7 +25,7 @@ test.describe("@backend tienda · pedido del cliente", () => {
         sessionStorage.setItem("e2e-cart-seeded", "1");
         localStorage.setItem(key, cart);
       },
-      ["rapitrip-cart-v1", JSON.stringify({ storeId: shop.storeId, storeName: "Tienda", lines: [{ variantId: shop.variantId, quantity: 2, seenPrice: 150 }] })] as const,
+      ["rapitrip-cart-v2", JSON.stringify({ lines: [{ storeId: shop.storeId, storeName: "Tienda", variantId: shop.variantId, quantity: 2, seenPrice: 150 }] })] as const,
     );
 
     await page.goto(`${STORE_URL}/checkout`);
@@ -39,12 +39,12 @@ test.describe("@backend tienda · pedido del cliente", () => {
 
     await page.getByLabel("Dirección de entrega").fill("Barrio Central, casa 4, portón azul");
     await page.getByLabel("Teléfono de contacto").fill("88881111");
-    // Sin el pin del destino no se puede confirmar; con él, la base de datos cotiza el envío por zona (0 km: zona 1, C$50).
+    // Sin el pin del destino no se puede confirmar; con él, la base de datos cotiza el envío: a 0 km y sin otro departamento es express (zona 1, C$50).
     await expect(page.getByRole("button", { name: "Marca tu punto de entrega" })).toBeDisabled();
     await context.grantPermissions(["geolocation"], { origin: STORE_URL });
     await context.setGeolocation({ latitude: 12.1364, longitude: -86.2514 });
     await page.getByRole("button", { name: "Usar mi ubicación" }).click();
-    await expect(page.getByText(/Zona 1: entrega de hasta 3 km desde la tienda/)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Llega en pocas horas")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("radio", { name: /Efectivo contra entrega/ }).check();
     await page.getByRole("button", { name: "Confirmar pedido" }).click();
 

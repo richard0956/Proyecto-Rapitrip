@@ -15,3 +15,6 @@ next-env.d.ts
 e2e/test-results/
 e2e/playwright-report/
 e2e/blob-report/
+
+# Lockfile generado por `deno test` en local
+supabase/functions/deno.lock

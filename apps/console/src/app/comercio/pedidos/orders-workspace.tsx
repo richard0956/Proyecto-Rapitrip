@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
+import { classLabel, etaText, type DeliveryClass } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
 import { orderGroup, orderStatusLabel, orderStatusTone, paymentLabel, shopActions, type OrderGroup, type OrderStatus, type ShopAction } from "@/lib/orders";
 import { OrderDistance } from "@/components/order-route";
@@ -25,6 +26,10 @@ export type OrderRow = {
   itemCount: number;
   reason: string | null;
   deadline: string | null;
+  deliveryClass: DeliveryClass;
+  etaMinDays: number | null;
+  etaMaxDays: number | null;
+  reclassifiedReason: string | null;
   createdAt: string;
   items: OrderItem[];
 };
@@ -108,7 +113,7 @@ function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow;
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [asking, setAsking] = useState<ShopAction | null>(null);
   const [pending, start] = useTransition();
-  const actions = shopActions(row.status);
+  const actions = shopActions(row.status, row.deliveryClass);
 
   function run(action: ShopAction) {
     setMessage(null);
@@ -125,9 +130,23 @@ function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow;
   return (
     <Card outerClassName="xl:sticky xl:top-6" className="p-5">
       <CardHeader title={`Pedido ${row.number}`} subtitle={`${row.store} · ${row.createdAt}`} actions={<Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>} />
+      <p className="mb-3.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
+        <Badge tone={row.deliveryClass === "express" ? "positive" : "neutral"}>{classLabel(row.deliveryClass)}</Badge>
+        {etaText(row.deliveryClass, row.etaMinDays, row.etaMaxDays)}
+      </p>
+      {row.deliveryClass === "programado" ? (
+        <Alert className="mb-3.5">
+          Pedido programado: lo lleva un repartidor con vehículo y llega en días. Puedes pasarlo a «En validación» mientras confirmas disponibilidad o armado, y confirmarlo cuando esté validado.
+        </Alert>
+      ) : null}
+      {row.reclassifiedReason ? <Alert tone="warning" className="mb-3.5">Coordinación lo pasó a programado: {row.reclassifiedReason}</Alert> : null}
       {row.deadline ? (
         <Alert tone="warning" className="mb-3.5" icon={<Clock className="size-[18px]" />}>
-          {row.status === "por_confirmar" ? `Responde antes de ${row.deadline}; si no, se cancela y se devuelve el stock.` : `Vence el ${row.deadline} si no se paga.`}
+          {row.status === "por_confirmar"
+            ? `Responde antes de ${row.deadline}; si no, se cancela y se devuelve el stock.`
+            : row.status === "en_validacion"
+              ? `Termina la validación antes de ${row.deadline}; si no, se cancela y se devuelve el stock.`
+              : `Vence el ${row.deadline} si no se paga.`}
         </Alert>
       ) : null}
       <OrderDistance orderId={row.id} load={loadDistance} />

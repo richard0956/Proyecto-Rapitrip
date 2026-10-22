@@ -2,6 +2,7 @@
 
 import { PinPicker } from "@rapitrip/maps";
 import { Alert, Badge, Button, Card, Dialog, Field, TextareaField } from "@rapitrip/ui";
+import { departmentName } from "@rapitrip/validation";
 import { Home, MapPin, MapPinned, Pencil, Plus, Smartphone, Star, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
@@ -17,6 +18,7 @@ export type SavedAddress = {
   is_default: boolean;
   latitude?: number | null;
   longitude?: number | null;
+  department?: string | null;
 };
 
 type Draft = { id: string | null; label: string; address: string; reference: string; phone: string; make_default: boolean; latitude: number | null; longitude: number | null };
@@ -29,7 +31,7 @@ type Actions = {
   remove: (id: string) => Promise<CustomerResult>;
 };
 
-/** Un borrador guardado antes de existir el mapa no trae coordenadas. */
+/** Un borrador guardado antes de existir el mapa o el departamento no trae esos datos. */
 const normalize = (draft: Draft | null): Draft | null => (draft ? { ...draft, latitude: draft.latitude ?? null, longitude: draft.longitude ?? null } : null);
 
 export function AddressBook({ addresses, actions }: { addresses: SavedAddress[]; actions: Actions }) {
@@ -93,6 +95,7 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
                   <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-tinta-suave" />
                   {item.address}
                 </p>
+                {item.department ? <p className="mt-1 text-[13px] text-tinta-suave">Departamento: {departmentName(item.department)}</p> : null}
                 {item.reference ? <p className="mt-1 text-[13px] text-tinta-suave">Referencia: {item.reference}</p> : null}
                 {item.latitude != null && item.longitude != null ? (
                   <p className="mt-1 flex items-center gap-2 text-[13px] text-hoja">
@@ -139,7 +142,7 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
 
             <PinPicker
               label="Ubicación en el mapa"
-              hint="Obligatoria: marca el punto exacto de entrega. Con él calculamos el envío; la dirección escrita sigue siendo la referencia."
+              hint="Obligatoria: marca el punto exacto de entrega. Con él sabemos el departamento y si tu pedido llega en horas (express) o en días (programado); la dirección escrita sigue siendo la referencia."
               value={editing.latitude !== null && editing.longitude !== null ? { lat: editing.latitude, lng: editing.longitude } : null}
               onChange={(point) => setEditing({ ...editing, latitude: point?.lat ?? null, longitude: point?.lng ?? null })}
               onUseAddress={(text) => setEditing({ ...editing, address: text })}

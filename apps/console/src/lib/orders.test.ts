@@ -4,6 +4,7 @@ import { classifyExceptions, coordActions, coordTab, orderGroup, paymentLabel, s
 describe("pedidos del comercio", () => {
   it("agrupa los estados en las tres pestañas", () => {
     expect(orderGroup("por_confirmar")).toBe("confirmar");
+    expect(orderGroup("en_validacion")).toBe("confirmar");
     expect(orderGroup("pendiente_pago")).toBe("curso");
     expect(orderGroup("preparando")).toBe("curso");
     expect(orderGroup("entregado")).toBe("terminados");
@@ -16,6 +17,14 @@ describe("pedidos del comercio", () => {
     expect(shopActions("confirmado").map((a) => a.to)).toEqual(["preparando", "cancelado"]);
     expect(shopActions("preparando").map((a) => a.to)).toEqual(["listo", "cancelado"]);
     for (const status of ["pendiente_pago", "listo", "en_camino", "entregado", "cancelado", "rechazado"] as const) expect(shopActions(status)).toEqual([]);
+  });
+
+  it("un programado puede pasar por validación antes de confirmarse", () => {
+    expect(shopActions("por_confirmar", "programado").map((a) => a.to)).toEqual(["en_validacion", "confirmado", "rechazado"]);
+    expect(shopActions("en_validacion").map((a) => a.to)).toEqual(["confirmado", "rechazado"]);
+    expect(shopActions("en_validacion").find((a) => a.to === "rechazado")?.reason).toBe(true);
+    // Un express no tiene paso de validación.
+    expect(shopActions("por_confirmar", "express").map((a) => a.to)).toEqual(["confirmado", "rechazado"]);
   });
 
   it("describe el pago", () => {
@@ -39,6 +48,7 @@ describe("coordinación", () => {
     expect(coordTab("confirmado")).toBe("preparacion");
     expect(coordTab("preparando")).toBe("preparacion");
     expect(coordTab("por_confirmar")).toBe("espera");
+    expect(coordTab("en_validacion")).toBe("espera");
     expect(coordTab("pendiente_pago")).toBe("espera");
     expect(coordTab("entregado")).toBe("terminados");
     expect(coordTab("cancelado")).toBe("terminados");
@@ -77,6 +87,18 @@ describe("excepciones de administración", () => {
     expect(result.sin_respuesta.map((o) => o.number)).toEqual([3]);
     expect(result.en_camino_largo.map((o) => o.number)).toEqual([5]);
     expect(result.reembolso_pendiente.map((o) => o.number)).toEqual([7]);
+  });
+
+  it("a un programado le da 12 horas antes de avisar que el comercio no responde", () => {
+    const result = classifyExceptions(
+      [
+        { ...base, number: 20, status: "por_confirmar", deliveryClass: "programado", updatedAt: ago(60) },
+        { ...base, number: 21, status: "por_confirmar", deliveryClass: "programado", updatedAt: ago(13 * 60) },
+        { ...base, number: 22, status: "por_confirmar", deliveryClass: "express", updatedAt: ago(30) },
+      ],
+      now,
+    );
+    expect(result.sin_respuesta.map((o) => o.number)).toEqual([21, 22]);
   });
 
   it("ignora las ventas de mostrador", () => {

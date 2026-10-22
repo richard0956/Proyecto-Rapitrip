@@ -1,12 +1,13 @@
 /** Filtros del catálogo: se leen de la URL (la página es del servidor y se puede compartir) y se vuelven a escribir en ella. */
 export type CommerceKind = "informal" | "empresa";
-export type CatalogSort = "nombre" | "precio_asc" | "precio_desc" | "recientes";
+export type CatalogSort = "nombre" | "precio_asc" | "precio_desc" | "recientes" | "descuento";
 
 export const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
   { value: "nombre", label: "Nombre (A–Z)" },
   { value: "precio_asc", label: "Precio: menor a mayor" },
   { value: "precio_desc", label: "Precio: mayor a menor" },
   { value: "recientes", label: "Más recientes" },
+  { value: "descuento", label: "Mayor descuento" },
 ];
 
 export const KIND_OPTIONS: { value: CommerceKind | null; label: string }[] = [
@@ -26,6 +27,8 @@ export type CatalogFilters = {
   orden: CatalogSort;
   tipo: CommerceKind | null;
   abiertas: boolean;
+  /** Solo productos con descuento. */
+  descuento: boolean;
   pagina: number;
 };
 
@@ -64,6 +67,7 @@ export function parseFilters(params: Params): CatalogFilters {
     orden,
     tipo,
     abiertas: first(params.abiertas) === "1",
+    descuento: first(params.descuento) === "1",
     pagina: Number.isInteger(page) && page >= 1 && page <= 1000 ? page : 1,
   };
 }
@@ -80,6 +84,7 @@ export function filtersHref(base: string, filters: CatalogFilters, changes: Part
   if (f.orden !== "nombre") search.set("orden", f.orden);
   if (f.tipo) search.set("tipo", f.tipo);
   if (f.abiertas) search.set("abiertas", "1");
+  if (f.descuento) search.set("descuento", "1");
   if (f.pagina > 1) search.set("pagina", String(f.pagina));
   const text = search.toString();
   return text ? `${base}?${text}` : base;
@@ -87,6 +92,6 @@ export function filtersHref(base: string, filters: CatalogFilters, changes: Part
 
 /** Cuántos filtros (sin contar el orden ni la página) hay activos. */
 export function activeFilterCount(f: CatalogFilters) {
-  const active = [f.q !== null, f.categoria !== null, f.tienda !== null, f.min !== null, f.max !== null, f.tipo !== null, f.abiertas];
+  const active = [f.q !== null, f.categoria !== null, f.tienda !== null, f.min !== null, f.max !== null, f.tipo !== null, f.abiertas, f.descuento];
   return active.filter(Boolean).length;
 }

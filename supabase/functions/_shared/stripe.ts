@@ -89,6 +89,62 @@ export function buildCheckoutParams(order: CheckoutOrder, items: CheckoutItem[],
   return params;
 }
 
+export type PurchaseOrder = { id: string; number: number; storeName: string; deliveryClass?: string | null; deliveryFee: number | string; items: CheckoutItem[] };
+export type Purchase = { id: string; orders: PurchaseOrder[] };
+
+/**
+ * Parámetros de UNA sesión de Stripe Checkout para toda una compra (varios pedidos). Los renglones suman exactamente la suma
+ * de los totales de los pedidos: los productos de cada uno y su envío como renglón aparte. La sesión se identifica por la compra.
+ */
+export function buildPurchaseCheckoutParams(purchase: Purchase, opts: { currency: string; storeUrl: string; nowSeconds?: number }): Record<string, string> {
+  const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
+  const numbers = purchase.orders.map((order) => order.number).join(", ");
+  const params: Record<string, string> = {
+    mode: "payment",
+    client_reference_id: purchase.id,
+    "metadata[checkout_id]": purchase.id,
+    "payment_intent_data[metadata][checkout_id]": purchase.id,
+    "payment_intent_data[description]": `Compra · pedidos ${numbers}`.slice(0, 200),
+    success_url: `${opts.storeUrl}/compras/${purchase.id}?pago=ok`,
+    cancel_url: `${opts.storeUrl}/compras/${purchase.id}?pago=cancelado`,
+    // Stripe exige que la sesión dure al menos 30 minutos; un pago tardío se reembolsa solo (ver apply_stripe_checkout_event).
+    expires_at: String(now + 31 * 60),
+    locale: "es",
+  };
+  let index = 0;
+  const line = (name: string, unitAmount: number, quantity: number) => {
+    params[`line_items[${index}][quantity]`] = String(quantity);
+    params[`line_items[${index}][price_data][currency]`] = opts.currency.toLowerCase();
+    params[`line_items[${index}][price_data][unit_amount]`] = String(unitAmount);
+    params[`line_items[${index}][price_data][product_data][name]`] = name.slice(0, 250);
+    index++;
+  };
+  for (const order of purchase.orders) {
+    for (const item of order.items) line(`${item.productName} · ${item.variantName} (${order.storeName})`, toMinorUnits(item.unitPrice), item.quantity);
+    const fee = toMinorUnits(order.deliveryFee);
+    if (fee > 0) line(`Envío ${order.deliveryClass === "programado" ? "programado" : "express"} · ${order.storeName}`, fee, 1);
+  }
+  return params;
+}
+
+/** Total de una compra en centavos, igual a lo que la base de datos espera (la suma de los pedidos que esperan pago). */
+export function purchaseTotalMinorUnits(purchase: Purchase): number {
+  return purchase.orders.reduce(
+    (sum, order) => sum + order.items.reduce((s, item) => s + toMinorUnits(item.unitPrice) * item.quantity, 0) + toMinorUnits(order.deliveryFee),
+    0,
+  );
+}
+
+/** A qué pertenece un evento de Stripe: a una compra (pagada de una vez) o a un pedido suelto. */
+export function stripeEventTarget(object: { client_reference_id?: unknown; metadata?: Record<string, string> | null }): { kind: "checkout" | "order"; id: string } | null {
+  const uuid = /^[0-9a-f-]{36}$/i;
+  const checkout = object.metadata?.checkout_id;
+  if (typeof checkout === "string" && uuid.test(checkout)) return { kind: "checkout", id: checkout };
+  const order = (object.client_reference_id as string | undefined) ?? object.metadata?.order_id;
+  if (typeof order === "string" && uuid.test(order)) return { kind: "order", id: order };
+  return null;
+}
+
 const API = "https://api.stripe.com";
 
 export class StripeError extends Error {
@@ -119,12 +175,17 @@ export async function stripeRequest<T = Record<string, unknown>>(
   return data as T;
 }
 
-/** Reembolso total de un pago. La clave de idempotencia evita devolver dos veces si el webhook se reintenta. */
-export function refundPayment(paymentIntent: string, idempotencyKey: string, reason: string) {
-  return stripeRequest<{ id: string }>(
-    "POST",
-    "/v1/refunds",
-    { payment_intent: paymentIntent, "metadata[motivo]": reason.slice(0, 200) },
-    { idempotencyKey },
-  );
+/** Parámetros de un reembolso: completo, o parcial si se indica el monto en centavos (varios pedidos comparten un cobro). */
+export function refundParams(paymentIntent: string, reason: string, amountCents?: number | null): Record<string, string> {
+  const params: Record<string, string> = { payment_intent: paymentIntent, "metadata[motivo]": reason.slice(0, 200) };
+  if (amountCents !== undefined && amountCents !== null) {
+    if (!Number.isInteger(amountCents) || amountCents <= 0) throw new Error("monto de reembolso inválido");
+    params.amount = String(amountCents);
+  }
+  return params;
+}
+
+/** Reembolso de un pago, completo o parcial. La clave de idempotencia evita devolver dos veces si el webhook o el programador se reintentan. */
+export function refundPayment(paymentIntent: string, idempotencyKey: string, reason: string, amountCents?: number | null) {
+  return stripeRequest<{ id: string }>("POST", "/v1/refunds", refundParams(paymentIntent, reason, amountCents), { idempotencyKey });
 }

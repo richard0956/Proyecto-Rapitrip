@@ -1,7 +1,8 @@
 "use client";
 
 import { PinPicker, type LatLng } from "@rapitrip/maps";
-import { Alert, Badge, Button, Card, CardHeader, Field } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, CardHeader, Field, SelectField } from "@rapitrip/ui";
+import { departments } from "@rapitrip/validation";
 import { CalendarOff, Check, Clock, MapPin, Plus, Smartphone, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
@@ -9,12 +10,13 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { flattenHours, formatCalendarDate, formatStoreDateTime, storeState, todayInStoreZone, weekdays, type HoursByDay } from "@/lib/stores";
 
-type Store = { id: string; name: string; address: string | null; phone: string | null; status: "activa" | "inactiva"; closed_until: string | null; closed_reason: string | null; open_now: boolean | null; latitude: number | null; longitude: number | null };
+type Store = { id: string; name: string; address: string | null; phone: string | null; status: "activa" | "inactiva"; closed_until: string | null; closed_reason: string | null; open_now: boolean | null; latitude: number | null; longitude: number | null; department: string | null };
 type Exception = { on_date: string; closed: boolean; opens: string | null; closes: string | null; note: string | null };
 
 type Actions = {
   updateStore: (id: string, values: unknown) => Promise<ActionResult>;
   setStoreLocation: (id: string, values: unknown) => Promise<ActionResult>;
+  setStoreDepartment: (id: string, department: string) => Promise<ActionResult>;
   setStoreStatus: (id: string, input: { status: "activa" | "inactiva"; reason: string }) => Promise<ActionResult>;
   saveStoreHours: (id: string, hours: unknown) => Promise<ActionResult>;
   closeStoreTemporarily: (id: string, input: unknown) => Promise<ActionResult>;
@@ -39,6 +41,11 @@ export function StoreEditor({ store, hours, exceptions, disabled, actions }: { s
           Esta tienda no recibe pedidos hasta que marques su ubicación en el mapa: con ella se calcula el envío de cada pedido por distancia.
         </Alert>
       ) : null}
+      {located && !store.department ? (
+        <Alert tone="warning" className="mb-5">
+          Falta el departamento de la tienda. Sin él, un pedido a otro departamento no se reconoce como programado y se trata como express si queda cerca.
+        </Alert>
+      ) : null}
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex flex-col gap-5">
           <HoursCard storeId={store.id} initial={hours} disabled={disabled} save={actions.saveStoreHours} />
@@ -50,7 +57,7 @@ export function StoreEditor({ store, hours, exceptions, disabled, actions }: { s
             <ClosureControls store={store} close={actions.closeStoreTemporarily} reopen={actions.reopenStore} setStatus={actions.setStoreStatus} />
           </Card>
           <DetailsCard store={store} update={actions.updateStore} />
-          <LocationCard store={store} save={actions.setStoreLocation} />
+          <LocationCard store={store} save={actions.setStoreLocation} saveDepartment={actions.setStoreDepartment} />
         </div>
       </div>
     </>
@@ -58,20 +65,26 @@ export function StoreEditor({ store, hours, exceptions, disabled, actions }: { s
 }
 
 /** Ubicación de la tienda en el mapa: el pin es lo que vale; la dirección escrita (arriba) es solo apoyo. */
-function LocationCard({ store, save }: { store: Store; save: Actions["setStoreLocation"] }) {
+function LocationCard({ store, save, saveDepartment }: { store: Store; save: Actions["setStoreLocation"]; saveDepartment: Actions["setStoreDepartment"] }) {
   const router = useRouter();
   const saved: LatLng | null = store.latitude !== null && store.longitude !== null ? { lat: store.latitude, lng: store.longitude } : null;
   const [point, setPoint] = useState<LatLng | null>(saved);
+  const [department, setDepartment] = useState(store.department ?? "");
   const [message, setMessage] = useState<Message>(null);
   const [pending, start] = useTransition();
-  const dirty = (point?.lat ?? null) !== (saved?.lat ?? null) || (point?.lng ?? null) !== (saved?.lng ?? null);
+  const pointDirty = (point?.lat ?? null) !== (saved?.lat ?? null) || (point?.lng ?? null) !== (saved?.lng ?? null);
+  const departmentDirty = department !== "" && department !== (store.department ?? "");
+  const dirty = pointDirty || departmentDirty;
 
   function submit() {
     setMessage(null);
     start(async () => {
-      const result = await save(store.id, { latitude: point?.lat ?? null, longitude: point?.lng ?? null });
-      setMessage(result.ok ? { ok: true, text: point ? "Ubicación guardada." : "Ubicación quitada." } : { ok: false, text: result.error });
-      if (result.ok) router.refresh();
+      const placed = pointDirty ? await save(store.id, { latitude: point?.lat ?? null, longitude: point?.lng ?? null }) : { ok: true as const };
+      if (!placed.ok) return setMessage({ ok: false, text: placed.error });
+      const area = departmentDirty ? await saveDepartment(store.id, department) : { ok: true as const };
+      if (!area.ok) return setMessage({ ok: false, text: area.error });
+      setMessage({ ok: true, text: pointDirty && !point ? "Ubicación quitada." : "Ubicación guardada." });
+      router.refresh();
     });
   }
 
@@ -79,6 +92,12 @@ function LocationCard({ store, save }: { store: Store; save: Actions["setStoreLo
     <Card className="p-5">
       <CardHeader title="Ubicación en el mapa" />
       <div className="flex flex-col gap-3.5">
+        <SelectField label="Departamento" value={department} onChange={(e) => setDepartment(e.target.value)} hint="Define si los pedidos a otros departamentos se entregan de forma programada." disabled={pending}>
+          <option value="">Elige un departamento</option>
+          {departments.map((d) => (
+            <option key={d.code} value={d.code}>{d.name}</option>
+          ))}
+        </SelectField>
         <PinPicker
           label="Punto exacto de la tienda"
           hint="Toca el mapa o arrastra el pin hasta la entrada de la tienda. Sirve para calcular rutas de entrega."

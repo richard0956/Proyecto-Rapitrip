@@ -1,6 +1,6 @@
 "use server";
 
-import { productSchema, reasonSchema, variantSchema } from "@rapitrip/validation";
+import { productDeliverySchema, productSchema, reasonSchema, variantSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
@@ -58,6 +58,30 @@ export async function updateProduct(id: string, input: unknown): Promise<ActionR
   return { ok: true };
 }
 
+/** Peso, medidas y tipo de entrega del producto. La base de datos vuelve a validar los límites vigentes de express. */
+export async function setProductDelivery(id: string, input: unknown): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = productDeliverySchema.safeParse(input);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  // Los nulos viajan como nulos: la función no tiene valores por defecto para el peso ni las medidas.
+  const orNull = (value: number | null) => value as unknown as number;
+  const { error } = await supabase.rpc("set_product_delivery", {
+    p_product: parsedId.data,
+    p_eligible: parsed.data.express_eligible,
+    p_weight_kg: orNull(parsed.data.weight_kg),
+    p_length_cm: orNull(parsed.data.length_cm),
+    p_width_cm: orNull(parsed.data.width_cm),
+    p_height_cm: orNull(parsed.data.height_cm),
+    p_validation_days: parsed.data.validation_days ?? undefined,
+  });
+  if (error) return failure(error);
+  refresh(parsedId.data);
+  return { ok: true };
+}
+
 export async function setProductStatus(id: string, input: { status: "borrador" | "publicado" | "archivado"; reason?: string }): Promise<ActionResult> {
   const parsed = z
     .object({ id: idSchema, status: z.enum(["borrador", "publicado", "archivado"]), reason: reasonSchema.optional() })
@@ -96,6 +120,18 @@ export async function updateVariant(productId: string, variantId: string, input:
   const { error } = await supabase.rpc("update_variant", { p_variant: parsedVariant.data, p_name: parsed.data.name, p_sku: parsed.data.sku, p_price: parsed.data.price });
   if (error) return failure(error);
   refresh(parsedProduct.data);
+  return { ok: true };
+}
+
+/** Quita el descuento de una presentación: queda el precio actual como precio normal. */
+export async function removeVariantDiscount(productId: string, variantId: string): Promise<ActionResult> {
+  const parsed = z.object({ product: idSchema, variant: idSchema }).safeParse({ product: productId, variant: variantId });
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("remove_variant_discount", { p_variant: parsed.data.variant });
+  if (error) return failure(error);
+  refresh(parsed.data.product);
   return { ok: true };
 }
 

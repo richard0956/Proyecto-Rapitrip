@@ -10,7 +10,7 @@ import { serverSupabase } from "@/lib/supabase";
 
 const schema = z.object({
   id: z.string().uuid(),
-  to: z.enum(["confirmado", "preparando", "listo", "cancelado", "rechazado"]),
+  to: z.enum(["en_validacion", "confirmado", "preparando", "listo", "cancelado", "rechazado"]),
   reason: reasonSchema.optional(),
 });
 

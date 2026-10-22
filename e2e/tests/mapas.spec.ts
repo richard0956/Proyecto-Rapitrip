@@ -107,6 +107,7 @@ test.describe("@backend mapas · ubicación de tienda y destino del pedido", () 
     await page.getByRole("button", { name: "Agregar dirección" }).click();
     await page.getByLabel("Nombre", { exact: true }).fill("Casa");
     await page.getByLabel("Dirección de entrega").fill("Barrio Central, casa 4, portón azul");
+    await page.getByLabel("Departamento", { exact: true }).selectOption("managua");
     await page.getByRole("button", { name: "Usar mi ubicación" }).click();
     await expect(page.getByText("Punto marcado: 12.13640, -86.25140.")).toBeVisible();
     await page.getByRole("button", { name: "Guardar dirección" }).click();
@@ -119,7 +120,7 @@ test.describe("@backend mapas · ubicación de tienda y destino del pedido", () 
         sessionStorage.setItem("e2e-cart-seeded", "1");
         localStorage.setItem(key, cart);
       },
-      ["rapitrip-cart-v1", JSON.stringify({ storeId: shop.storeId, storeName: "Tienda", lines: [{ variantId: shop.variantId, quantity: 1, seenPrice: 150 }] })] as const,
+      ["rapitrip-cart-v2", JSON.stringify({ lines: [{ storeId: shop.storeId, storeName: "Tienda", variantId: shop.variantId, quantity: 1, seenPrice: 150 }] })] as const,
     );
     await page.goto(`${STORE_URL}/checkout`);
     await expect(page.getByText("Punto marcado: 12.13640, -86.25140.")).toBeVisible({ timeout: 30_000 });

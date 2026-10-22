@@ -150,6 +150,75 @@ export const productSchema = z.object({
 });
 export type ProductInput = z.infer<typeof productSchema>;
 
+/** Límites de la entrega express (los vigentes los fija la administración; la base de datos vuelve a validarlos). */
+export type ExpressLimits = { max_unit_kg: number; max_side_cm: number; max_sum_cm: number; max_order_kg: number };
+export const defaultExpressLimits: ExpressLimits = { max_unit_kg: 5, max_side_cm: 45, max_sum_cm: 100, max_order_kg: 10 };
+
+const optionalPositive = (message: string) =>
+  z
+    .number({ invalid_type_error: message })
+    .positive(message)
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null);
+
+/** Peso, medidas y tipo de entrega de un producto: solo puede ser express si cabe en una moto. */
+export const productDeliverySchema = z
+  .object({
+    express_eligible: z.boolean(),
+    weight_kg: optionalPositive("el peso debe ser mayor que cero").refine((value) => value === null || value <= 9999, "peso demasiado alto"),
+    length_cm: optionalPositive("el largo debe ser mayor que cero"),
+    width_cm: optionalPositive("el ancho debe ser mayor que cero"),
+    height_cm: optionalPositive("el alto debe ser mayor que cero"),
+    validation_days: z
+      .number({ invalid_type_error: "los días de validación son un número entero" })
+      .int("los días de validación son un número entero")
+      .min(0, "los días de validación van de 0 a 60")
+      .max(60, "los días de validación van de 0 a 60")
+      .nullable()
+      .optional()
+      .transform((value) => value ?? null),
+  })
+  .superRefine((value, ctx) => {
+    const dims = [value.length_cm, value.width_cm, value.height_cm];
+    if (dims.some((d) => d === null) && dims.some((d) => d !== null)) {
+      ctx.addIssue({ code: "custom", path: ["length_cm"], message: "las medidas van completas (largo, ancho y alto) o no van" });
+    }
+  });
+export type ProductDeliveryInput = z.infer<typeof productDeliverySchema>;
+
+/** Motivo por el que un producto no puede ser express con esos límites; nulo si cumple. Misma regla que `set_product_delivery`. */
+export function expressLimitProblem(
+  product: { weight_kg: number | null; length_cm: number | null; width_cm: number | null; height_cm: number | null },
+  limits: ExpressLimits,
+): string | null {
+  if (product.weight_kg === null || product.length_cm === null || product.width_cm === null || product.height_cm === null) {
+    return "Para entregar como express indica el peso y las medidas del producto.";
+  }
+  if (product.weight_kg > limits.max_unit_kg) return `Un producto express pesa hasta ${limits.max_unit_kg} kg.`;
+  const side = Math.max(product.length_cm, product.width_cm, product.height_cm);
+  if (side > limits.max_side_cm) return `Un producto express mide hasta ${limits.max_side_cm} cm de lado.`;
+  if (product.length_cm + product.width_cm + product.height_cm > limits.max_sum_cm) {
+    return `Largo, ancho y alto de un producto express suman hasta ${limits.max_sum_cm} cm.`;
+  }
+  return null;
+}
+
+/** Límites de express que edita la administración. */
+const positiveLimit = (label: string) => z.number({ invalid_type_error: `${label}: escribe un número` }).positive(`${label}: debe ser mayor que cero`).max(100000, `${label}: demasiado alto`);
+export const deliveryLimitsSchema = z
+  .object({
+    max_unit_kg: positiveLimit("Peso por unidad"),
+    max_side_cm: positiveLimit("Lado más largo"),
+    max_sum_cm: positiveLimit("Largo + ancho + alto"),
+    max_order_kg: positiveLimit("Peso por pedido"),
+  })
+  .superRefine((value, ctx) => {
+    if (value.max_order_kg < value.max_unit_kg) ctx.addIssue({ code: "custom", path: ["max_order_kg"], message: "El peso por pedido no puede ser menor que el de una unidad." });
+    if (value.max_sum_cm < value.max_side_cm) ctx.addIssue({ code: "custom", path: ["max_sum_cm"], message: "La suma de medidas no puede ser menor que el lado más largo." });
+  });
+export type DeliveryLimitsInput = z.infer<typeof deliveryLimitsSchema>;
+
 export const skuSchema = z.string().trim().regex(/^[A-Za-z0-9._-]{2,40}$/, "el SKU admite letras, números, punto, guion y guion bajo (2 a 40)");
 export const variantSchema = z.object({
   name: z.string().trim().min(1, "escribe el nombre de la variante").max(80, "máximo 80 caracteres"),
@@ -168,6 +237,31 @@ export const stockChangeSchema = z
   .object({ kind: z.enum(["entrada", "salida", "conteo"]), amount: stockInt, reason: z.string().trim().min(5, "el motivo exige al menos 5 caracteres").max(200, "máximo 200 caracteres") })
   .refine((value) => value.kind === "conteo" || value.amount > 0, { message: "la cantidad debe ser mayor que cero", path: ["amount"] });
 export type StockChange = z.infer<typeof stockChangeSchema>;
+
+/** Departamentos y regiones autónomas de Nicaragua: los mismos códigos de `sales.departments`. */
+export const departments = [
+  { code: "boaco", name: "Boaco" },
+  { code: "carazo", name: "Carazo" },
+  { code: "chinandega", name: "Chinandega" },
+  { code: "chontales", name: "Chontales" },
+  { code: "esteli", name: "Estelí" },
+  { code: "granada", name: "Granada" },
+  { code: "jinotega", name: "Jinotega" },
+  { code: "leon", name: "León" },
+  { code: "madriz", name: "Madriz" },
+  { code: "managua", name: "Managua" },
+  { code: "masaya", name: "Masaya" },
+  { code: "matagalpa", name: "Matagalpa" },
+  { code: "nueva_segovia", name: "Nueva Segovia" },
+  { code: "rio_san_juan", name: "Río San Juan" },
+  { code: "rivas", name: "Rivas" },
+  { code: "raccn", name: "Costa Caribe Norte" },
+  { code: "raccs", name: "Costa Caribe Sur" },
+] as const;
+export type DepartmentCode = (typeof departments)[number]["code"];
+export const departmentCodes: readonly string[] = departments.map((d) => d.code);
+export const departmentSchema = z.enum(departments.map((d) => d.code) as [DepartmentCode, ...DepartmentCode[]], { errorMap: () => ({ message: "elige el departamento de entrega" }) });
+export const departmentName = (code: string | null | undefined): string => departments.find((d) => d.code === code)?.name ?? "";
 
 /** Tienda pública (Fase 4): libreta de direcciones, carrito y checkout. Mismos límites que valida la base de datos. */
 const optionalPhone = z
@@ -204,20 +298,37 @@ export const cartLineSchema = z.object({
   quantity: z.number().int("usa un número entero").min(1, "mínimo 1").max(99, "máximo 99 por producto"),
 });
 
-/** Lo que el checkout envía a `create_order`. Dirección y teléfono se copian al pedido como texto. */
-export const checkoutSchema = z
+/** Una tienda de la compra: sus productos y, si la hay, la cotización por ruta de su envío. */
+const purchaseGroupSchema = z.object({
+  store_id: z.string().uuid(),
+  items: z.array(cartLineSchema).min(1, "el carrito está vacío").max(30, "máximo 30 productos distintos"),
+  quote_id: z.string().uuid().nullable().optional().transform((value) => value ?? null),
+});
+
+/** Lo que el checkout único envía a `create_checkout`: hasta 4 tiendas, una dirección, un pin (el departamento sale del pin). */
+export const purchaseSchema = z
   .object({
-    store_id: z.string().uuid(),
-    items: z.array(cartLineSchema).min(1, "el carrito está vacío").max(30, "máximo 30 productos distintos"),
+    groups: z.array(purchaseGroupSchema).min(1, "el carrito está vacío").max(4, "una compra admite hasta 4 tiendas"),
     payment_method: paymentMethodSchema,
     address: z.string().trim().min(5, "la dirección exige al menos 5 caracteres").max(240, "máximo 240 caracteres"),
     phone: phoneSchema,
     notes: optionalText(240),
     client_ref: z.string().uuid(),
-    /** Pin del destino (obligatorio en la base de datos): lo que cuenta es el punto; la dirección escrita es apoyo. */
-    ...pinFields,
-    /** Cotización del envío por ruta (función `quote-delivery`); sin ella la base de datos cotiza por línea recta. */
-    quote_id: z.string().uuid().nullable().optional().transform((value) => value ?? null),
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
   })
-  .refine(pinIsComplete, { message: "la ubicación va completa o no va", path: ["latitude"] });
-export type CheckoutInput = z.infer<typeof checkoutSchema>;
+  .superRefine((value, ctx) => {
+    const stores = value.groups.map((group) => group.store_id);
+    if (new Set(stores).size !== stores.length) ctx.addIssue({ code: "custom", path: ["groups"], message: "una tienda aparece dos veces en la compra" });
+    if (value.groups.reduce((sum, group) => sum + group.items.length, 0) > 30) ctx.addIssue({ code: "custom", path: ["groups"], message: "máximo 30 productos distintos" });
+  });
+export type PurchaseInput = z.infer<typeof purchaseSchema>;
+
+/** Cotización de la entrega de una tienda: clase (express o programado), costo y plazo de cada envío. */
+export const deliveryGroupQuoteSchema = z.object({
+  store_id: z.string().uuid(),
+  items: z.array(cartLineSchema).min(1).max(30),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+});
+export type DeliveryGroupQuoteInput = z.infer<typeof deliveryGroupQuoteSchema>;

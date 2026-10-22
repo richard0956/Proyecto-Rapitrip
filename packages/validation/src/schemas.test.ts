@@ -2,6 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   acceptInvitationSchema,
   masterItemSchema,
+  productDeliverySchema,
+  purchaseSchema,
+  deliveryGroupQuoteSchema,
+  departments,
+  departmentName,
+  customerAddressSchema as addressSchemaForDepartment,
+  deliveryLimitsSchema,
+  expressLimitProblem,
+  defaultExpressLimits,
   productSchema,
   variantSchema,
   stockChangeSchema,
@@ -139,7 +148,7 @@ describe("inventario", () => {
   });
 });
 
-import { checkoutSchema, customerAddressSchema, locationSchema } from "./schemas";
+import { customerAddressSchema, locationSchema } from "./schemas";
 
 describe("customerAddressSchema", () => {
   const base = { label: "Casa", address: "Barrio Central, casa 4" };
@@ -166,43 +175,6 @@ describe("customerAddressSchema", () => {
   });
 });
 
-describe("checkoutSchema", () => {
-  const uuid = "11111111-1111-4111-8111-111111111111";
-  const base = {
-    store_id: uuid,
-    items: [{ variant_id: uuid, quantity: 2 }],
-    payment_method: "efectivo",
-    address: "Barrio Central, casa 4",
-    phone: "88881111",
-    client_ref: uuid,
-  };
-  it("acepta un pedido válido", () => {
-    expect(checkoutSchema.safeParse(base).success).toBe(true);
-  });
-  it("rechaza carrito vacío, cantidades fuera de rango y métodos desconocidos", () => {
-    expect(checkoutSchema.safeParse({ ...base, items: [] }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, items: [{ variant_id: uuid, quantity: 100 }] }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, items: [{ variant_id: uuid, quantity: 0 }] }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, payment_method: "trueque" }).success).toBe(false);
-  });
-  it("valida dirección, teléfono y nota", () => {
-    expect(checkoutSchema.safeParse({ ...base, address: "abc" }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, phone: "12" }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, notes: "x".repeat(241) }).success).toBe(false);
-  });
-  it("el pin del destino es opcional y va completo o no va", () => {
-    expect(checkoutSchema.parse(base)).toMatchObject({ latitude: null, longitude: null });
-    expect(checkoutSchema.safeParse({ ...base, latitude: 12.1364, longitude: -86.2514 }).success).toBe(true);
-    expect(checkoutSchema.safeParse({ ...base, latitude: 12.1364 }).success).toBe(false);
-    expect(checkoutSchema.safeParse({ ...base, latitude: 120, longitude: -86.2514 }).success).toBe(false);
-  });
-  it("la cotización del envío es opcional y debe ser un identificador", () => {
-    expect(checkoutSchema.parse(base)).toMatchObject({ quote_id: null });
-    expect(checkoutSchema.safeParse({ ...base, quote_id: uuid }).success).toBe(true);
-    expect(checkoutSchema.safeParse({ ...base, quote_id: "abc" }).success).toBe(false);
-  });
-});
-
 describe("locationSchema", () => {
   it("acepta un punto completo, o ninguno para quitar la ubicación", () => {
     expect(locationSchema.parse({ latitude: 12.1364, longitude: -86.2514 })).toEqual({ latitude: 12.1364, longitude: -86.2514 });
@@ -212,5 +184,109 @@ describe("locationSchema", () => {
   it("rechaza un punto a medias o fuera de rango", () => {
     expect(locationSchema.safeParse({ latitude: 12.1, longitude: null }).success).toBe(false);
     expect(locationSchema.safeParse({ latitude: 95, longitude: -86 }).success).toBe(false);
+  });
+});
+
+describe("productDeliverySchema", () => {
+  const ok = { express_eligible: true, weight_kg: 1, length_cm: 10, width_cm: 10, height_cm: 10 };
+  it("acepta un producto pequeño y normaliza lo que falta a nulo", () => {
+    expect(productDeliverySchema.parse(ok)).toMatchObject({ validation_days: null });
+    expect(productDeliverySchema.parse({ express_eligible: false })).toEqual({ express_eligible: false, weight_kg: null, length_cm: null, width_cm: null, height_cm: null, validation_days: null });
+  });
+  it("las medidas van completas o no van, y todo debe ser positivo", () => {
+    expect(productDeliverySchema.safeParse({ ...ok, width_cm: null }).success).toBe(false);
+    expect(productDeliverySchema.safeParse({ ...ok, weight_kg: 0 }).success).toBe(false);
+    expect(productDeliverySchema.safeParse({ ...ok, height_cm: -3 }).success).toBe(false);
+  });
+  it("los días de validación son enteros de 0 a 60", () => {
+    expect(productDeliverySchema.safeParse({ ...ok, validation_days: 61 }).success).toBe(false);
+    expect(productDeliverySchema.safeParse({ ...ok, validation_days: 1.5 }).success).toBe(false);
+    expect(productDeliverySchema.safeParse({ ...ok, validation_days: 14 }).success).toBe(true);
+  });
+});
+
+describe("expressLimitProblem", () => {
+  const small = { weight_kg: 1, length_cm: 10, width_cm: 10, height_cm: 10 };
+  it("no ve problema en un producto dentro de los límites", () => {
+    expect(expressLimitProblem(small, defaultExpressLimits)).toBeNull();
+  });
+  it("pide medidas cuando faltan", () => {
+    expect(expressLimitProblem({ ...small, weight_kg: null }, defaultExpressLimits)).toMatch(/peso y las medidas/);
+    expect(expressLimitProblem({ ...small, length_cm: null }, defaultExpressLimits)).toMatch(/peso y las medidas/);
+  });
+  it("detecta peso, lado y suma por encima del límite", () => {
+    expect(expressLimitProblem({ ...small, weight_kg: 6 }, defaultExpressLimits)).toMatch(/pesa hasta 5 kg/);
+    expect(expressLimitProblem({ ...small, length_cm: 50 }, defaultExpressLimits)).toMatch(/lado/);
+    expect(expressLimitProblem({ weight_kg: 1, length_cm: 40, width_cm: 40, height_cm: 40 }, defaultExpressLimits)).toMatch(/suman hasta 100/);
+  });
+  it("acepta exactamente el límite", () => {
+    expect(expressLimitProblem({ weight_kg: 5, length_cm: 45, width_cm: 45, height_cm: 10 }, defaultExpressLimits)).toBeNull();
+  });
+});
+
+describe("deliveryLimitsSchema", () => {
+  const base = { max_unit_kg: 5, max_side_cm: 45, max_sum_cm: 100, max_order_kg: 10 };
+  it("acepta los límites por defecto", () => {
+    expect(deliveryLimitsSchema.safeParse(base).success).toBe(true);
+  });
+  it("exige valores positivos y coherentes entre sí", () => {
+    expect(deliveryLimitsSchema.safeParse({ ...base, max_unit_kg: 0 }).success).toBe(false);
+    expect(deliveryLimitsSchema.safeParse({ ...base, max_order_kg: 4 }).success).toBe(false);
+    expect(deliveryLimitsSchema.safeParse({ ...base, max_sum_cm: 40 }).success).toBe(false);
+  });
+});
+
+describe("departamentos", () => {
+  it("son 15 departamentos y 2 regiones autónomas, con código único", () => {
+    expect(departments).toHaveLength(17);
+    expect(new Set(departments.map((d) => d.code)).size).toBe(17);
+    expect(departmentName("leon")).toBe("León");
+    expect(departmentName(null)).toBe("");
+  });
+
+  it("la dirección guardada no trae departamento: lo deduce el servidor del punto del mapa", () => {
+    const base = { label: "Casa", address: "Barrio Central, casa 4", latitude: 12.1364, longitude: -86.2514 };
+    expect(addressSchemaForDepartment.parse({ ...base, department: "granada" })).not.toHaveProperty("department");
+    expect(addressSchemaForDepartment.parse(base)).toMatchObject({ latitude: 12.1364, longitude: -86.2514 });
+  });
+});
+
+describe("purchaseSchema", () => {
+  const A = "11111111-1111-4111-8111-111111111111";
+  const B = "22222222-2222-4222-8222-222222222222";
+  const V = "00000000-0000-4000-8000-000000000001";
+  const base = {
+    groups: [{ store_id: A, items: [{ variant_id: V, quantity: 2 }] }],
+    payment_method: "efectivo",
+    address: "Barrio Central, casa 4",
+    phone: "88881111",
+    client_ref: A,
+    latitude: 12.1364,
+    longitude: -86.2514,
+  };
+  it("acepta una compra con una o varias tiendas y normaliza lo opcional", () => {
+    expect(purchaseSchema.parse(base)).toMatchObject({ notes: null });
+    expect(purchaseSchema.parse(base).groups[0]!.quote_id).toBeNull();
+    const two = { ...base, groups: [...base.groups, { store_id: B, items: [{ variant_id: V, quantity: 1 }], quote_id: A }] };
+    expect(purchaseSchema.safeParse(two).success).toBe(true);
+  });
+  it("rechaza más de 4 tiendas, tiendas repetidas y carritos vacíos", () => {
+    const five = ["1", "2", "3", "4", "5"].map((n) => ({ store_id: `${n}1111111-1111-4111-8111-111111111111`, items: [{ variant_id: V, quantity: 1 }] }));
+    expect(purchaseSchema.safeParse({ ...base, groups: five }).success).toBe(false);
+    expect(purchaseSchema.safeParse({ ...base, groups: [base.groups[0], base.groups[0]] }).success).toBe(false);
+    expect(purchaseSchema.safeParse({ ...base, groups: [] }).success).toBe(false);
+    expect(purchaseSchema.safeParse({ ...base, groups: [{ store_id: A, items: [] }] }).success).toBe(false);
+  });
+  it("exige pin, teléfono y dirección, y no acepta un departamento del cliente", () => {
+    expect(purchaseSchema.safeParse({ ...base, latitude: undefined }).success).toBe(false);
+    expect(purchaseSchema.parse({ ...base, department: "granada" })).not.toHaveProperty("department");
+    expect(purchaseSchema.safeParse({ ...base, phone: "12" }).success).toBe(false);
+    expect(purchaseSchema.safeParse({ ...base, address: "abc" }).success).toBe(false);
+    expect(purchaseSchema.safeParse({ ...base, payment_method: "trueque" }).success).toBe(false);
+  });
+  it("la cotización por grupo pide tienda, productos y punto", () => {
+    const q = { store_id: A, items: [{ variant_id: V, quantity: 1 }], latitude: 12.1, longitude: -86.2 };
+    expect(deliveryGroupQuoteSchema.safeParse(q).success).toBe(true);
+    expect(deliveryGroupQuoteSchema.safeParse({ ...q, latitude: undefined }).success).toBe(false);
   });
 });

@@ -30,6 +30,14 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"commerce_reclassification_stats": {
+                  Row: {
+                    "commerce_id": string | null,"express_total": number | null,"reclassified": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"commerce_requests_list": {
                   Row: {
                     "business_name": string | null,"commerce_id": string | null,"created_at": string | null,"decision_reason": string | null,"details": Json | null,"id": string | null,"requester_id": string | null,"reviewed_at": string | null,"status": "pendiente"|"aprobada"|"rechazada" | null
@@ -60,14 +68,28 @@ export type Database = {
                   ]
                 },"couriers_list": {
                   Row: {
-                    "created_at": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_type": string | null
+                    "created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "created_at"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_type"?: string | null
+                           "created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Update: {
-                           "created_at"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_type"?: string | null
+                           "created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"delivery_class_settings_view": {
+                  Row: {
+                    "max_order_kg": number | null,"max_side_cm": number | null,"max_sum_cm": number | null,"max_unit_kg": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "max_order_kg"?: number | null,"max_side_cm"?: number | null,"max_sum_cm"?: number | null,"max_unit_kg"?: number | null
+                         }
+                        Update: {
+                           "max_order_kg"?: number | null,"max_side_cm"?: number | null,"max_sum_cm"?: number | null,"max_unit_kg"?: number | null
                          }
                         Relationships: [
                     
@@ -124,7 +146,7 @@ export type Database = {
                   ]
                 },"master_items_list": {
                   Row: {
-                    "created_at": string | null,"id": string | null,"kind": string | null,"name": string | null,"parent_id": string | null,"parent_name": string | null,"status": string | null,"updated_at": string | null
+                    "created_at": string | null,"id": string | null,"kind": string | null,"name": string | null,"parent_id": string | null,"parent_name": string | null,"programado_only": boolean | null,"status": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -132,14 +154,28 @@ export type Database = {
                   ]
                 },"my_addresses": {
                   Row: {
-                    "address": string | null,"created_at": string | null,"id": string | null,"is_default": boolean | null,"label": string | null,"latitude": number | null,"longitude": number | null,"phone": string | null,"reference": string | null,"updated_at": string | null
+                    "address": string | null,"created_at": string | null,"department": string | null,"id": string | null,"is_default": boolean | null,"label": string | null,"latitude": number | null,"longitude": number | null,"phone": string | null,"reference": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "address"?: string | null,"created_at"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
+                           "address"?: string | null,"created_at"?: string | null,"department"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
                          }
                         Update: {
-                           "address"?: string | null,"created_at"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
+                           "address"?: string | null,"created_at"?: string | null,"department"?: string | null,"id"?: string | null,"is_default"?: boolean | null,"label"?: string | null,"latitude"?: number | null,"longitude"?: number | null,"phone"?: string | null,"reference"?: string | null,"updated_at"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"my_checkouts": {
+                  Row: {
+                    "created_at": string | null,"id": string | null,"order_count": number | null,"payment_method": string | null,"payment_status": string | null,"total": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"id"?: string | null,"order_count"?: number | null,"payment_method"?: string | null,"payment_status"?: string | null,"total"?: number | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"id"?: string | null,"order_count"?: number | null,"payment_method"?: string | null,"payment_status"?: string | null,"total"?: number | null
                          }
                         Relationships: [
                     
@@ -156,6 +192,14 @@ export type Database = {
                            "business_name"?: string | null,"created_at"?: string | null,"decision_reason"?: string | null,"id"?: string | null,"reviewed_at"?: string | null,"status"?: "pendiente"|"aprobada"|"rechazada" | null
                          }
                         Relationships: [
+                    
+                  ]
+                },"my_order_units": {
+                  Row: {
+                    "checkout_id": string | null,"created_at": string | null,"order_count": number | null,"payment_status": string | null,"total": number | null,"unit_id": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
                     
                   ]
                 },"my_profile": {
@@ -224,21 +268,21 @@ export type Database = {
                   ]
                 },"orders_list": {
                   Row: {
-                    "cash_received_at": string | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_fee": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
+                    "cash_received_at": string | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_fee"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Update: {
-                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_fee"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Relationships: [
                     
                   ]
                 },"payment_events_list": {
                   Row: {
-                    "event_id": string | null,"event_type": string | null,"order_id": string | null,"order_number": number | null,"outcome": string | null,"received_at": string | null,"updated_at": string | null
+                    "event_id": string | null,"event_type": string | null,"for_checkout": boolean | null,"order_id": string | null,"order_number": number | null,"outcome": string | null,"received_at": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -260,24 +304,38 @@ export type Database = {
                   ]
                 },"product_variants_list": {
                   Row: {
-                    "id": string | null,"name": string | null,"price": number | null,"product_id": string | null,"sku": string | null,"status": string | null,"store_id": string | null
+                    "compare_at_price": number | null,"discount_pct": number | null,"id": string | null,"name": string | null,"price": number | null,"product_id": string | null,"sku": string | null,"status": string | null,"store_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
+                           "compare_at_price"?: number | null,"discount_pct"?: never,"id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
                          }
                         Update: {
-                           "id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
+                           "compare_at_price"?: number | null,"discount_pct"?: never,"id"?: string | null,"name"?: string | null,"price"?: number | null,"product_id"?: string | null,"sku"?: string | null,"status"?: string | null,"store_id"?: string | null
                          }
                         Relationships: [
                     
                   ]
                 },"products_list": {
                   Row: {
-                    "active_variants": number | null,"brand_id": string | null,"category_id": string | null,"commerce_id": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"id": string | null,"min_price": number | null,"name": string | null,"product_type_id": string | null,"status": string | null,"store_id": string | null,"store_name": string | null,"updated_at": string | null
+                    "active_variants": number | null,"brand_id": string | null,"category_id": string | null,"commerce_id": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"express_eligible": boolean | null,"express_ok": boolean | null,"height_cm": number | null,"id": string | null,"length_cm": number | null,"min_price": number | null,"name": string | null,"product_type_id": string | null,"status": string | null,"store_id": string | null,"store_name": string | null,"updated_at": string | null,"validation_days": number | null,"weight_kg": number | null,"width_cm": number | null
                   }
                   ComputedFields: never
                   Relationships: [
+                    
+                  ]
+                },"programmed_bands_list": {
+                  Row: {
+                    "band": number | null,"courier_pay": number | null,"customer_fee": number | null,"margin": number | null,"max_days": number | null,"min_days": number | null,"up_to_km": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "band"?: number | null,"courier_pay"?: number | null,"customer_fee"?: number | null,"margin"?: number | null,"max_days"?: number | null,"min_days"?: number | null,"up_to_km"?: number | null
+                         }
+                        Update: {
+                           "band"?: number | null,"courier_pay"?: number | null,"customer_fee"?: number | null,"margin"?: number | null,"max_days"?: number | null,"min_days"?: number | null,"up_to_km"?: number | null
+                         }
+                        Relationships: [
                     
                   ]
                 },"stock_movements_list": {
@@ -324,7 +382,7 @@ export type Database = {
                   ]
                 },"stores_list": {
                   Row: {
-                    "address": string | null,"closed_reason": string | null,"closed_until": string | null,"commerce_id": string | null,"commerce_name": string | null,"contact_phone": string | null,"created_at": string | null,"delivery_fee": number | null,"hour_ranges": number | null,"id": string | null,"latitude": number | null,"longitude": number | null,"name": string | null,"open_now": boolean | null,"status": string | null,"updated_at": string | null
+                    "address": string | null,"closed_reason": string | null,"closed_until": string | null,"commerce_id": string | null,"commerce_name": string | null,"contact_phone": string | null,"created_at": string | null,"delivery_fee": number | null,"department": string | null,"hour_ranges": number | null,"id": string | null,"latitude": number | null,"longitude": number | null,"name": string | null,"open_now": boolean | null,"status": string | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -338,6 +396,9 @@ export type Database = {
                            },
 "add_stock":
 { Args: { "p_amount": number,"p_reason": string,"p_variant": string }; Returns: number
+                           },
+"apply_stripe_checkout_event":
+{ Args: { "p_amount": number,"p_checkout": string,"p_currency": string,"p_event_id": string,"p_intent": string,"p_paid": boolean,"p_session": string,"p_type": string }; Returns: string
                            },
 "apply_stripe_event":
 { Args: { "p_amount": number,"p_currency": string,"p_event_id": string,"p_intent": string,"p_order": string,"p_paid": boolean,"p_session": string,"p_type": string }; Returns: string
@@ -382,8 +443,8 @@ export type Database = {
             }[]
                            },
 "catalog_search_products":
-{ Args: { "p_category"?: string,"p_kind"?: string,"p_limit"?: number,"p_max_price"?: number,"p_min_price"?: number,"p_offset"?: number,"p_open_only"?: boolean,"p_query"?: string,"p_sort"?: string,"p_store"?: string }; Returns: {
-              "brand_name": string,"category_id": string,"category_name": string,"commerce_kind": string,"cover_path": string,"created_at": string,"id": string,"min_price": number,"name": string,"quick_max": number,"quick_variant_id": string,"quick_variant_name": string,"store_id": string,"store_name": string,"store_open": boolean,"total_count": number,"variant_count": number
+{ Args: { "p_category"?: string,"p_discount_only"?: boolean,"p_kind"?: string,"p_limit"?: number,"p_max_price"?: number,"p_min_price"?: number,"p_offset"?: number,"p_open_only"?: boolean,"p_query"?: string,"p_sort"?: string,"p_store"?: string }; Returns: {
+              "brand_name": string,"category_id": string,"category_name": string,"commerce_kind": string,"compare_price": number,"cover_path": string,"created_at": string,"discount_pct": number,"id": string,"min_price": number,"name": string,"quick_max": number,"quick_variant_id": string,"quick_variant_name": string,"store_id": string,"store_name": string,"store_open": boolean,"total_count": number,"variant_count": number
             }[]
                            },
 "catalog_search_stores":
@@ -406,7 +467,7 @@ export type Database = {
                            },
 "claim_pending_refunds":
 { Args: { "p_limit"?: number }; Returns: {
-              "order_id": string,"order_number": number,"payment_intent_id": string
+              "amount_cents": number,"order_id": string,"order_number": number,"payment_intent_id": string
             }[]
                            },
 "close_cash_session":
@@ -425,6 +486,9 @@ export type Database = {
 { Args: Record<PropertyKey, never>; Returns: {
               "price": number,"product_name": string,"quantity": number,"sku": string,"store_id": string,"store_name": string,"variant_id": string,"variant_name": string
             }[]
+                           },
+"create_checkout":
+{ Args: { "p_address": string,"p_client_ref"?: string,"p_department"?: string,"p_groups": Json,"p_latitude"?: number,"p_longitude"?: number,"p_notes"?: string,"p_payment_method": string,"p_phone": string }; Returns: Json
                            },
 "create_counter_sale":
 { Args: { "p_items": Json,"p_payment_method": string,"p_reference"?: string,"p_store": string }; Returns: string
@@ -463,6 +527,9 @@ export type Database = {
 { Args: { "p_store": string }; Returns: {
               "latitude": number,"longitude": number
             }[]
+                           },
+"department_for_point":
+{ Args: { "p_latitude": number,"p_longitude": number }; Returns: string
                            },
 "export_dataset":
 { Args: { "p_dataset": string,"p_from"?: string,"p_reason": string,"p_to"?: string }; Returns: Json
@@ -523,6 +590,9 @@ export type Database = {
 "quote_delivery":
 { Args: { "p_latitude": number,"p_longitude": number,"p_store": string }; Returns: Json
                            },
+"quote_delivery_group":
+{ Args: { "p_department"?: string,"p_items": Json,"p_latitude": number,"p_longitude": number,"p_quote_id"?: string,"p_store": string }; Returns: Json
+                           },
 "reactivate_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
                            },
@@ -531,6 +601,12 @@ export type Database = {
                            },
 "receive_courier_cash":
 { Args: { "p_order": string }; Returns: undefined
+                           },
+"reclassify_order":
+{ Args: { "p_order": string,"p_reason": string }; Returns: undefined
+                           },
+"record_checkout_payment_session":
+{ Args: { "p_checkout": string,"p_currency": string,"p_session": string }; Returns: Json
                            },
 "record_delivery_quote":
 { Args: { "p_client": string,"p_latitude": number,"p_longitude": number,"p_road_km"?: number,"p_store": string }; Returns: Json
@@ -549,6 +625,9 @@ export type Database = {
                            },
 "remove_stock":
 { Args: { "p_amount": number,"p_reason": string,"p_variant": string }; Returns: number
+                           },
+"remove_variant_discount":
+{ Args: { "p_variant": string }; Returns: undefined
                            },
 "rename_master_item":
 { Args: { "p_id": string,"p_name": string }; Returns: undefined
@@ -579,8 +658,14 @@ export type Database = {
 "save_address":
 { Args: { "p_address": string,"p_id": string,"p_label": string,"p_latitude"?: number,"p_longitude"?: number,"p_make_default"?: boolean,"p_phone"?: string,"p_reference"?: string }; Returns: string
                            },
+"set_address_department":
+{ Args: { "p_department": string,"p_id": string }; Returns: undefined
+                           },
 "set_commerce_status":
 { Args: { "p_commerce": string,"p_reason": string,"p_status": string }; Returns: undefined
+                           },
+"set_courier_coverage":
+{ Args: { "p_courier": string,"p_department": string,"p_vehicle_class": string }; Returns: undefined
                            },
 "set_courier_status":
 { Args: { "p_id": string,"p_reason": string,"p_status": string }; Returns: undefined
@@ -588,8 +673,14 @@ export type Database = {
 "set_default_address":
 { Args: { "p_id": string }; Returns: undefined
                            },
+"set_delivery_class_limits":
+{ Args: { "p_order_kg": number,"p_side_cm": number,"p_sum_cm": number,"p_unit_kg": number }; Returns: undefined
+                           },
 "set_incident_status":
 { Args: { "p_id": string,"p_resolution"?: string,"p_status": "abierto"|"en_atencion"|"resuelto" }; Returns: undefined
+                           },
+"set_master_item_programado_only":
+{ Args: { "p_id": string,"p_value": boolean }; Returns: undefined
                            },
 "set_master_item_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
@@ -600,6 +691,9 @@ export type Database = {
 "set_payment_event_outcome":
 { Args: { "p_event_id": string,"p_outcome": string }; Returns: undefined
                            },
+"set_product_delivery":
+{ Args: { "p_eligible": boolean,"p_height_cm": number,"p_length_cm": number,"p_product": string,"p_validation_days"?: number,"p_weight_kg": number,"p_width_cm": number }; Returns: undefined
+                           },
 "set_product_status":
 { Args: { "p_product": string,"p_reason"?: string,"p_status": string }; Returns: undefined
                            },
@@ -608,6 +702,9 @@ export type Database = {
                            },
 "set_store_delivery_fee":
 { Args: { "p_fee": number,"p_store": string }; Returns: undefined
+                           },
+"set_store_department":
+{ Args: { "p_department": string,"p_store": string }; Returns: undefined
                            },
 "set_store_exception":
 { Args: { "p_closed": boolean,"p_closes"?: string,"p_date": string,"p_note"?: string,"p_opens"?: string,"p_store": string }; Returns: undefined

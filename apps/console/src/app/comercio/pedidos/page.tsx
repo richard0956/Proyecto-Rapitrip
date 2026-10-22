@@ -1,6 +1,7 @@
 import { Alert } from "@rapitrip/ui";
 import { PageHeader } from "@/components/shell";
 import { requireConsoleAccess } from "@/lib/guard";
+import { toDeliveryClass } from "@/lib/delivery-class";
 import { orderStatuses, type OrderStatus } from "@/lib/orders";
 import { formatStoreDateTime } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
@@ -14,7 +15,7 @@ export default async function PedidosPage() {
   const supabase = await serverSupabase();
   const orders = await supabase
     .from("orders_list")
-    .select("id, number, store_name, status, payment_method, payment_status, subtotal, delivery_fee, total, item_count, status_reason, expires_at, created_at")
+    .select("id, number, store_name, status, payment_method, payment_status, subtotal, delivery_fee, total, item_count, status_reason, expires_at, created_at, delivery_class, eta_min_days, eta_max_days, reclassified_reason")
     .order("created_at", { ascending: false })
     .limit(100);
   const ids = (orders.data ?? []).flatMap((row) => (row.id ? [row.id] : []));
@@ -44,7 +45,11 @@ export default async function PedidosPage() {
             total: Number(row.total ?? 0),
             itemCount: Number(row.item_count ?? 0),
             reason: row.status_reason,
-            deadline: row.expires_at && (status === "por_confirmar" || status === "pendiente_pago") ? formatStoreDateTime(row.expires_at) : null,
+            deadline: row.expires_at && (status === "por_confirmar" || status === "en_validacion" || status === "pendiente_pago") ? formatStoreDateTime(row.expires_at) : null,
+            deliveryClass: toDeliveryClass(row.delivery_class),
+            etaMinDays: row.eta_min_days,
+            etaMaxDays: row.eta_max_days,
+            reclassifiedReason: row.reclassified_reason,
             createdAt: formatStoreDateTime(row.created_at),
             items: itemsByOrder[row.id] ?? [],
           },

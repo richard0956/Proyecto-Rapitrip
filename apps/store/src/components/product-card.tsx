@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { CatalogProduct } from "@/lib/catalog";
 import { kindLabel } from "@/lib/catalog-filters";
 import { formatMoney } from "@/lib/money";
+import { DiscountBadge, PriceWas } from "./discount";
 import { ProductImage } from "./product-image";
 import { QuickAdd } from "./quick-add";
 
@@ -30,6 +31,7 @@ export function ProductCard({ product, showStore = true, priority = false }: { p
           {product.commerce_kind === "empresa" ? <span className={`${chip} text-exito`}>Empresa</span> : null}
         </div>
         {low ? <span className={`${chip} pointer-events-none absolute bottom-2.5 left-2.5 text-durazno-texto`}>Pocas unidades</span> : null}
+        <DiscountBadge pct={product.discount_pct} className="pointer-events-none absolute bottom-2.5 right-2.5" />
       </div>
 
       <div className="flex flex-1 flex-col gap-1 px-2.5 pb-2.5 pt-3">
@@ -51,9 +53,12 @@ export function ProductCard({ product, showStore = true, priority = false }: { p
         </p>
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-3">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] font-bold text-tinta-suave">{single ? "Precio" : "Desde"}</p>
-            <p className="text-lg font-extrabold leading-none tracking-tight text-tinta">{formatMoney(product.min_price)}</p>
+            <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="whitespace-nowrap text-lg font-extrabold leading-none tracking-tight text-tinta">{formatMoney(product.min_price)}</span>
+              <PriceWas value={product.compare_price} className="whitespace-nowrap text-xs font-bold" />
+            </p>
           </div>
           {single && product.store_open ? (
             <QuickAdd product={product} />

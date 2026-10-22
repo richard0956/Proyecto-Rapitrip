@@ -5,17 +5,17 @@ const ID = "11111111-1111-4111-8111-111111111111";
 
 describe("parseFilters", () => {
   it("sin parámetros devuelve los valores por omisión", () => {
-    expect(parseFilters({})).toEqual({ q: null, categoria: null, tienda: null, min: null, max: null, orden: "nombre", tipo: null, abiertas: false, pagina: 1 });
+    expect(parseFilters({})).toEqual({ q: null, categoria: null, tienda: null, min: null, max: null, orden: "nombre", tipo: null, abiertas: false, descuento: false, pagina: 1 });
   });
 
   it("lee todos los filtros", () => {
     const f = parseFilters({ q: "  café ", categoria: ID, tienda: ID, min: "10", max: "99,5", orden: "precio_desc", tipo: "empresa", abiertas: "1", pagina: "3" });
-    expect(f).toEqual({ q: "café", categoria: ID, tienda: ID, min: 10, max: 99.5, orden: "precio_desc", tipo: "empresa", abiertas: true, pagina: 3 });
+    expect(f).toEqual({ q: "café", categoria: ID, tienda: ID, min: 10, max: 99.5, orden: "precio_desc", tipo: "empresa", abiertas: true, descuento: false, pagina: 3 });
   });
 
   it("ignora valores inválidos en vez de fallar", () => {
     const f = parseFilters({ categoria: "no-es-uuid", tienda: "x", min: "abc", max: "-5", orden: "raro", tipo: "otro", abiertas: "si", pagina: "0" });
-    expect(f).toEqual({ q: null, categoria: null, tienda: null, min: null, max: null, orden: "nombre", tipo: null, abiertas: false, pagina: 1 });
+    expect(f).toEqual({ q: null, categoria: null, tienda: null, min: null, max: null, orden: "nombre", tipo: null, abiertas: false, descuento: false, pagina: 1 });
   });
 
   it("acota el texto de búsqueda a 80 caracteres", () => {
@@ -54,5 +54,18 @@ describe("activeFilterCount", () => {
   it("cuenta los filtros activos sin el orden ni la página", () => {
     expect(activeFilterCount(parseFilters({ orden: "precio_asc", pagina: "2" }))).toBe(0);
     expect(activeFilterCount(parseFilters({ q: "pan", min: "5", abiertas: "1", tipo: "empresa" }))).toBe(4);
+  });
+});
+
+describe("filtro de descuento", () => {
+  it("se lee de la URL, se escribe de vuelta y cuenta como filtro activo", () => {
+    expect(parseFilters({ descuento: "1" }).descuento).toBe(true);
+    expect(parseFilters({ descuento: "si" }).descuento).toBe(false);
+    expect(filtersHref("/catalogo", parseFilters({ descuento: "1", orden: "descuento" }))).toBe("/catalogo?orden=descuento&descuento=1");
+    expect(activeFilterCount(parseFilters({ descuento: "1" }))).toBe(1);
+  });
+
+  it("acepta el orden por mayor descuento", () => {
+    expect(parseFilters({ orden: "descuento" }).orden).toBe("descuento");
   });
 });

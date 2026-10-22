@@ -1,0 +1,89 @@
+<style>
+.rt{--selva:#06362a;--selva-panel:#0a4a39;--hoja:#0b7a57;--esmeralda:#24c08e;--marino:#0c4e67;--menta:#dcf6ec;--menta-borde:#a9e4cd;--crema:#f4f8f5;--papel:#fcfdfb;--borde:#e2ebe5;--tinta:#14231d;--suave:#55645d;--durazno:#ffe9d6;--durazno-t:#9e4300;--rosa:#fde7e4;--rojo:#a53b3b;--naranja:#d96c2a;
+ display:flex;border-radius:12px;overflow:hidden;border:1px solid var(--borde);background:var(--crema);color:var(--tinta);font-size:12px;margin-bottom:22px}
+.rt *{box-sizing:border-box}
+.rt .side{width:150px;background:var(--selva);color:#e4f5ee;padding:12px 10px;flex-shrink:0}
+.rt .logo{font-weight:800;font-size:15px;color:#fff;margin-bottom:2px}.rt .logo span{color:var(--esmeralda)}
+.rt .rol{font-size:10px;color:var(--bruma,#b4e6d2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+.rt .nav div{padding:6px 8px;border-radius:7px;margin-bottom:2px;opacity:.85}
+.rt .nav div.on{background:var(--selva-panel);opacity:1;box-shadow:inset 3px 0 0 var(--esmeralda);font-weight:600}
+.rt .main{flex:1;padding:14px;min-width:0}
+.rt .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rt .top h3{margin:0;font-size:16px;color:var(--selva)}.rt .top small{color:var(--suave)}
+.rt .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.rt .chip{border:1px solid var(--menta-borde);border-radius:14px;padding:3px 10px;background:#fff;color:var(--hoja)}
+.rt .chip.on{background:var(--hoja);color:#fff;border-color:var(--hoja)}
+.rt .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.rt .kpi{background:var(--papel);border:1px solid var(--borde);border-radius:10px;padding:10px;border-top:3px solid var(--esmeralda)}
+.rt .kpi.m{border-top-color:var(--marino)}.rt .kpi.n{border-top-color:var(--naranja)}
+.rt .kpi small{color:var(--suave);display:block}.rt .kpi b{font-size:19px;color:var(--selva);display:block;margin:2px 0}
+.rt .kpi .up{color:var(--hoja);font-weight:600}
+.rt .kpi.hero{background:linear-gradient(135deg,var(--hoja),var(--selva-panel));border:0;color:#fff}
+.rt .kpi.hero small,.rt .kpi.hero b{color:#fff}
+.rt .grid{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px}
+.rt .box{background:var(--papel);border:1px solid var(--borde);border-radius:10px;padding:10px;margin-bottom:0}
+.rt .box h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--suave)}
+.rt .bars{display:flex;align-items:flex-end;gap:7px;height:80px;border-bottom:1px solid var(--borde)}
+.rt .bars i{flex:1;background:linear-gradient(var(--esmeralda),var(--hoja));border-radius:4px 4px 0 0}
+.rt .bars i.m{background:linear-gradient(#3a8aa8,var(--marino))}
+.rt .lbl{display:flex;gap:7px;color:var(--suave);font-size:10px;margin-top:3px}.rt .lbl span{flex:1;text-align:center}
+.rt .hb{display:flex;align-items:center;gap:6px;margin:5px 0}.rt .hb em{font-style:normal;width:74px;font-size:11px}
+.rt .hb i{display:block;height:10px;border-radius:5px;background:var(--esmeralda)}.rt .hb i.m{background:var(--marino)}
+.rt .alert{background:var(--durazno);color:var(--durazno-t);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-weight:600}
+.rt table{width:100%;border-collapse:collapse}
+.rt th{background:var(--menta);color:var(--selva);text-align:left;padding:6px 8px;font-size:11px}
+.rt th:first-child{border-radius:7px 0 0 7px}.rt th:last-child{border-radius:0 7px 7px 0}
+.rt td{padding:6px 8px;border-bottom:1px solid var(--borde)}
+.rt .tag{border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700}
+.rt .t-w{background:var(--durazno);color:var(--durazno-t)}.rt .t-ok{background:var(--menta);color:#0b6b4b}.rt .t-b{background:var(--rosa);color:var(--rojo)}.rt .t-m{background:#d9ecf3;color:var(--marino)}
+.rt .btn{background:var(--hoja);color:#fff;border-radius:8px;padding:3px 10px;font-weight:600;display:inline-block}
+</style>
+
+<h2>Boceto v2: con la paleta de Rapitrip</h2>
+<p class="subtitle">Tomé los colores de la consola actual: verde selva en el menú, esmeralda y hoja como acento, marino como segundo color, durazno para alertas. Sigue siendo un boceto de estructura.</p>
+
+<div class="rt"><div class="side"><div class="logo">Rapi<span>trip</span></div><div class="rol">Administrador</div>
+<div class="nav"><div class="on">Inicio</div><div>Solicitudes</div><div>Comercios</div><div>Pedidos</div><div>Catálogo maestro</div><div>Excepciones</div><div>Auditoría</div></div></div>
+<div class="main"><div class="top"><div><h3>Operación de Rapitrip</h3><small>Jueves 22 de octubre</small></div></div>
+<div class="filters"><span class="chip on">Hoy</span><span class="chip">7 días</span><span class="chip">Quincena</span><span class="chip">Mes</span><span class="chip">Todas las tiendas ▾</span></div>
+<div class="alert">⚠ 2 confirmaciones vencidas · 1 comercio con 3 faltantes esta semana</div>
+<div class="kpis"><div class="kpi"><small>Pedidos hoy</small><b>14</b><span class="up">▲ 3 vs ayer</span></div><div class="kpi m"><small>Ventas del día</small><b>C$ 8,450</b></div><div class="kpi n"><small>Cancelaciones</small><b>1</b><small>7 %</small></div><div class="kpi hero"><small>Solicitudes pendientes</small><b>3</b><small>por revisar</small></div></div>
+<div class="grid"><div class="box"><h4>Pedidos por día</h4><div class="bars"><i style="height:40%"></i><i style="height:55%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:60%"></i><i style="height:92%"></i><i style="height:65%"></i></div><div class="lbl"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div></div>
+<div class="box"><h4>Ventas por tienda</h4><div class="hb"><em>Tienda A</em><i style="width:80px"></i></div><div class="hb"><em>Tienda B</em><i class="m" style="width:55px"></i></div><div class="hb"><em>Tienda C</em><i style="width:30px"></i></div></div></div>
+<div class="box"><h4>Solicitudes de comercio</h4><div class="filters"><span class="chip on">Pendientes</span><span class="chip">Aprobadas</span><span class="chip">Rechazadas</span><span class="chip">🔍 Buscar negocio…</span></div>
+<table><tr><th>Negocio</th><th>Solicitante</th><th>Fecha</th><th>Docs</th><th>Estado</th><th></th></tr>
+<tr><td>Pulpería Los Ángeles</td><td>M. Pérez</td><td>20 oct</td><td>3/3</td><td><span class="tag t-w">Pendiente</span></td><td><span class="btn">Revisar</span></td></tr>
+<tr><td>Farmacia Central</td><td>J. López</td><td>18 oct</td><td>2/3</td><td><span class="tag t-ok">Aprobada</span></td><td>Ver</td></tr></table></div></div></div>
+
+<div class="rt"><div class="side"><div class="logo">Rapi<span>trip</span></div><div class="rol">Comercio</div>
+<div class="nav"><div class="on">Inicio</div><div>Pedidos</div><div>Catálogo</div><div>Inventario</div><div>Tiendas</div><div>Mis ganancias</div></div></div>
+<div class="main"><div class="top"><div><h3>Mi comercio</h3><small>Tienda A · Tienda B</small></div></div>
+<div class="filters"><span class="chip on">Mes</span><span class="chip">7 días</span><span class="chip">Hoy</span><span class="chip">Todas mis tiendas ▾</span></div>
+<div class="alert">⏱ 2 pedidos por confirmar — vencen en 9 y 13 min · <u>Ir a pedidos</u></div>
+<div class="kpis"><div class="kpi"><small>Ventas del mes</small><b>C$ 32,100</b><span class="up">▲ 12 %</span></div><div class="kpi m"><small>Pedidos</small><b>76</b></div><div class="kpi n"><small>Prep. promedio</small><b>11 min</b></div><div class="kpi hero"><small>Mi parte ganada</small><b>C$ 28,900</b><small>pago límite 5 nov</small></div></div>
+<div class="grid"><div class="box"><h4>Ventas por día</h4><div class="bars"><i style="height:30%"></i><i style="height:50%"></i><i style="height:45%"></i><i style="height:80%"></i><i style="height:60%"></i><i style="height:95%"></i><i style="height:70%"></i></div><div class="lbl"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div></div>
+<div class="box"><h4>Más vendidos</h4><div class="hb"><em>Producto 1</em><i style="width:80px"></i></div><div class="hb"><em>Producto 2</em><i class="m" style="width:56px"></i></div><div class="hb"><em>Producto 3</em><i style="width:32px"></i></div></div></div>
+<div class="box"><h4>Inventario</h4><div class="filters"><span class="chip on">Stock bajo</span><span class="chip">Agotados</span><span class="chip">Todos</span><span class="chip">Tienda ▾</span></div>
+<table><tr><th>Producto</th><th>Tienda</th><th>Stock</th><th>Vendidos (mes)</th><th>Estado</th></tr>
+<tr><td>Producto 2</td><td>Tienda A</td><td>3</td><td>41</td><td><span class="tag t-w">Stock bajo</span></td></tr>
+<tr><td>Producto 7</td><td>Tienda B</td><td>0</td><td>12</td><td><span class="tag t-b">Agotado</span></td></tr></table></div></div></div>
+
+<div class="rt"><div class="side"><div class="logo">Rapi<span>trip</span></div><div class="rol">Coordinador</div>
+<div class="nav"><div class="on">Inicio</div><div>Pedidos</div><div>Excepciones</div><div>Repartidores</div><div>Informe del día</div></div></div>
+<div class="main"><div class="top"><div><h3>Pedidos de hoy</h3><small>Qué necesita mi atención ahora</small></div></div>
+<div class="kpis"><div class="kpi"><small>Vendido hoy</small><b>C$ 8,450</b></div><div class="kpi m"><small>Pedidos activos</small><b>6</b></div><div class="kpi n"><small>Excepciones</small><b>3</b></div><div class="kpi hero"><small>Entregados hoy</small><b>9</b><small>de 15</small></div></div>
+<div class="grid"><div class="box"><h4>Pedidos por etapa</h4><div class="hb"><em>En confirmación</em><i style="width:40px"></i><b>2</b></div><div class="hb"><em>Confirmado</em><i class="m" style="width:20px"></i><b>1</b></div><div class="hb"><em>En preparación</em><i style="width:60px"></i><b>3</b></div><div class="hb"><em>En entrega</em><i class="m" style="width:20px"></i><b>1</b></div></div>
+<div class="box"><h4>Informe de ventas</h4><div class="hb"><em>Contra entrega</em><i style="width:60px"></i></div><div class="hb"><em>En línea</em><i class="m" style="width:44px"></i></div><span class="btn" style="margin-top:6px">Descargar</span></div></div>
+<div class="box"><h4>Pedidos del día</h4><div class="filters"><span class="chip on">Activos</span><span class="chip">Con excepción</span><span class="chip">Entregados</span><span class="chip">Tienda ▾</span><span class="chip">Repartidor ▾</span></div>
+<table><tr><th>#</th><th>Tienda</th><th>Cliente</th><th>Total</th><th>Etapa</th><th>Repartidor</th><th>Alerta</th></tr>
+<tr><td>1042</td><td>Tienda A</td><td>Ana R.</td><td>C$ 500</td><td><span class="tag t-w">En confirmación</span></td><td>—</td><td><span class="tag t-b">Vencida</span></td></tr>
+<tr><td>1041</td><td>Tienda B</td><td>Luis M.</td><td>C$ 720</td><td><span class="tag t-m">En entrega</span></td><td>Carlos</td><td></td></tr></table></div></div></div>
+
+<div class="rt"><div class="side"><div class="logo">Rapi<span>trip</span></div><div class="rol">Cajero</div>
+<div class="nav"><div class="on">Inicio</div><div>Cobros</div><div>Reembolsos</div><div>Liquidaciones</div><div>Conciliación</div></div></div>
+<div class="main"><div class="top"><div><h3>Caja</h3><small>Cuánto entró, cuánto pagar, qué no cuadra</small></div></div>
+<div class="kpis"><div class="kpi"><small>Cobrado hoy</small><b>C$ 6,200</b></div><div class="kpi n"><small>Por cobrar (contra entrega)</small><b>C$ 2,250</b></div><div class="kpi m"><small>Por pagar a comercios</small><b>C$ 41,300</b></div><div class="kpi hero"><small>Por pagar a repartidores</small><b>C$ 3,840</b></div></div>
+<div class="box"><h4>Liquidaciones</h4><div class="filters"><span class="chip on">Pendientes</span><span class="chip">Pagadas</span><span class="chip">Comercios</span><span class="chip">Repartidores</span><span class="chip">Quincena ▾</span></div>
+<table><tr><th>Beneficiario</th><th>Tipo</th><th>Pedidos</th><th>Monto</th><th>Fecha límite</th><th>Estado</th></tr>
+<tr><td>Tienda A</td><td>Comercio</td><td>76</td><td>C$ 28,900</td><td>5 nov</td><td><span class="tag t-w">Pendiente</span></td></tr>
+<tr><td>Carlos</td><td>Repartidor</td><td>31</td><td>C$ 1,240</td><td>—</td><td><span class="tag t-ok">Pagado</span></td></tr></table></div></div></div>

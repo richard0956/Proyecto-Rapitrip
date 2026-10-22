@@ -12,9 +12,10 @@ const guarantees = ["Confirmamos tu correo antes de activar la cuenta", "Ingresa
 
 export default async function Home() {
   // Si la lectura falla, la portada sigue mostrándose sin la lista de tiendas.
-  const [stores, products] = await Promise.all([
+  const [stores, products, deals] = await Promise.all([
     getStores(true, 1).catch(() => []),
     searchProducts(parseFilters({ abiertas: "1", orden: "recientes" }), null, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", descuento: "1", orden: "descuento" }), null, 1).catch(() => []),
   ]);
   return (
     <main className="mx-auto max-w-[1040px] px-4 sm:px-8">
@@ -59,6 +60,24 @@ export default async function Home() {
           <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {stores.slice(0, 3).map((store) => (
               <StoreCard key={store.id} store={store} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {deals.length > 0 ? (
+        <section aria-labelledby="ofertas" className="py-6 lg:py-10">
+          <div className="flex items-end justify-between gap-4">
+            <h2 id="ofertas" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
+              Con descuento
+            </h2>
+            <Link href="/catalogo?descuento=1&orden=descuento" className="text-[13.5px] font-bold text-hoja hover:underline">
+              Ver todos los descuentos
+            </Link>
+          </div>
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {deals.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </ul>
         </section>

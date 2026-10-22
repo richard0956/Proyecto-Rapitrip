@@ -61,9 +61,13 @@ export type CatalogProduct = ProductSummary & {
   created_at: string;
   brand_name: string | null;
   total_count: number;
+  /** Precio anterior de la presentación más barata, si está en descuento. */
+  compare_price: number | null;
+  /** El mayor descuento entre las presentaciones disponibles (0 si no hay). */
+  discount_pct: number;
 };
 
-export type ProductVariant = { id: string; name: string; price: number; available: boolean; max_per_order: number | null };
+export type ProductVariant = { id: string; name: string; price: number; available: boolean; max_per_order: number | null; compare_at_price?: number | null; discount_pct?: number };
 
 export type ProductDetail = {
   id: string;
@@ -177,6 +181,7 @@ export const searchProducts = unstable_cache(
         ...(filters.max !== null ? { p_max_price: filters.max } : {}),
         ...(filters.tipo ? { p_kind: filters.tipo } : {}),
         ...(filters.abiertas ? { p_open_only: true } : {}),
+        ...(filters.descuento ? { p_discount_only: true } : {}),
         p_sort: filters.orden,
         p_limit: PAGE_SIZE,
         p_offset: (page - 1) * PAGE_SIZE,
