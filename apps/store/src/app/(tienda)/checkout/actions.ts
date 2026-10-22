@@ -12,6 +12,49 @@ export type PlaceOrderResult =
   | { ok: true; orderId: string; payUrl: string | null; payError?: string }
   | { ok: false; error: string; expired?: boolean };
 
+export type DeliveryQuoteResult =
+  | { ok: true; zone: number; upToKm: number; fee: number; /** Cotización por ruta guardada en la base de datos; nulo si se cotizó por línea recta. */ quoteId: string | null; method: "ruta" | "linea_recta" }
+  | { ok: false; error: string; expired?: boolean };
+
+const deliveryInput = z.object({ store_id: z.string().uuid(), latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) });
+
+/**
+ * Cotiza el envío de la tienda al pin del cliente. Primero pide la distancia por calle a la función de borde `quote-delivery`
+ * (Mapbox); si no responde (sin token, servicio caído), cae a la cotización por línea recta de la base de datos. En ambos casos
+ * el monto lo decide la base de datos; aquí solo se traduce el resultado.
+ */
+export async function quoteDeliveryAction(input: unknown): Promise<DeliveryQuoteResult> {
+  const parsed = deliveryInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Marca el punto exacto de entrega en el mapa." };
+  await requireCustomer("/checkout");
+  const supabase = await serverSupabase();
+  const viaRoute = await supabase.functions.invoke("quote-delivery", { body: parsed.data });
+  if (!viaRoute.error && viaRoute.data?.quote_id) {
+    const route = viaRoute.data as { quote_id: string; zone: number; up_to_km: number; fee: number; method: "ruta" | "linea_recta" };
+    return { ok: true, zone: Number(route.zone), upToKm: Number(route.up_to_km), fee: Number(route.fee), quoteId: route.quote_id, method: route.method };
+  }
+  const context = (viaRoute.error as { context?: Response } | null)?.context;
+  if (context && typeof context.json === "function") {
+    if (context.status === 401) return { ok: false, error: expiredMessage, expired: true };
+    // 422: regla de negocio con mensaje para el cliente (fuera de cobertura, tienda sin ubicación...).
+    if (context.status === 422) {
+      const problem = await context.json().catch(() => null);
+      if (typeof problem?.error === "string") return { ok: false, error: problem.error };
+    }
+  }
+  if (viaRoute.error) console.error("[checkout] quote-delivery", viaRoute.error.message);
+
+  // Respaldo: la base de datos cotiza por línea recta (por el factor de ruta).
+  const { data, error } = await supabase.rpc("quote_delivery", { p_store: parsed.data.store_id, p_latitude: parsed.data.latitude, p_longitude: parsed.data.longitude });
+  if (isSessionExpired(error)) return { ok: false, error: expiredMessage, expired: true };
+  if (error || !data) {
+    const result = failure(error);
+    return { ok: false, error: result.ok ? "No pudimos calcular el envío." : result.error };
+  }
+  const quote = data as { zone: number; up_to_km: number; fee: number };
+  return { ok: true, zone: Number(quote.zone), upToKm: Number(quote.up_to_km), fee: Number(quote.fee), quoteId: null, method: "linea_recta" };
+}
+
 const extras = z.object({
   /** Guardar la dirección escrita en la libreta (D4). Es un extra: si falla, el pedido no se ve afectado. */
   save_address_as: z.string().trim().min(1).max(40).nullable().optional(),
@@ -44,7 +87,7 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
   const extra = extras.safeParse(input);
   await requireCustomer("/checkout");
   const supabase = await serverSupabase();
-  const { store_id, items, payment_method, address, phone, notes, client_ref } = parsed.data;
+  const { store_id, items, payment_method, address, phone, notes, client_ref, latitude, longitude, quote_id } = parsed.data;
 
   const { data: orderId, error } = await supabase.rpc("create_order", {
     p_store: store_id,
@@ -54,6 +97,11 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
     p_phone: phone,
     p_notes: (notes ?? null) as string,
     p_client_ref: client_ref,
+    // El pin es opcional: sin él (nulo) el parámetro se omite y el pedido queda sin coordenadas.
+    p_latitude: latitude ?? undefined,
+    p_longitude: longitude ?? undefined,
+    // Cotización del envío por ruta; sin ella la base de datos cotiza por línea recta.
+    p_quote_id: quote_id ?? undefined,
   });
   if (isSessionExpired(error)) return { ok: false, error: expiredMessage, expired: true };
   if (error || !orderId) {
@@ -63,7 +111,7 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
 
   if (extra.success && extra.data.save_address_as) {
     // Extra de comodidad: un fallo (por ejemplo, el tope de 10 direcciones) no debe afectar al pedido ya creado.
-    await supabase.rpc("save_address", { p_id: null as unknown as string, p_label: extra.data.save_address_as, p_address: address, p_phone: phone, p_make_default: false });
+    await supabase.rpc("save_address", { p_id: null as unknown as string, p_label: extra.data.save_address_as, p_address: address, p_phone: phone, p_make_default: false, p_latitude: latitude ?? undefined, p_longitude: longitude ?? undefined });
   }
 
   if (payment_method !== "tarjeta") return { ok: true, orderId, payUrl: null };

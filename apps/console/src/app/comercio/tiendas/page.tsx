@@ -10,11 +10,11 @@ export const metadata = { title: "Mis tiendas" };
 export default async function TiendasPage() {
   await requireConsoleAccess("comercio");
   const supabase = await serverSupabase();
-  const { data, error } = await supabase.from("stores_list").select("id, name, address, status, closed_until, open_now, hour_ranges").order("name");
+  const { data, error } = await supabase.from("stores_list").select("id, name, address, status, closed_until, open_now, hour_ranges, latitude").order("name");
   if (error) console.error("[tiendas]", error.message);
 
   const rows: StoreRow[] = (data ?? []).flatMap((row) =>
-    row.id && row.name ? [{ id: row.id, name: row.name, address: row.address, status: row.status, closed_until: row.closed_until, open_now: row.open_now, hour_ranges: Number(row.hour_ranges ?? 0) }] : [],
+    row.id && row.name ? [{ id: row.id, name: row.name, address: row.address, status: row.status, closed_until: row.closed_until, open_now: row.open_now, hour_ranges: Number(row.hour_ranges ?? 0), located: row.latitude !== null }] : [],
   );
 
   return (

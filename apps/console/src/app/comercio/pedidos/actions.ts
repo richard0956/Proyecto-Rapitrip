@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
 import { requireConsoleAccess } from "@/lib/guard";
+import type { DistanceResult } from "@/lib/order-route";
 import { serverSupabase } from "@/lib/supabase";
 
 const schema = z.object({
@@ -24,4 +25,15 @@ export async function setOrderStatus(id: string, input: { to: string; reason?: s
   revalidatePath("/comercio");
   revalidatePath("/comercio/pedidos");
   return { ok: true };
+}
+
+/** Distancia aproximada (en línea recta) entre la tienda y el cliente. El comercio nunca recibe el punto del cliente, solo esta cifra. */
+export async function orderDistance(id: string): Promise<DistanceResult> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("order_distance_km", { p_order: parsed.data });
+  if (error) return { ok: false, error: "No pudimos calcular la distancia." };
+  return { ok: true, km: data === null ? null : Number(data) };
 }

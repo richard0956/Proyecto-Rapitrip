@@ -1,5 +1,6 @@
 "use client";
 
+import { PinPicker, type LatLng } from "@rapitrip/maps";
 import { Alert, Badge, Button, Card, Dialog, EmptyState, Field } from "@rapitrip/ui";
 import { MapPin, Plus, Smartphone } from "lucide-react";
 import Link from "next/link";
@@ -8,9 +9,11 @@ import { useState, useTransition, type FormEvent } from "react";
 import { storeState } from "@/lib/stores";
 import type { CreateStoreResult } from "./actions";
 
-export type StoreRow = { id: string; name: string; address: string | null; status: string | null; closed_until: string | null; open_now: boolean | null; hour_ranges: number };
+export type StoreRow = { id: string; name: string; address: string | null; status: string | null; closed_until: string | null; open_now: boolean | null; hour_ranges: number; located: boolean };
 
-export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (values: { name: string; address: string; phone: string }) => Promise<CreateStoreResult> }) {
+type NewStoreValues = { name: string; address: string; phone: string; latitude: number; longitude: number };
+
+export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (values: NewStoreValues) => Promise<CreateStoreResult> }) {
   const [creating, setCreating] = useState(false);
   return (
     <Card>
@@ -38,6 +41,7 @@ export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (v
                     <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
                     {row.address ?? "Sin dirección"}
                   </p>
+                  {!row.located ? <p className="mt-2 text-xs font-bold text-durazno-texto">Marca su ubicación en el mapa: sin ella no recibe pedidos.</p> : null}
                   {row.status === "activa" && row.hour_ranges === 0 ? <p className="mt-2 text-xs font-bold text-durazno-texto">Define su horario para que pueda abrir.</p> : null}
                 </Link>
               </li>
@@ -50,15 +54,17 @@ export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (v
   );
 }
 
-function NewStore({ open, onClose, create }: { open: boolean; onClose: () => void; create: (values: { name: string; address: string; phone: string }) => Promise<CreateStoreResult> }) {
+function NewStore({ open, onClose, create }: { open: boolean; onClose: () => void; create: (values: NewStoreValues) => Promise<CreateStoreResult> }) {
   const router = useRouter();
   const [values, setValues] = useState({ name: "", address: "", phone: "" });
+  const [point, setPoint] = useState<LatLng | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const set = (key: keyof typeof values) => (e: { target: { value: string } }) => setValues((v) => ({ ...v, [key]: e.target.value }));
 
   function close() {
     setValues({ name: "", address: "", phone: "" });
+    setPoint(null);
     setError(null);
     onClose();
   }
@@ -66,8 +72,9 @@ function NewStore({ open, onClose, create }: { open: boolean; onClose: () => voi
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+    if (!point) return setError("Marca la ubicación de la tienda en el mapa.");
     start(async () => {
-      const result = await create(values);
+      const result = await create({ ...values, latitude: point.lat, longitude: point.lng });
       if (!result.ok) return setError(result.error);
       close();
       router.push(`/comercio/tiendas/${result.id}`);
@@ -80,12 +87,20 @@ function NewStore({ open, onClose, create }: { open: boolean; onClose: () => voi
         <Field label="Nombre de la tienda" value={values.name} onChange={set("name")} placeholder="Sucursal Centro" required />
         <Field label="Dirección" icon={<MapPin className="size-4" />} value={values.address} onChange={set("address")} hint="Opcional" />
         <Field label="Teléfono de contacto" icon={<Smartphone className="size-4" />} type="tel" value={values.phone} onChange={set("phone")} hint="Opcional" />
+        <PinPicker
+          label="Ubicación de la tienda en el mapa"
+          hint="Obligatoria: marca la entrada de la tienda. Con ella se calcula el envío de cada pedido por distancia."
+          value={point}
+          onChange={setPoint}
+          onUseAddress={(text) => setValues((v) => ({ ...v, address: text }))}
+          disabled={pending}
+        />
         {error ? <Alert tone="error">{error}</Alert> : null}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={close} disabled={pending}>
             Cancelar
           </Button>
-          <Button variant="primary" type="submit" disabled={pending || values.name.trim().length < 2}>
+          <Button variant="primary" type="submit" disabled={pending || values.name.trim().length < 2 || !point}>
             {pending ? "Creando…" : "Crear tienda"}
           </Button>
         </div>

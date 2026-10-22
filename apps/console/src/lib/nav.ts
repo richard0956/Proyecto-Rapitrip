@@ -41,6 +41,7 @@ export const adminNav: NavSection[] = [
     label: "Finanzas",
     items: [
       { href: "/admin/caja", label: "Caja y venta", icon: "cash" },
+      { href: "/admin/devoluciones", label: "Devoluciones", icon: "receipt" },
       { href: "/admin/liquidaciones", label: "Liquidaciones", icon: "receipt", soon: true },
     ],
   },
@@ -55,7 +56,7 @@ export const adminNav: NavSection[] = [
 ];
 
 export const cajaNav: NavSection[] = [{ items: [{ href: "/caja", label: "Caja y venta", icon: "cash" }] }];
-export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Pedidos", icon: "orders" }] }];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Pedidos", icon: "orders" }, { href: "/repartidor", label: "Efectivo de repartidores", icon: "cash" }] }];
 export const comercioNav: NavSection[] = [
   {
     items: [

@@ -139,7 +139,7 @@ describe("inventario", () => {
   });
 });
 
-import { checkoutSchema, customerAddressSchema } from "./schemas";
+import { checkoutSchema, customerAddressSchema, locationSchema } from "./schemas";
 
 describe("customerAddressSchema", () => {
   const base = { label: "Casa", address: "Barrio Central, casa 4" };
@@ -189,5 +189,28 @@ describe("checkoutSchema", () => {
     expect(checkoutSchema.safeParse({ ...base, address: "abc" }).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...base, phone: "12" }).success).toBe(false);
     expect(checkoutSchema.safeParse({ ...base, notes: "x".repeat(241) }).success).toBe(false);
+  });
+  it("el pin del destino es opcional y va completo o no va", () => {
+    expect(checkoutSchema.parse(base)).toMatchObject({ latitude: null, longitude: null });
+    expect(checkoutSchema.safeParse({ ...base, latitude: 12.1364, longitude: -86.2514 }).success).toBe(true);
+    expect(checkoutSchema.safeParse({ ...base, latitude: 12.1364 }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...base, latitude: 120, longitude: -86.2514 }).success).toBe(false);
+  });
+  it("la cotización del envío es opcional y debe ser un identificador", () => {
+    expect(checkoutSchema.parse(base)).toMatchObject({ quote_id: null });
+    expect(checkoutSchema.safeParse({ ...base, quote_id: uuid }).success).toBe(true);
+    expect(checkoutSchema.safeParse({ ...base, quote_id: "abc" }).success).toBe(false);
+  });
+});
+
+describe("locationSchema", () => {
+  it("acepta un punto completo, o ninguno para quitar la ubicación", () => {
+    expect(locationSchema.parse({ latitude: 12.1364, longitude: -86.2514 })).toEqual({ latitude: 12.1364, longitude: -86.2514 });
+    expect(locationSchema.parse({ latitude: null, longitude: null })).toEqual({ latitude: null, longitude: null });
+    expect(locationSchema.parse({})).toEqual({ latitude: null, longitude: null });
+  });
+  it("rechaza un punto a medias o fuera de rango", () => {
+    expect(locationSchema.safeParse({ latitude: 12.1, longitude: null }).success).toBe(false);
+    expect(locationSchema.safeParse({ latitude: 95, longitude: -86 }).success).toBe(false);
   });
 });

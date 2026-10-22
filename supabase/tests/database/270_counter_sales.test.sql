@@ -62,7 +62,7 @@ select is((select total from public.orders_list where id = current_setting('t.o1
 select is((select status || '/' || payment_status || '/' || channel from public.orders_list where id = current_setting('t.o1')::uuid), 'entregado/pagado/mostrador',
   'la venta nace entregada, pagada y de mostrador');
 select is((select client_id from public.orders_list where id = current_setting('t.o1')::uuid), null, 'no tiene cliente');
-select lives_ok(format($$select set_config('t.o2', public.create_counter_sale(%L, '[{"variant_id":"%s","quantity":1}]'::jsonb, 'tarjeta')::text, true)$$,
+select lives_ok(format($$select set_config('t.o2', public.create_counter_sale(%L, '[{"variant_id":"%s","quantity":1}]'::jsonb, 'tarjeta', 'VCH270')::text, true)$$,
   current_setting('t.store'), current_setting('t.v1')), 'venta con tarjeta en terminal externo');
 select throws_ok(format($$select public.create_counter_sale(%L, '[{"variant_id":"%s","quantity":99}]'::jsonb, 'efectivo')$$, current_setting('t.store'), current_setting('t.v1')),
   '22023', null::text, 'no vende más de lo que hay');

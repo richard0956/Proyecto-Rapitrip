@@ -1,7 +1,8 @@
 "use client";
 
+import { PinPicker } from "@rapitrip/maps";
 import { Alert, Badge, Button, Card, Dialog, Field, TextareaField } from "@rapitrip/ui";
-import { Home, MapPin, Pencil, Plus, Smartphone, Star, Trash2 } from "lucide-react";
+import { Home, MapPin, MapPinned, Pencil, Plus, Smartphone, Star, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import { saveDraft, takeDraft } from "@/lib/draft";
@@ -14,11 +15,13 @@ export type SavedAddress = {
   reference: string | null;
   phone: string | null;
   is_default: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
-type Draft = { id: string | null; label: string; address: string; reference: string; phone: string; make_default: boolean };
+type Draft = { id: string | null; label: string; address: string; reference: string; phone: string; make_default: boolean; latitude: number | null; longitude: number | null };
 const DRAFT_KEY = "rapitrip:direccion";
-const blank: Draft = { id: null, label: "", address: "", reference: "", phone: "", make_default: false };
+const blank: Draft = { id: null, label: "", address: "", reference: "", phone: "", make_default: false, latitude: null, longitude: null };
 
 type Actions = {
   save: (input: unknown) => Promise<CustomerResult>;
@@ -26,9 +29,12 @@ type Actions = {
   remove: (id: string) => Promise<CustomerResult>;
 };
 
+/** Un borrador guardado antes de existir el mapa no trae coordenadas. */
+const normalize = (draft: Draft | null): Draft | null => (draft ? { ...draft, latitude: draft.latitude ?? null, longitude: draft.longitude ?? null } : null);
+
 export function AddressBook({ addresses, actions }: { addresses: SavedAddress[]; actions: Actions }) {
   const router = useRouter();
-  const [editing, setEditing] = useState<Draft | null>(() => (typeof window === "undefined" ? null : takeDraft<Draft>(DRAFT_KEY)));
+  const [editing, setEditing] = useState<Draft | null>(() => (typeof window === "undefined" ? null : normalize(takeDraft<Draft>(DRAFT_KEY))));
   const [toDelete, setToDelete] = useState<SavedAddress | null>(null);
   const [result, setResult] = useState<CustomerResult | null>(null);
   const [pending, start] = useTransition();
@@ -55,6 +61,10 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!editing) return;
+    if (editing.latitude === null || editing.longitude === null) {
+      setResult({ ok: false, error: "Marca el punto exacto de entrega en el mapa." });
+      return;
+    }
     run(() => actions.save({ ...editing, reference: editing.reference, phone: editing.phone }), editing);
   }
 
@@ -84,6 +94,12 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
                   {item.address}
                 </p>
                 {item.reference ? <p className="mt-1 text-[13px] text-tinta-suave">Referencia: {item.reference}</p> : null}
+                {item.latitude != null && item.longitude != null ? (
+                  <p className="mt-1 flex items-center gap-2 text-[13px] text-hoja">
+                    <MapPinned aria-hidden="true" className="size-4" />
+                    Con punto marcado en el mapa
+                  </p>
+                ) : null}
                 {item.phone ? (
                   <p className="mt-1 flex items-center gap-2 text-[13px] text-tinta-suave">
                     <Smartphone aria-hidden="true" className="size-4" />
@@ -98,7 +114,7 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
                     Predeterminar
                   </Button>
                 ) : null}
-                <Button variant="secondary" disabled={pending} onClick={() => { setResult(null); setEditing({ id: item.id, label: item.label, address: item.address, reference: item.reference ?? "", phone: item.phone ?? "", make_default: item.is_default }); }}>
+                <Button variant="secondary" disabled={pending} onClick={() => { setResult(null); setEditing({ id: item.id, label: item.label, address: item.address, reference: item.reference ?? "", phone: item.phone ?? "", make_default: item.is_default, latitude: item.latitude ?? null, longitude: item.longitude ?? null }); }}>
                   <Pencil aria-hidden="true" className="size-4" />
                   Editar
                 </Button>
@@ -121,11 +137,14 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
             <Field label="Referencia" hint="Opcional. Un punto conocido o cómo reconocer la casa." maxLength={240} value={editing.reference} onChange={(e) => setEditing({ ...editing, reference: e.target.value })} />
             <Field label="Teléfono de contacto" hint="Opcional. Si lo dejas vacío usamos el de tu perfil." type="tel" autoComplete="tel" value={editing.phone} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
 
-            {/* Espacio reservado para el mapa (otra fase): aquí irá el selector de ubicación. La base de datos y el esquema ya aceptan latitud y longitud. */}
-            <div data-slot="address-map" className="rounded-2xl border border-dashed border-borde-campo bg-menta/40 px-4 py-4 text-[13px] text-tinta-suave">
-              <p className="font-bold text-tinta">Ubicación en el mapa</p>
-              <p>Próximamente podrás marcar el punto exacto de entrega.</p>
-            </div>
+            <PinPicker
+              label="Ubicación en el mapa"
+              hint="Obligatoria: marca el punto exacto de entrega. Con él calculamos el envío; la dirección escrita sigue siendo la referencia."
+              value={editing.latitude !== null && editing.longitude !== null ? { lat: editing.latitude, lng: editing.longitude } : null}
+              onChange={(point) => setEditing({ ...editing, latitude: point?.lat ?? null, longitude: point?.lng ?? null })}
+              onUseAddress={(text) => setEditing({ ...editing, address: text })}
+              disabled={pending}
+            />
 
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[13.5px] font-bold text-tinta">
               <input type="checkbox" checked={editing.make_default} onChange={(e) => setEditing({ ...editing, make_default: e.target.checked })} className="size-5 accent-[var(--hoja)]" />

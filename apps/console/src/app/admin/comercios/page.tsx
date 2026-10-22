@@ -45,6 +45,7 @@ export default async function ComerciosPage() {
               </Link>
             ),
           },
+          { header: "Tipo", cell: (row) => (row.kind === "empresa" ? <span className="whitespace-nowrap">Empresa · <span className="tabular-nums">{row.ruc}</span></span> : "Vendedor propio") },
           { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "danger"}>{row.status === "activo" ? "Activo" : "Suspendido"}</Badge> },
           { header: "Tiendas activas", cell: (row) => <span className="tabular-nums">{storeCount.get(row.id ?? "") ?? 0}</span> },
           { header: "Cuentas activas", cell: (row) => <span className="tabular-nums">{activeUsers.get(row.id ?? "") ?? 0}</span> },

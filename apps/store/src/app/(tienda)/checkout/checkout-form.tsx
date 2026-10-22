@@ -1,5 +1,6 @@
 "use client";
 
+import { PinPicker, type LatLng } from "@rapitrip/maps";
 import { Alert, Button, buttonStyles, Card, EmptyState, Field, TextareaField } from "@rapitrip/ui";
 import { Banknote, CreditCard } from "lucide-react";
 import Link from "next/link";
@@ -13,11 +14,14 @@ import { formatMoney } from "@/lib/money";
 import { changedPrices, hasBlocking, isBlocking, problemMessage, resolveProblems } from "@/lib/quote-problems";
 import { useCart } from "@/lib/use-cart";
 import type { QuoteResult } from "../carrito/actions";
-import type { PlaceOrderResult } from "./actions";
+import type { DeliveryQuoteResult, PlaceOrderResult } from "./actions";
 
-export type CheckoutAddress = { id: string; label: string; address: string; phone: string | null; is_default: boolean };
+export type CheckoutAddress = { id: string; label: string; address: string; phone: string | null; is_default: boolean; latitude?: number | null; longitude?: number | null };
 type Method = "efectivo" | "tarjeta";
-type Values = { addressId: string; address: string; saveAs: string; saveNew: boolean; phone: string; notes: string; method: Method };
+type Values = { addressId: string; address: string; saveAs: string; saveNew: boolean; phone: string; notes: string; method: Method; point: LatLng | null };
+
+/** El pin guardado con una dirección de la libreta, si lo tiene. */
+const pointOf = (address?: CheckoutAddress): LatLng | null => (address && address.latitude != null && address.longitude != null ? { lat: address.latitude, lng: address.longitude } : null);
 
 const DRAFT_KEY = "rapitrip:checkout";
 const NEW = "nueva";
@@ -27,9 +31,10 @@ type Props = {
   profilePhone: string;
   quoteAction: (input: unknown) => Promise<QuoteResult>;
   placeOrder: (input: unknown) => Promise<PlaceOrderResult>;
+  quoteDelivery: (input: unknown) => Promise<DeliveryQuoteResult>;
 };
 
-export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder }: Props) {
+export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder, quoteDelivery }: Props) {
   const router = useRouter();
   const cart = useCart();
   const initialAddress = addresses.find((a) => a.is_default) ?? addresses[0];
@@ -41,6 +46,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
     phone: initialAddress?.phone || profilePhone,
     notes: "",
     method: "efectivo",
+    point: pointOf(initialAddress),
   });
   const [hydrated, setHydrated] = useState(false);
   const [restored, setRestored] = useState(false);
@@ -48,6 +54,12 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
+  // Envío por zona: la base de datos cotiza según la distancia entre la tienda y el pin del cliente.
+  const [delivery, setDelivery] = useState<{ zone: number; upToKm: number; fee: number; quoteId: string | null; method: "ruta" | "linea_recta" } | null>(null);
+  // Sube cuando hay que pedir otra cotización (por ejemplo, si la anterior venció antes de confirmar).
+  const [quoteNonce, setQuoteNonce] = useState(0);
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [pending, start] = useTransition();
   const submitting = useRef(false);
   const attempt = useRef<{ key: string; ref: string } | null>(null);
@@ -58,7 +70,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
     if (draft) {
       // Recuperar lo escrito antes de que venciera la sesión solo es posible tras hidratar (sessionStorage).
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setValues(draft);
+      setValues({ ...draft, point: draft.point ?? null });
       setRestored(true);
     }
     setHydrated(true);
@@ -85,6 +97,36 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, hydrated, quoteAction]);
 
+  const pointLat = values.point?.lat;
+  const pointLng = values.point?.lng;
+  useEffect(() => {
+    if (!hydrated || !cart.storeId) return;
+    if (pointLat === undefined || pointLng === undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDelivery(null);
+      setDeliveryError(null);
+      return;
+    }
+    let cancelled = false;
+    setDeliveryLoading(true);
+    const timer = setTimeout(async () => {
+      const result = await quoteDelivery({ store_id: cart.storeId, latitude: pointLat, longitude: pointLng });
+      if (cancelled) return;
+      setDeliveryLoading(false);
+      if (result.ok) {
+        setDelivery({ zone: result.zone, upToKm: result.upToKm, fee: result.fee, quoteId: result.quoteId, method: result.method });
+        setDeliveryError(null);
+      } else {
+        setDelivery(null);
+        setDeliveryError(result.error);
+      }
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [pointLat, pointLng, cart.storeId, hydrated, quoteDelivery, quoteNonce]);
+
   if (!hydrated) return <p className="py-10 text-center text-sm text-tinta-suave" aria-live="polite">Preparando tu pedido…</p>;
 
   if (cart.lines.length === 0) {
@@ -102,14 +144,14 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
 
   const problems = quote?.problems ?? [];
   const priceChanges = problems.filter((p) => p.code === "precio_cambiado");
-  const blocked = !quote || loading || hasBlocking(quote) || priceChanges.length > 0;
+  const blocked = !quote || loading || hasBlocking(quote) || priceChanges.length > 0 || !values.point || !delivery || deliveryLoading;
   const chosen = addresses.find((a) => a.id === values.addressId);
   const addressText = (values.addressId === NEW ? values.address : (chosen?.address ?? "")).trim();
   const set = <K extends keyof Values>(name: K, value: Values[K]) => setValues((v) => ({ ...v, [name]: value }));
 
   function pickAddress(id: string) {
     const saved = addresses.find((a) => a.id === id);
-    setValues((v) => ({ ...v, addressId: id, phone: saved?.phone || v.phone || profilePhone }));
+    setValues((v) => ({ ...v, addressId: id, phone: saved?.phone || v.phone || profilePhone, point: pointOf(saved) }));
   }
 
   function submit(event: FormEvent) {
@@ -117,11 +159,12 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
     if (submitting.current || blocked || !cart.storeId) return;
     setFieldError(null);
     setError(null);
+    if (!values.point) return setFieldError("Marca el punto exacto de entrega en el mapa.");
     if (addressText.length < 5) return setFieldError("Escribe la dirección de entrega (al menos 5 caracteres).");
     if (!/^[0-9+() -]{8,20}$/.test(values.phone.trim())) return setFieldError("Escribe un teléfono válido para coordinar la entrega.");
 
     // Una referencia por intento: si nada cambió, un reintento devuelve el mismo pedido en vez de crear otro.
-    const payload = JSON.stringify([cart.storeId, toOrderItems(cart), values.method, addressText, values.phone.trim(), values.notes.trim()]);
+    const payload = JSON.stringify([cart.storeId, toOrderItems(cart), values.method, addressText, values.phone.trim(), values.notes.trim(), values.point]);
     if (attempt.current?.key !== payload) attempt.current = { key: payload, ref: crypto.randomUUID() };
     const clientRef = attempt.current.ref;
 
@@ -135,6 +178,9 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
           address: addressText,
           phone: values.phone.trim(),
           notes: values.notes.trim(),
+          latitude: values.point?.lat ?? null,
+          longitude: values.point?.lng ?? null,
+          quote_id: delivery?.quoteId ?? null,
           client_ref: clientRef,
           save_address_as: values.addressId === NEW && values.saveNew ? values.saveAs.trim() || "Casa" : null,
         });
@@ -145,6 +191,11 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
             return;
           }
           setError(result.error);
+          // Si la cotización del envío venció, se pide otra para que pueda confirmar de nuevo.
+          if (/cotización del envío/i.test(result.error)) {
+            setDelivery(null);
+            setQuoteNonce((n) => n + 1);
+          }
           return;
         }
         setCart(emptyCart);
@@ -195,6 +246,16 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
               Administrar mis direcciones
             </Link>
           </p>
+          <div className="mt-4">
+            <PinPicker
+              label="Punto exacto de entrega"
+              hint="Obligatorio: con tu punto calculamos el envío según la distancia y el repartidor te encuentra. La dirección escrita sigue siendo necesaria."
+              value={values.point}
+              onChange={(point) => set("point", point)}
+              onUseAddress={values.addressId === NEW ? (text) => set("address", text) : undefined}
+              disabled={pending}
+            />
+          </div>
           <div className="mt-4 flex flex-col gap-3">
             <Field label="Teléfono de contacto" type="tel" autoComplete="tel" value={values.phone} onChange={(e) => set("phone", e.target.value)} required />
             <TextareaField label="Nota para el comercio o el repartidor (opcional)" rows={2} maxLength={240} value={values.notes} onChange={(e) => set("notes", e.target.value)} />
@@ -265,17 +326,19 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, placeOrder 
           </div>
           <div className="flex justify-between">
             <dt className="text-tinta-suave">Envío</dt>
-            <dd className="font-bold">{quote ? (quote.delivery_fee > 0 ? formatMoney(quote.delivery_fee) : "Gratis") : "—"}</dd>
+            <dd className="font-bold">{delivery ? formatMoney(delivery.fee) : deliveryLoading ? "Calculando…" : "—"}</dd>
           </div>
+          {delivery ? <p className="-mt-1 text-xs text-tinta-suave">Zona {delivery.zone}: entrega de hasta {delivery.upToKm} km desde la tienda{delivery.method === "ruta" ? " (distancia por calle)" : " (distancia aproximada)"}.</p> : null}
           <div className="mt-1 flex justify-between border-t border-borde pt-2 text-[16px]">
-            <dt className="font-extrabold">Total</dt>
-            <dd className="font-extrabold text-hoja">{quote ? formatMoney(quote.total) : "—"}</dd>
+            <dt className="font-extrabold">{delivery ? "Total" : "Subtotal"}</dt>
+            <dd className="font-extrabold text-hoja">{quote ? formatMoney(quote.subtotal + (delivery?.fee ?? 0)) : "—"}</dd>
           </div>
         </dl>
+        {deliveryError ? <Alert tone="warning">{deliveryError}</Alert> : null}
         {fieldError ? <Alert tone="error">{fieldError}</Alert> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
         <Button variant="primary" type="submit" disabled={blocked || pending} className="w-full">
-          {pending ? "Enviando tu pedido…" : loading || !quote ? "Actualizando precios…" : values.method === "tarjeta" ? "Confirmar y pagar" : "Confirmar pedido"}
+          {pending ? "Enviando tu pedido…" : loading || !quote ? "Actualizando precios…" : !values.point ? "Marca tu punto de entrega" : deliveryLoading ? "Calculando el envío…" : values.method === "tarjeta" ? "Confirmar y pagar" : "Confirmar pedido"}
         </Button>
         <p className="text-xs text-tinta-suave">
           {values.method === "tarjeta" ? "Te llevamos a la página segura de Stripe. Los datos de tu tarjeta nunca pasan por Rapitrip." : "El comercio tiene 45 minutos para confirmar tu pedido."}

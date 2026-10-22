@@ -1,5 +1,6 @@
 "use client";
 
+import { PinPicker, type LatLng } from "@rapitrip/maps";
 import { Alert, Badge, Button, Card, CardHeader, Field } from "@rapitrip/ui";
 import { CalendarOff, Check, Clock, MapPin, Plus, Smartphone, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,11 +9,12 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { flattenHours, formatCalendarDate, formatStoreDateTime, storeState, todayInStoreZone, weekdays, type HoursByDay } from "@/lib/stores";
 
-type Store = { id: string; name: string; address: string | null; phone: string | null; status: "activa" | "inactiva"; closed_until: string | null; closed_reason: string | null; open_now: boolean | null };
+type Store = { id: string; name: string; address: string | null; phone: string | null; status: "activa" | "inactiva"; closed_until: string | null; closed_reason: string | null; open_now: boolean | null; latitude: number | null; longitude: number | null };
 type Exception = { on_date: string; closed: boolean; opens: string | null; closes: string | null; note: string | null };
 
 type Actions = {
   updateStore: (id: string, values: unknown) => Promise<ActionResult>;
+  setStoreLocation: (id: string, values: unknown) => Promise<ActionResult>;
   setStoreStatus: (id: string, input: { status: "activa" | "inactiva"; reason: string }) => Promise<ActionResult>;
   saveStoreHours: (id: string, hours: unknown) => Promise<ActionResult>;
   closeStoreTemporarily: (id: string, input: unknown) => Promise<ActionResult>;
@@ -29,20 +31,68 @@ function Feedback({ message }: { message: Message }) {
 
 export function StoreEditor({ store, hours, exceptions, disabled, actions }: { store: Store; hours: HoursByDay; exceptions: Exception[]; disabled: boolean; actions: Actions }) {
   const state = storeState(store);
+  const located = store.latitude !== null && store.longitude !== null;
   return (
-    <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="flex flex-col gap-5">
-        <HoursCard storeId={store.id} initial={hours} disabled={disabled} save={actions.saveStoreHours} />
-        <ExceptionsCard storeId={store.id} exceptions={exceptions} save={actions.saveStoreException} remove={actions.deleteStoreException} />
+    <>
+      {!located ? (
+        <Alert tone="warning" className="mb-5">
+          Esta tienda no recibe pedidos hasta que marques su ubicación en el mapa: con ella se calcula el envío de cada pedido por distancia.
+        </Alert>
+      ) : null}
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="flex flex-col gap-5">
+          <HoursCard storeId={store.id} initial={hours} disabled={disabled} save={actions.saveStoreHours} />
+          <ExceptionsCard storeId={store.id} exceptions={exceptions} save={actions.saveStoreException} remove={actions.deleteStoreException} />
+        </div>
+        <div className="flex flex-col gap-5">
+          <Card className="p-5">
+            <CardHeader title="Estado" actions={<Badge tone={state.tone}>{state.label}</Badge>} />
+            <ClosureControls store={store} close={actions.closeStoreTemporarily} reopen={actions.reopenStore} setStatus={actions.setStoreStatus} />
+          </Card>
+          <DetailsCard store={store} update={actions.updateStore} />
+          <LocationCard store={store} save={actions.setStoreLocation} />
+        </div>
       </div>
-      <div className="flex flex-col gap-5">
-        <Card className="p-5">
-          <CardHeader title="Estado" actions={<Badge tone={state.tone}>{state.label}</Badge>} />
-          <ClosureControls store={store} close={actions.closeStoreTemporarily} reopen={actions.reopenStore} setStatus={actions.setStoreStatus} />
-        </Card>
-        <DetailsCard store={store} update={actions.updateStore} />
+    </>
+  );
+}
+
+/** Ubicación de la tienda en el mapa: el pin es lo que vale; la dirección escrita (arriba) es solo apoyo. */
+function LocationCard({ store, save }: { store: Store; save: Actions["setStoreLocation"] }) {
+  const router = useRouter();
+  const saved: LatLng | null = store.latitude !== null && store.longitude !== null ? { lat: store.latitude, lng: store.longitude } : null;
+  const [point, setPoint] = useState<LatLng | null>(saved);
+  const [message, setMessage] = useState<Message>(null);
+  const [pending, start] = useTransition();
+  const dirty = (point?.lat ?? null) !== (saved?.lat ?? null) || (point?.lng ?? null) !== (saved?.lng ?? null);
+
+  function submit() {
+    setMessage(null);
+    start(async () => {
+      const result = await save(store.id, { latitude: point?.lat ?? null, longitude: point?.lng ?? null });
+      setMessage(result.ok ? { ok: true, text: point ? "Ubicación guardada." : "Ubicación quitada." } : { ok: false, text: result.error });
+      if (result.ok) router.refresh();
+    });
+  }
+
+  return (
+    <Card className="p-5">
+      <CardHeader title="Ubicación en el mapa" />
+      <div className="flex flex-col gap-3.5">
+        <PinPicker
+          label="Punto exacto de la tienda"
+          hint="Toca el mapa o arrastra el pin hasta la entrada de la tienda. Sirve para calcular rutas de entrega."
+          value={point}
+          onChange={setPoint}
+          disabled={pending}
+        />
+        <Feedback message={message} />
+        <Button variant="primary" disabled={pending || !dirty} onClick={submit} className="self-start">
+          <MapPin className="size-4" aria-hidden="true" />
+          {pending ? "Guardando…" : "Guardar ubicación"}
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }
 

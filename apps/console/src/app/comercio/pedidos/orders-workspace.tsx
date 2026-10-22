@@ -8,6 +8,8 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
 import { orderGroup, orderStatusLabel, orderStatusTone, paymentLabel, shopActions, type OrderGroup, type OrderStatus, type ShopAction } from "@/lib/orders";
+import { OrderDistance } from "@/components/order-route";
+import type { DistanceResult } from "@/lib/order-route";
 
 export type OrderItem = { name: string; quantity: number; unitPrice: number; total: number };
 export type OrderRow = {
@@ -33,7 +35,7 @@ const tabs: { key: OrderGroup; label: string; empty: string }[] = [
   { key: "terminados", label: "Terminados", empty: "Todavía no hay pedidos terminados." },
 ];
 
-export function OrdersWorkspace({ rows, setStatus }: { rows: OrderRow[]; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult> }) {
+export function OrdersWorkspace({ rows, setStatus, loadDistance }: { rows: OrderRow[]; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult> }) {
   const router = useRouter();
   const [tab, setTab] = useState<OrderGroup>("confirmar");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export function OrdersWorkspace({ rows, setStatus }: { rows: OrderRow[]; setStat
           {tabs.map((item) => (
             <button key={item.key} type="button" role="tab" aria-selected={tab === item.key} onClick={() => setTab(item.key)} className={pillStyles(tab === item.key)}>
               {item.label}
-              <span className="tabular-nums opacity-80">{counts[item.key]}</span>
+              <span className="tabular-nums opacity-90">{counts[item.key]}</span>
             </button>
           ))}
         </div>
@@ -89,7 +91,7 @@ export function OrdersWorkspace({ rows, setStatus }: { rows: OrderRow[]; setStat
       </Card>
 
       {selected ? (
-        <OrderDetail key={selected.id} row={selected} setStatus={setStatus} onMoved={(to) => setTab(orderGroup(to))} />
+        <OrderDetail key={selected.id} row={selected} setStatus={setStatus} loadDistance={loadDistance} onMoved={(to) => setTab(orderGroup(to))} />
       ) : (
         <Card>
           <CardHeader title="Detalle del pedido" />
@@ -101,7 +103,7 @@ export function OrdersWorkspace({ rows, setStatus }: { rows: OrderRow[]; setStat
 }
 
 /** `onMoved` lleva la lista a la pestaña del nuevo estado: así el pedido sigue a la vista y seleccionado tras responderlo. */
-function OrderDetail({ row, setStatus, onMoved }: { row: OrderRow; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; onMoved: (to: OrderStatus) => void }) {
+function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult>; onMoved: (to: OrderStatus) => void }) {
   const router = useRouter();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [asking, setAsking] = useState<ShopAction | null>(null);
@@ -128,6 +130,7 @@ function OrderDetail({ row, setStatus, onMoved }: { row: OrderRow; setStatus: (i
           {row.status === "por_confirmar" ? `Responde antes de ${row.deadline}; si no, se cancela y se devuelve el stock.` : `Vence el ${row.deadline} si no se paga.`}
         </Alert>
       ) : null}
+      <OrderDistance orderId={row.id} load={loadDistance} />
       <ul className="mb-3.5 flex flex-col divide-y divide-borde text-sm">
         {row.items.map((item) => (
           <li key={item.name} className="flex items-start justify-between gap-3 py-2">

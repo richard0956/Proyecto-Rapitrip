@@ -1,17 +1,21 @@
 import { Alert, Badge, Card } from "@rapitrip/ui";
+import { MapView } from "@rapitrip/maps";
 import { Check, Circle, MapPin, Smartphone, StickyNote } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { isUuid } from "@/lib/catalog";
+import { withinReturnWindow, type ReturnStatus } from "@/lib/returns";
 import { formatMoney } from "@/lib/money";
 import { awaitingPaymentConfirmation, customerCanCancel, isFinalStatus, isOrderStatus, orderStatusHint, orderStatusLabel, orderStatusTone, progressIndex, progressSteps, remainingText } from "@/lib/orders";
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
 import { startCardPayment } from "../../checkout/actions";
-import { cancelOrder } from "../actions";
+import { cancelOrder, requestReturn } from "../actions";
 import { AutoRefresh } from "./auto-refresh";
 import { OrderActions } from "./order-actions";
+import { ReturnForm } from "./return-form";
+import { ReturnStatusCard } from "./return-status";
 import { PaymentWatch } from "./payment-watch";
 
 export const metadata: Metadata = { title: "Mi pedido", robots: { index: false } };
@@ -35,8 +39,11 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
   const [{ data: items }, { data: events }, { data: delivery }] = await Promise.all([
     supabase.from("order_items_list").select("id, variant_id, product_name, variant_name, unit_price, quantity, line_total").eq("order_id", id).order("product_name"),
     supabase.from("order_events_list").select("id, to_status, reason, created_at").eq("order_id", id).order("id"),
-    supabase.from("order_delivery_list").select("address, phone, notes").eq("order_id", id).maybeSingle(),
+    supabase.from("order_delivery_list").select("address, phone, notes, latitude, longitude").eq("order_id", id).maybeSingle(),
   ]);
+
+  const { data: returnRows } = await supabase.rpc("my_return_request", { p_order: id });
+  const returnRequest = returnRows?.[0] ?? null;
 
   const waitingPayment = status === "pendiente_pago";
   const left = waitingPayment || status === "por_confirmar" ? remainingText(order.expires_at) : null;
@@ -147,6 +154,11 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
             ) : (
               <p className="mt-2 text-sm text-tinta-suave">Los datos de entrega ya no están disponibles.</p>
             )}
+            {delivery && delivery.latitude != null && delivery.longitude != null ? (
+              <div className="mt-4">
+                <MapView ariaLabel="Mapa del punto de entrega" markers={[{ id: "destino", label: "Punto de entrega", point: { lat: delivery.latitude, lng: delivery.longitude } }]} />
+              </div>
+            ) : null}
           </Card>
         </div>
 
@@ -168,6 +180,19 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
               />
             </div>
           </Card>
+
+          {returnRequest ? (
+            <ReturnStatusCard
+              status={returnRequest.status as ReturnStatus}
+              paymentMethod={order.payment_method === "tarjeta" ? "tarjeta" : "efectivo"}
+              reason={returnRequest.reason ?? ""}
+              photoCount={Number(returnRequest.photo_count ?? 0)}
+              decisionNote={returnRequest.decision_note}
+              requestedAt={fecha.format(new Date(returnRequest.requested_at))}
+            />
+          ) : status === "entregado" && withinReturnWindow(order.delivered_at) && profile.id ? (
+            <ReturnForm orderId={order.id!} customerId={profile.id} request={requestReturn} />
+          ) : null}
 
           <Card className="p-6">
             <h2 className="text-base font-bold text-tinta">Historial</h2>

@@ -4,9 +4,11 @@ import { Alert, Badge, Button, Card, CardHeader, EmptyState, SelectField, pillSt
 import { MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { OrderRoute } from "@/components/order-route";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
+import type { RouteResult } from "@/lib/order-route";
 import { coordActions, coordTab, orderStatusLabel, orderStatusTone, paymentLabel, type CoordAction, type CoordTab, type OrderStatus } from "@/lib/orders";
 
 export type Courier = { id: string; name: string; vehicle: string; phone: string };
@@ -42,9 +44,10 @@ type Props = {
   couriers: Courier[];
   setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>;
   assign: (id: string, courierId: string) => Promise<ActionResult>;
+  loadRoute: (id: string) => Promise<RouteResult>;
 };
 
-export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) {
+export function DispatchWorkspace({ rows, couriers, setStatus, assign, loadRoute }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<CoordTab>("listos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -69,7 +72,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
           {tabs.map((item) => (
             <button key={item.key} type="button" role="tab" aria-selected={tab === item.key} onClick={() => setTab(item.key)} className={pillStyles(tab === item.key)}>
               {item.label}
-              <span className="tabular-nums opacity-80">{count(item.key)}</span>
+              <span className="tabular-nums opacity-90">{count(item.key)}</span>
             </button>
           ))}
         </div>
@@ -102,7 +105,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
       </Card>
 
       {selected ? (
-        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} onMoved={(to) => setTab(coordTab(to))} />
+        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} loadRoute={loadRoute} onMoved={(to) => setTab(coordTab(to))} />
       ) : (
         <Card>
           <CardHeader title="Detalle del pedido" />
@@ -113,7 +116,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
   );
 }
 
-function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
+function DispatchDetail({ row, couriers, setStatus, assign, loadRoute, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
   const router = useRouter();
   const [courier, setCourier] = useState(row.courierId ?? "");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -166,6 +169,8 @@ function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Prop
           <p className="text-tinta-suave">Sin datos de entrega.</p>
         )}
       </div>
+
+      {row.address ? <OrderRoute orderId={row.id} load={loadRoute} /> : null}
 
       <ul className="mb-3.5 flex flex-col divide-y divide-borde text-sm">
         {row.items.map((item) => (

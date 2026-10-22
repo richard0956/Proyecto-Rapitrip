@@ -56,7 +56,7 @@ export function MasterCatalog({ rows, create, rename, setStatus }: Props) {
         {kinds.map((item) => (
           <button key={item.key} type="button" role="tab" aria-selected={kind === item.key} onClick={() => { setKind(item.key); setMessage(null); setParentId(""); }} className={pillStyles(kind === item.key)}>
             {item.label}
-            <span className="tabular-nums opacity-80">{rows.filter((row) => row.kind === item.key).length}</span>
+            <span className="tabular-nums opacity-90">{rows.filter((row) => row.kind === item.key).length}</span>
           </button>
         ))}
       </div>

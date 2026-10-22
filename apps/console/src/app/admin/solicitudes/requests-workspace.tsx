@@ -14,7 +14,7 @@ export type RequestRow = {
   receivedAt: string;
   decisionReason: string | null;
   reviewedAt: string | null;
-  details: { contactName: string; phone: string; address: string; category: string };
+  details: { contactName: string; phone: string; address: string; category: string; kind: "informal" | "empresa"; ruc: string; cedula: string; email: string; description: string };
 };
 
 type Props = {
@@ -115,10 +115,15 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
             <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-panel border border-borde bg-white p-4 text-cuerpo sm:grid-cols-2">
               {(
                 [
-                  ["Representante", selected.details.contactName],
+                  ["Tipo de vendedor", selected.details.kind === "empresa" ? "Empresa (con RUC)" : "Vendedor propio o informal"],
+                  ...(selected.details.kind === "empresa" ? ([["RUC", selected.details.ruc]] as const) : []),
+                  ...(selected.details.kind !== "empresa" ? ([["Cédula", selected.details.cedula]] as const) : []),
+                  [selected.details.kind === "empresa" ? "Representante" : "Nombre completo", selected.details.contactName],
                   ["Teléfono", selected.details.phone],
+                  ["Correo electrónico", selected.details.email],
                   ["Dirección del negocio", selected.details.address],
                   ["Categoría", selected.details.category],
+                  ["Descripción y productos", selected.details.description],
                 ] as const
               ).map(([label, value]) => (
                 <div key={label}>

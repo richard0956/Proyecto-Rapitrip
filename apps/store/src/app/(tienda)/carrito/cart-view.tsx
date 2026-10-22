@@ -157,11 +157,11 @@ export function CartView({ quoteAction }: { quoteAction: (input: unknown) => Pro
           </div>
           <div className="flex justify-between">
             <dt className="text-tinta-suave">Envío</dt>
-            <dd className="font-bold">{quote ? (quote.delivery_fee > 0 ? formatMoney(quote.delivery_fee) : "Gratis") : "—"}</dd>
+            <dd className="text-[13px] font-bold text-tinta-suave">Según tu ubicación</dd>
           </div>
           <div className="mt-1 flex justify-between border-t border-borde pt-2 text-[16px]">
-            <dt className="font-extrabold">Total</dt>
-            <dd className="font-extrabold text-hoja">{quote ? formatMoney(quote.total) : "—"}</dd>
+            <dt className="font-extrabold">Subtotal</dt>
+            <dd className="font-extrabold text-hoja">{quote ? formatMoney(quote.subtotal) : "—"}</dd>
           </div>
         </dl>
         {blocked ? (

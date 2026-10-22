@@ -7,36 +7,165 @@ import { useMemo, useState, useTransition, type FormEvent } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
-import type { CloseResult } from "./actions";
+import type { CashIncident, CloseResult } from "./actions";
 
 export type CatalogRow = { storeId: string; storeName: string; variantId: string; product: string; variant: string; sku: string; price: number; quantity: number | null };
 export type Sale = { id: string; number: number; store: string; voided: boolean; method: "efectivo" | "tarjeta"; total: number; at: string };
 export type Shift = { id: string; openedAt: string; opening: number; closed: boolean; difference: number | null; note: string | null; salesCount: number; salesTotal: number; cashExpected: number };
+export type CashReturn = { requestId: string; orderNumber: number; store: string; total: number; decidedAt: string };
+export type PendingCash = { orderId: string; orderNumber: number; store: string; total: number; code: string; deliveredAt: string };
 
 type Actions = {
   openCashSession: (opening: number) => Promise<ActionResult>;
   closeCashSession: (input: { counted: number; note?: string }) => Promise<CloseResult>;
-  createCounterSale: (input: { store: string; method: "efectivo" | "tarjeta"; items: { variant_id: string; quantity: number }[] }) => Promise<ActionResult>;
+  createCounterSale: (input: { store: string; method: "efectivo" | "tarjeta"; reference?: string; items: { variant_id: string; quantity: number }[] }) => Promise<ActionResult>;
   voidCounterSale: (id: string, reason: string) => Promise<ActionResult>;
+  receiveCourierCash: (orderId: string) => Promise<ActionResult>;
+  returnCashToCustomer: (requestId: string) => Promise<ActionResult>;
+  loadCashIncidents: (sessionId: string) => Promise<{ ok: true; incidents: CashIncident[] } | { ok: false; error: string }>;
 };
 
 type Message = { ok: boolean; text: string } | null;
 const Feedback = ({ message }: { message: Message }) => (message ? <Alert tone={message.ok ? "info" : "error"}>{message.text}</Alert> : null);
 
-export function CashWorkspace({ shift, history, catalog, sales, actions }: { shift: Shift | null; history: Shift[]; catalog: CatalogRow[]; sales: Sale[]; actions: Actions }) {
+export function CashWorkspace({ shift, history, catalog, sales, pendingCash, pendingReturns, actions }: { shift: Shift | null; history: Shift[]; catalog: CatalogRow[]; sales: Sale[]; pendingCash: PendingCash[]; pendingReturns: CashReturn[]; actions: Actions }) {
+  const [lastClosed, setLastClosed] = useState<CashIncident[] | null>(null);
   return shift ? (
     <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
       <SalePanel catalog={catalog} create={actions.createCounterSale} />
       <div className="flex flex-col gap-5">
-        <ShiftCard shift={shift} close={actions.closeCashSession} />
+        <CourierCashCard pending={pendingCash} receive={actions.receiveCourierCash} />
+        <CashReturnsCard pending={pendingReturns} giveBack={actions.returnCashToCustomer} />
+        <ShiftCard shift={shift} close={actions.closeCashSession} loadIncidents={actions.loadCashIncidents} onClosed={setLastClosed} />
         <SalesCard sales={sales} voidSale={actions.voidCounterSale} />
       </div>
     </div>
   ) : (
     <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
       <OpenCard open={actions.openCashSession} />
-      <HistoryCard history={history} />
+      <div className="flex flex-col gap-5">
+        {lastClosed ? <IncidentsCard incidents={lastClosed} /> : null}
+        <HistoryCard history={history} />
+      </div>
     </div>
+  );
+}
+
+function CourierCashCard({ pending, receive }: { pending: PendingCash[]; receive: Actions["receiveCourierCash"] }) {
+  const router = useRouter();
+  const [message, setMessage] = useState<Message>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function accept(orderId: string) {
+    setBusy(orderId);
+    setMessage(null);
+    const result = await receive(orderId);
+    setBusy(null);
+    if (!result.ok) return setMessage({ ok: false, text: result.error });
+    router.refresh();
+  }
+
+  return (
+    <Card className="p-5">
+      <CardHeader title="Efectivo de repartidores" subtitle="Recibe el efectivo físico que entregó cada repartidor." />
+      {pending.length === 0 ? (
+        <p className="text-[13px] text-tinta-suave">No hay efectivo pendiente de recibir.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-borde">
+          {pending.map((item) => (
+            <li key={item.orderId} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+              <span className="min-w-0">
+                <span className="block font-bold text-tinta">Pedido {item.orderNumber} · {formatMoney(item.total)}</span>
+                <span className="block truncate text-xs text-tinta-suave">{item.store} · código {item.code} · entregado {item.deliveredAt}</span>
+              </span>
+              <Button variant="secondary" onClick={() => accept(item.orderId)} disabled={busy !== null} className="min-h-9 px-3">
+                {busy === item.orderId ? "Recibiendo…" : "Recibir"}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-3.5">
+        <Feedback message={message} />
+      </div>
+    </Card>
+  );
+}
+
+function CashReturnsCard({ pending, giveBack }: { pending: CashReturn[]; giveBack: Actions["returnCashToCustomer"] }) {
+  const router = useRouter();
+  const [message, setMessage] = useState<Message>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function accept(requestId: string) {
+    setBusy(requestId);
+    setMessage(null);
+    const result = await giveBack(requestId);
+    setBusy(null);
+    if (!result.ok) return setMessage({ ok: false, text: result.error });
+    router.refresh();
+  }
+
+  return (
+    <Card className="p-5">
+      <CardHeader title="Devoluciones en efectivo" subtitle="Administración aprobó estas devoluciones. Entrega el dinero al cliente y confírmalo aquí." />
+      {pending.length === 0 ? (
+        <p className="text-[13px] text-tinta-suave">No hay efectivo pendiente de devolver.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-borde">
+          {pending.map((item) => (
+            <li key={item.requestId} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
+              <span className="min-w-0">
+                <span className="block font-bold text-tinta">Pedido {item.orderNumber} · {formatMoney(item.total)}</span>
+                <span className="block truncate text-xs text-tinta-suave">{item.store} · aprobada {item.decidedAt}</span>
+              </span>
+              <Button variant="secondary" onClick={() => accept(item.requestId)} disabled={busy !== null} className="min-h-9 px-3">
+                {busy === item.requestId ? "Devolviendo…" : "Devolver efectivo"}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-3.5">
+        <Feedback message={message} />
+      </div>
+    </Card>
+  );
+}
+
+function IncidentsCard({ incidents }: { incidents: CashIncident[] }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, CashIncident[]>();
+    for (const item of incidents) {
+      const key = item.commerceName ?? "Sin comercio";
+      map.set(key, [...(map.get(key) ?? []), item]);
+    }
+    return [...map.entries()];
+  }, [incidents]);
+
+  return (
+    <Card className="p-5">
+      <CardHeader title="Incidencias del último cierre" subtitle="Avisa a cada comercio de sus ventas con diferencia." />
+      {groups.length === 0 ? (
+        <p className="text-[13px] text-tinta-suave">El cierre no tuvo incidencias.</p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {groups.map(([commerce, items]) => (
+            <div key={commerce}>
+              <p className="mb-1.5 text-sm font-bold text-tinta">{commerce}</p>
+              <ul className="flex flex-col divide-y divide-borde">
+                {items.map((item, index) => (
+                  <li key={item.kind + "-" + index} className="py-2 text-sm">
+                    <span className="block text-tinta">{item.detail}</span>
+                    <span className="block text-xs text-tinta-suave">{item.kind.split("_").join(" ")}{item.orderNumber !== null ? " · pedido " + item.orderNumber : ""}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -102,6 +231,7 @@ function SalePanel({ catalog, create }: { catalog: CatalogRow[]; create: Actions
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
   const [method, setMethod] = useState<"efectivo" | "tarjeta">("efectivo");
+  const [voucher, setVoucher] = useState("");
   const [received, setReceived] = useState("");
   const [message, setMessage] = useState<Message>(null);
   const [pending, start] = useTransition();
@@ -128,11 +258,12 @@ function SalePanel({ catalog, create }: { catalog: CatalogRow[]; create: Actions
     if (!storeId) return;
     setMessage(null);
     start(async () => {
-      const result = await create({ store: storeId, method, items: lines.map((line) => ({ variant_id: line.row.variantId, quantity: line.quantity })) });
+      const result = await create({ store: storeId, method, reference: method === "tarjeta" ? voucher : undefined, items: lines.map((line) => ({ variant_id: line.row.variantId, quantity: line.quantity })) });
       if (!result.ok) return setMessage({ ok: false, text: result.error });
       setMessage({ ok: true, text: `Venta registrada por ${formatMoney(total)}.` });
       setCart({});
       setReceived("");
+      setVoucher("");
       router.refresh();
     });
   }
@@ -211,11 +342,11 @@ function SalePanel({ catalog, create }: { catalog: CatalogRow[]; create: Actions
             <p className="pb-2 text-sm text-tinta">{change === null ? "" : change >= 0 ? `Vuelto: ${formatMoney(change)}` : `Faltan ${formatMoney(-change)}`}</p>
           </div>
         ) : (
-          <p className="mb-3 text-xs text-tinta-suave">Cobra en el terminal de tarjeta y registra aquí la venta.</p>
+          <Field label="Voucher del terminal" value={voucher} onChange={(e) => setVoucher(e.target.value)} maxLength={20} hint="Entre 4 y 20 caracteres, el que imprime el terminal" className="mb-3" />
         )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-lg font-bold tabular-nums text-tinta">Total {formatMoney(total)}</p>
-          <Button variant="primary" onClick={charge} disabled={pending || lines.length === 0 || (change !== null && change < 0)}>
+          <Button variant="primary" onClick={charge} disabled={pending || lines.length === 0 || (change !== null && change < 0) || (method === "tarjeta" && voucher.trim().length < 4)}>
             {pending ? "Cobrando…" : "Cobrar"}
           </Button>
         </div>
@@ -227,7 +358,7 @@ function SalePanel({ catalog, create }: { catalog: CatalogRow[]; create: Actions
   );
 }
 
-function ShiftCard({ shift, close }: { shift: Shift; close: Actions["closeCashSession"] }) {
+function ShiftCard({ shift, close, loadIncidents, onClosed }: { shift: Shift; close: Actions["closeCashSession"]; loadIncidents: Actions["loadCashIncidents"]; onClosed: (incidents: CashIncident[]) => void }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [counted, setCounted] = useState("");
@@ -248,6 +379,10 @@ function ShiftCard({ shift, close }: { shift: Shift; close: Actions["closeCashSe
     start(async () => {
       const result = await close({ counted: Number(counted), note });
       if (!result.ok) return setMessage({ ok: false, text: result.error });
+      if (result.incidentsCount > 0) {
+        const detail = await loadIncidents(shift.id);
+        if (detail.ok) onClosed(detail.incidents);
+      }
       setOpen(false);
       router.refresh();
     });
@@ -271,7 +406,7 @@ function ShiftCard({ shift, close }: { shift: Shift; close: Actions["closeCashSe
         <form onSubmit={submit} className="flex flex-col gap-3.5" noValidate>
           <p className="text-sm text-tinta-suave">Cuenta el efectivo que hay en caja. Se espera {formatMoney(shift.cashExpected)}.</p>
           <Field label="Efectivo contado" type="number" inputMode="decimal" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} />
-          <Field label="Nota" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} hint="Obligatoria si hay diferencia" />
+          <Field label="Nota" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} hint="Obligatoria si hay diferencia o incidencias" />
           <Feedback message={message} />
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={dismiss} disabled={pending}>

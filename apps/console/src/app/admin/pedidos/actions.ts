@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
 import { requireConsoleAccess } from "@/lib/guard";
+import { toRoutePoints, type RouteResult } from "@/lib/order-route";
 import { serverSupabase } from "@/lib/supabase";
 
 /** Cancelar un pedido abierto como excepción. La base de datos exige motivo, devuelve el stock y encola el reembolso si estaba pagado con tarjeta. */
@@ -18,4 +19,16 @@ export async function cancelOrder(id: string, reason: string): Promise<ActionRes
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/excepciones");
   return { ok: true };
+}
+
+/** Puntos de la ruta (tienda y destino) de un pedido. La base de datos solo los entrega a coordinación y administración. */
+export async function orderRoute(id: string): Promise<RouteResult> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("order_route_points", { p_order: parsed.data });
+  const row = data?.[0];
+  if (error || !row) return { ok: false, error: "No pudimos cargar la ruta." };
+  return { ok: true, points: toRoutePoints(row) };
 }

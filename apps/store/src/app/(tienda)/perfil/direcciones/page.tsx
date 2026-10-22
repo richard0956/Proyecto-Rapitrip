@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Mis direcciones", robots: { index: f
 export default async function DireccionesPage() {
   await requireCustomer("/perfil/direcciones");
   const supabase = await serverSupabase();
-  const { data, error } = await supabase.from("my_addresses").select("id, label, address, reference, phone, is_default").order("is_default", { ascending: false }).order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("my_addresses").select("id, label, address, reference, phone, is_default, latitude, longitude").order("is_default", { ascending: false }).order("created_at", { ascending: false });
   // La vista responde vacía (no con error) si la sesión de un día venció: confirmarlo con el perfil evita tomarlo por «sin direcciones».
   const { data: profile } = await supabase.from("my_profile").select("id").maybeSingle();
   if (!profile) redirect(`/ingresar?next=${encodeURIComponent("/perfil/direcciones")}&expirada=1`);
@@ -24,6 +24,8 @@ export default async function DireccionesPage() {
     reference: row.reference,
     phone: row.phone,
     is_default: !!row.is_default,
+    latitude: row.latitude,
+    longitude: row.longitude,
   }));
 
   return (

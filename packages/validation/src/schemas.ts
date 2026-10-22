@@ -69,6 +69,16 @@ export const storeSchema = z.object({
 });
 export type StoreInput = z.infer<typeof storeSchema>;
 
+/** Pin del mapa: latitud y longitud juntas o ninguna. La base de datos exige además que el punto caiga dentro de Nicaragua. */
+const pinFields = {
+  latitude: z.number().min(-90).max(90).nullable().optional().transform((value) => value ?? null),
+  longitude: z.number().min(-180).max(180).nullable().optional().transform((value) => value ?? null),
+};
+const pinIsComplete = (value: { latitude: number | null; longitude: number | null }) => (value.latitude === null) === (value.longitude === null);
+
+export const locationSchema = z.object(pinFields).refine(pinIsComplete, { message: "la ubicación va completa o no va", path: ["latitude"] });
+export type LocationInput = z.infer<typeof locationSchema>;
+
 const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "hora inválida (usa HH:MM)");
 
 export const hoursRangeSchema = z
@@ -195,13 +205,19 @@ export const cartLineSchema = z.object({
 });
 
 /** Lo que el checkout envía a `create_order`. Dirección y teléfono se copian al pedido como texto. */
-export const checkoutSchema = z.object({
-  store_id: z.string().uuid(),
-  items: z.array(cartLineSchema).min(1, "el carrito está vacío").max(30, "máximo 30 productos distintos"),
-  payment_method: paymentMethodSchema,
-  address: z.string().trim().min(5, "la dirección exige al menos 5 caracteres").max(240, "máximo 240 caracteres"),
-  phone: phoneSchema,
-  notes: optionalText(240),
-  client_ref: z.string().uuid(),
-});
+export const checkoutSchema = z
+  .object({
+    store_id: z.string().uuid(),
+    items: z.array(cartLineSchema).min(1, "el carrito está vacío").max(30, "máximo 30 productos distintos"),
+    payment_method: paymentMethodSchema,
+    address: z.string().trim().min(5, "la dirección exige al menos 5 caracteres").max(240, "máximo 240 caracteres"),
+    phone: phoneSchema,
+    notes: optionalText(240),
+    client_ref: z.string().uuid(),
+    /** Pin del destino (obligatorio en la base de datos): lo que cuenta es el punto; la dirección escrita es apoyo. */
+    ...pinFields,
+    /** Cotización del envío por ruta (función `quote-delivery`); sin ella la base de datos cotiza por línea recta. */
+    quote_id: z.string().uuid().nullable().optional().transform((value) => value ?? null),
+  })
+  .refine(pinIsComplete, { message: "la ubicación va completa o no va", path: ["latitude"] });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

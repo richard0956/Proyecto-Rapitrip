@@ -7,13 +7,13 @@ import { serverSupabase } from "@/lib/supabase";
 import { approveRequest, rejectRequest } from "./actions";
 import { RequestsWorkspace, type RequestRow } from "./requests-workspace";
 
-const detailsSchema = z.object({ contact_name: z.string().catch(""), phone: z.string().catch(""), address: z.string().catch(""), category: z.string().catch("") });
+const detailsSchema = z.object({ contact_name: z.string().catch(""), phone: z.string().catch(""), address: z.string().catch(""), category: z.string().catch(""), business_kind: z.string().catch("informal"), ruc: z.string().catch(""), cedula: z.string().catch(""), email: z.string().catch(""), description: z.string().catch("") });
 
 /** Los datos los escribe el solicitante: se leen con tolerancia, sin asumir que vengan completos. */
 function readDetails(value: unknown) {
   const parsed = detailsSchema.safeParse(value && typeof value === "object" ? value : {});
-  const d = parsed.success ? parsed.data : { contact_name: "", phone: "", address: "", category: "" };
-  return { contactName: d.contact_name, phone: d.phone, address: d.address, category: d.category };
+  const d = parsed.success ? parsed.data : { contact_name: "", phone: "", address: "", category: "", business_kind: "informal", ruc: "", cedula: "", email: "", description: "" };
+  return { contactName: d.contact_name, phone: d.phone, address: d.address, category: d.category, kind: d.business_kind === "empresa" ? ("empresa" as const) : ("informal" as const), ruc: d.ruc, cedula: d.cedula, email: d.email, description: d.description };
 }
 
 export default async function SolicitudesPage() {

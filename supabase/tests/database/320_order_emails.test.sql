@@ -12,6 +12,7 @@ select tests.grant_role((select id from tu where k = 'com'), 'comercio', (select
 
 select tests.authenticate_as((select id from tu where k = 'com'));
 select set_config('t.store', public.create_store((select id from tc where k = 'a'), 'Tienda A')::text, true);
+select public.set_store_location(current_setting('t.store')::uuid, 12.136400, -86.251400);
 select public.set_store_hours(current_setting('t.store')::uuid,
   (select jsonb_agg(jsonb_build_object('weekday', d, 'opens', '00:00', 'closes', '23:59')) from generate_series(0, 6) d));
 select set_config('t.prod', public.create_product(current_setting('t.store')::uuid, 'Café')::text, true);
@@ -23,9 +24,9 @@ delete from private.email_outbox;
 
 select tests.authenticate_as((select id from tu where k = 'cli'));
 select set_config('t.o1', public.create_order(current_setting('t.store')::uuid,
-  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111')::text, true);
+  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
 select set_config('t.o2', public.create_order(current_setting('t.store')::uuid,
-  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111')::text, true);
+  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
 reset role;
 
 select is((select count(*)::int from private.email_outbox where template = 'order_received'), 1,

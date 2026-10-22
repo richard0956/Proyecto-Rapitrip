@@ -17,7 +17,7 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
   await requireConsoleAccess("admin");
   const supabase = await serverSupabase();
   const [commerce, stores, products, accounts] = await Promise.all([
-    supabase.from("commerces_list").select("id, name, status, created_at").eq("id", id).maybeSingle(),
+    supabase.from("commerces_list").select("id, name, status, created_at, kind, ruc").eq("id", id).maybeSingle(),
     supabase.from("stores_list").select("id, name, address, status, closed_until, open_now").eq("commerce_id", id).order("name"),
     supabase.from("products_list").select("id, store_id, status").eq("commerce_id", id),
     supabase.from("accounts_staff").select("full_name, email, role_status").eq("role", "comercio").eq("commerce_id", id),
@@ -41,7 +41,7 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
     <>
       <PageHeader
         title={commerce.data.name}
-        description={`Afiliado desde ${formatDate(commerce.data.created_at)}.`}
+        description={`Afiliado desde ${formatDate(commerce.data.created_at)} · ${commerce.data.kind === "empresa" ? `Empresa, RUC ${commerce.data.ruc}` : "Vendedor propio"}.`}
         actions={
           <Link href="/admin/comercios" className={buttonStyles({ variant: "ghost" })}>
             <ArrowLeft className="size-4" aria-hidden="true" />

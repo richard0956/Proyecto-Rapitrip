@@ -2,7 +2,7 @@ import { Badge, Card } from "@rapitrip/ui";
 import { Clock, MapPin, Truck } from "lucide-react";
 import Link from "next/link";
 import type { StoreSummary } from "@/lib/catalog";
-import { formatMoney } from "@/lib/money";
+import { kindLabel } from "@/lib/catalog-filters";
 
 export function StoreCard({ store }: { store: StoreSummary }) {
   return (
@@ -16,6 +16,7 @@ export function StoreCard({ store }: { store: StoreSummary }) {
           </h2>
           <Badge tone={store.open_now ? "positive" : "neutral"}>{store.open_now ? "Abierta" : "Cerrada"}</Badge>
         </div>
+        {store.commerce_kind ? <p className="-mt-1.5 text-[12px] font-bold text-tinta-suave">{kindLabel(store.commerce_kind)}</p> : null}
         <ul className="flex flex-col gap-1.5 text-[13px] text-tinta-suave">
           {store.address ? (
             <li className="flex items-start gap-2">
@@ -25,7 +26,7 @@ export function StoreCard({ store }: { store: StoreSummary }) {
           ) : null}
           <li className="flex items-center gap-2">
             <Truck aria-hidden="true" className="size-4 shrink-0" />
-            {store.delivery_fee > 0 ? `Envío ${formatMoney(store.delivery_fee)}` : "Envío gratis"}
+            Envío según la distancia
           </li>
           {!store.open_now && store.closed_reason ? (
             <li className="flex items-start gap-2">
@@ -34,6 +35,15 @@ export function StoreCard({ store }: { store: StoreSummary }) {
             </li>
           ) : null}
         </ul>
+        {store.categories && store.categories.length > 0 ? (
+          <ul aria-label="Categorías de la tienda" className="flex flex-wrap gap-1.5">
+            {store.categories.map((name) => (
+              <li key={name} className="rounded-full bg-menta px-2.5 py-1 text-[11px] font-bold text-exito">
+                {name}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <p className="mt-auto text-xs font-bold text-hoja">
           {store.product_count} {store.product_count === 1 ? "producto" : "productos"}
         </p>

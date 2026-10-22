@@ -25,6 +25,7 @@ insert into identity.couriers (full_name, phone, vehicle_type, created_by)
 -- Catálogo del comercio A: una tienda abierta todo el día, un producto con stock controlado y otro sin control.
 select tests.authenticate_as((select id from tu where k = 'com'));
 select set_config('t.store', public.create_store((select id from tc where k = 'a'), 'Tienda A')::text, true);
+select public.set_store_location(current_setting('t.store')::uuid, 12.136400, -86.251400);
 select public.set_store_hours(current_setting('t.store')::uuid,
   (select jsonb_agg(jsonb_build_object('weekday', d, 'opens', '00:00', 'closes', '23:59')) from generate_series(0, 6) d));
 select set_config('t.prod', public.create_product(current_setting('t.store')::uuid, 'Café')::text, true);
@@ -47,28 +48,28 @@ reset role;
 
 -- Crear pedidos
 select tests.authenticate_as((select id from tu where k = 'cli'));
-select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111')$$,
+select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$,
   current_setting('t.store'), format('[{"variant_id":"%s","quantity":50}]', current_setting('t.var'))),
   '22023', null::text, 'no se reserva más stock del que hay');
-select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111')$$,
+select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$,
   current_setting('t.store'), format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var3'))),
   '22023', null::text, 'un producto en borrador no se puede pedir');
-select throws_ok(format($$select public.create_order(%L, '[]'::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111')$$, current_setting('t.store')),
+select throws_ok(format($$select public.create_order(%L, '[]'::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$, current_setting('t.store')),
   '22023', null::text, 'el pedido necesita productos');
-select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'trueque', 'Barrio Central, casa 4', '88881111')$$,
+select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'trueque', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$,
   current_setting('t.store'), format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var2'))),
   '22023', null::text, 'el método de pago debe ser válido');
 select set_config('t.o1', public.create_order(current_setting('t.store')::uuid,
   format('[{"variant_id":"%s","quantity":3},{"variant_id":"%s","quantity":2},{"variant_id":"%s","quantity":1}]',
     current_setting('t.var'), current_setting('t.var2'), current_setting('t.var'))::jsonb,
-  'efectivo', 'Barrio Central, casa 4', '88881111', 'tocar el timbre')::text, true);
-select is((select total from public.orders_list where id = current_setting('t.o1')::uuid), 446.00::numeric,
-  'total = 4 x 100 + 2 x 10,50 + 25 de envío (variantes repetidas se suman)');
+  'efectivo', 'Barrio Central, casa 4', '88881111', 'tocar el timbre', null, 12.136400, -86.251400)::text, true);
+select is((select total from public.orders_list where id = current_setting('t.o1')::uuid), 471.00::numeric,
+  'total = 4 x 100 + 2 x 10,50 + 50 de envío de la zona 1 (variantes repetidas se suman)');
 select is((select status from public.orders_list where id = current_setting('t.o1')::uuid), 'por_confirmar', 'el pedido en efectivo nace por confirmar');
 select is((select count(*)::int from public.order_items_list where order_id = current_setting('t.o1')::uuid), 2, 'un renglón por variante');
 select is((select address from public.order_delivery_list where order_id = current_setting('t.o1')::uuid), 'Barrio Central, casa 4', 'el cliente ve su dirección');
 select set_config('t.o2', public.create_order(current_setting('t.store')::uuid,
-  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var2'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111')::text, true);
+  format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var2'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
 select is((select status from public.orders_list where id = current_setting('t.o2')::uuid), 'pendiente_pago', 'el pedido con tarjeta espera el pago');
 reset role;
 
@@ -121,7 +122,7 @@ select ok(not has_function_privilege('authenticated', 'public.mark_order_paid(uu
 -- Vencimiento
 select tests.authenticate_as((select id from tu where k = 'cli'));
 select set_config('t.o3', public.create_order(current_setting('t.store')::uuid,
-  format('[{"variant_id":"%s","quantity":2}]', current_setting('t.var'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111')::text, true);
+  format('[{"variant_id":"%s","quantity":2}]', current_setting('t.var'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
 reset role;
 select is((select quantity from commerce.inventory where variant_id = current_setting('t.var')::uuid), 4, 'el nuevo pedido reservó 2 más');
 update sales.orders set expires_at = now() - interval '1 minute' where id = current_setting('t.o3')::uuid;
@@ -135,7 +136,7 @@ select set_config('t.varx', public.create_variant(current_setting('t.prodx')::uu
 select public.set_product_status(current_setting('t.prodx')::uuid, 'publicado');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'cli2'));
-select lives_ok(format($$select set_config('t.o4', public.create_order(%L, '[{"variant_id":"%s","quantity":3}]'::jsonb, 'efectivo', 'Barrio Central, casa 9', '88882222')::text, true)$$,
+select lives_ok(format($$select set_config('t.o4', public.create_order(%L, '[{"variant_id":"%s","quantity":3}]'::jsonb, 'efectivo', 'Barrio Central, casa 9', '88882222', null, null, 12.136400, -86.251400)::text, true)$$,
   current_setting('t.store'), current_setting('t.varx')), 'pedido de una variante sin control de stock');
 reset role;
 select is((select stock_reserved from sales.order_items where order_id = current_setting('t.o4')::uuid), false, 'sin control no se marca reserva');
@@ -150,7 +151,7 @@ select is((select quantity from commerce.inventory where variant_id = current_se
   'cancelar un pedido que no reservó stock no suma unidades');
 select tests.authenticate_as((select id from tu where k = 'cli2'));
 select set_config('t.o5', public.create_order(current_setting('t.store')::uuid,
-  format('[{"variant_id":"%s","quantity":4}]', current_setting('t.varx'))::jsonb, 'efectivo', 'Barrio Central, casa 9', '88882222')::text, true);
+  format('[{"variant_id":"%s","quantity":4}]', current_setting('t.varx'))::jsonb, 'efectivo', 'Barrio Central, casa 9', '88882222', null, null, 12.136400, -86.251400)::text, true);
 reset role;
 select is((select quantity from commerce.inventory where variant_id = current_setting('t.varx')::uuid), 6, 'con control, el pedido reserva 4');
 select tests.authenticate_as((select id from tu where k = 'cli2'));

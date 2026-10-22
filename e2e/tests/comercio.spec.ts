@@ -8,12 +8,22 @@ import { CONSOLE_URL } from "../support/urls";
 /** PNG de 1×1 píxel: suficiente para probar la subida con las políticas reales de Storage. */
 const PIXEL = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
 
+/** La ubicación de la tienda es obligatoria: se marca con «Usar mi ubicación» (la del navegador se simula en el centro de Managua). */
+async function markStoreLocation(page: Page) {
+  await page.context().grantPermissions(["geolocation"], { origin: CONSOLE_URL });
+  await page.context().setGeolocation({ latitude: 12.1364, longitude: -86.2514 });
+  await page.getByRole("button", { name: "Usar mi ubicación" }).click();
+  await expect(page.getByText("Punto marcado: 12.13640, -86.25140.")).toBeVisible();
+}
+
 async function createStore(page: Page, name: string) {
   await page.goto(`${CONSOLE_URL}/comercio/tiendas`);
   await page.getByRole("button", { name: "Nueva tienda" }).click();
   await page.getByLabel("Nombre de la tienda").fill(name);
+  await expect(page.getByRole("button", { name: "Crear tienda" })).toBeDisabled();
+  await markStoreLocation(page);
   await page.getByRole("button", { name: "Crear tienda" }).click();
-  await expect(page).toHaveURL(/\/comercio\/tiendas\/[0-9a-f-]{36}$/);
+  await expect(page).toHaveURL(/\/comercio\/tiendas\/[0-9a-f-]{36}$/, { timeout: 30_000 });
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
 }
 
@@ -155,6 +165,7 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await owner.goto(`${CONSOLE_URL}/comercio/tiendas`);
     await owner.getByRole("button", { name: "Nueva tienda" }).click();
     await owner.getByLabel("Nombre de la tienda").fill("Tienda Catálogo");
+    await markStoreLocation(owner);
     await owner.getByRole("button", { name: "Crear tienda" }).click();
     await expect(owner).toHaveURL(/\/comercio\/tiendas\/[0-9a-f-]{36}$/);
     await owner.goto(`${CONSOLE_URL}/comercio/catalogo`);
@@ -249,10 +260,10 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
     await expect(page.getByText("Motivo: sin existencias reales")).toBeVisible();
 
-    // Inicio: nada por confirmar y la venta de hoy es la del pedido confirmado (2 × 150)
+    // Inicio: nada por confirmar y la venta de hoy es la del pedido confirmado (2 × 150 + 50 de envío de la zona 1)
     await page.goto(`${CONSOLE_URL}/comercio`);
     await expect(page.getByText("Ventas de hoy")).toBeVisible();
-    await expect(page.getByText(/300/).first()).toBeVisible();
+    await expect(page.getByText(/350/).first()).toBeVisible();
     await expectNoViolations(page);
   });
 });

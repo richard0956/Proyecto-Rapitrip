@@ -7,15 +7,20 @@ try {
   // Sin URL de Supabase la política queda sin ese origen; la app no arranca sin ella de todos modos.
 }
 
+/** Mapbox GL pide estilos, teselas y letras a su API, envía telemetría y trabaja en un Web Worker creado desde un blob. */
+const mapbox = "https://api.mapbox.com https://*.tiles.mapbox.com https://events.mapbox.com";
+
 /** Turnstile carga su script y su iframe desde Cloudflare; Supabase recibe las llamadas de auth y datos. */
 const csp = [
   "default-src 'self'",
   // Next inyecta scripts en línea (hidratación y la introducción); en desarrollo además usa eval.
   `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${isProd ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${supabaseOrigin}`.trim(),
+  `img-src 'self' data: blob: ${supabaseOrigin} ${mapbox}`.trim(),
   "font-src 'self' data:",
-  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, "ws")} https://challenges.cloudflare.com`.trim(),
+  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace(/^http/, "ws")} https://challenges.cloudflare.com ${mapbox}`.trim(),
+  "worker-src 'self' blob:",
+  "child-src blob:",
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -26,7 +31,7 @@ const csp = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@rapitrip/ui", "@rapitrip/supabase", "@rapitrip/validation", "@rapitrip/db-types"],
+  transpilePackages: ["@rapitrip/ui", "@rapitrip/maps", "@rapitrip/supabase", "@rapitrip/validation", "@rapitrip/db-types"],
   poweredByHeader: false,
   // Se abre en http://127.0.0.1 (cookies y redirecciones de Supabase); sin esto Next bloquea la hidratación en desarrollo y los botones no responden.
   allowedDevOrigins: ["127.0.0.1"],
@@ -40,7 +45,7 @@ const nextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()" },
           ...(isProd ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }] : []),
         ],
       },

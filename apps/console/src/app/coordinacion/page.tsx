@@ -4,7 +4,7 @@ import { requireConsoleAccess } from "@/lib/guard";
 import { orderStatuses, type OrderStatus } from "@/lib/orders";
 import { formatStoreDateTime } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
-import { assignCourier, setOrderStatus } from "./actions";
+import { assignCourier, orderRoute, setOrderStatus } from "./actions";
 import { DispatchWorkspace, type Courier, type DispatchOrder } from "./dispatch-workspace";
 
 export const metadata = { title: "Pedidos" };
@@ -69,7 +69,7 @@ export default async function CoordinacionPage() {
     <>
       <PageHeader title="Pedidos" description="Asigna repartidor, despacha y marca las entregas. La lista se actualiza sola." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo. Recarga la página.</Alert> : null}
-      <DispatchWorkspace rows={rows} couriers={courierList} setStatus={setOrderStatus} assign={assignCourier} />
+      <DispatchWorkspace rows={rows} couriers={courierList} setStatus={setOrderStatus} assign={assignCourier} loadRoute={orderRoute} />
     </>
   );
 }

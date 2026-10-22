@@ -11,7 +11,7 @@ import { STORE_URL } from "../support/urls";
 test.describe("@backend tienda · pedido del cliente", () => {
   test.skip(!hasBackend, backendHint);
 
-  test("el cliente compra en efectivo, ve su pedido y lo cancela; el stock vuelve", async ({ page }) => {
+  test("el cliente compra en efectivo, ve su pedido y lo cancela; el stock vuelve", async ({ page, context }) => {
     test.setTimeout(180_000);
     const shop = await openShop("Comercio de la tienda", { store: `Tienda ${Date.now()}` });
     const email = uniqueEmail("comprador");
@@ -39,12 +39,20 @@ test.describe("@backend tienda · pedido del cliente", () => {
 
     await page.getByLabel("Dirección de entrega").fill("Barrio Central, casa 4, portón azul");
     await page.getByLabel("Teléfono de contacto").fill("88881111");
+    // Sin el pin del destino no se puede confirmar; con él, la base de datos cotiza el envío por zona (0 km: zona 1, C$50).
+    await expect(page.getByRole("button", { name: "Marca tu punto de entrega" })).toBeDisabled();
+    await context.grantPermissions(["geolocation"], { origin: STORE_URL });
+    await context.setGeolocation({ latitude: 12.1364, longitude: -86.2514 });
+    await page.getByRole("button", { name: "Usar mi ubicación" }).click();
+    await expect(page.getByText(/Zona 1: entrega de hasta 3 km desde la tienda/)).toBeVisible({ timeout: 30_000 });
     await page.getByRole("radio", { name: /Efectivo contra entrega/ }).check();
     await page.getByRole("button", { name: "Confirmar pedido" }).click();
 
     await expect(page).toHaveURL(/\/pedidos\/[0-9a-f-]{36}$/, { timeout: 30_000 });
     await expect(page.getByRole("heading", { level: 1, name: /^Pedido \d+/ })).toBeVisible();
     await expect(page.getByText("Barrio Central, casa 4, portón azul")).toBeVisible();
+    // 2 × 150 + 50 de envío de la zona 1.
+    await expect(page.getByText("350,00 NIO")).toBeVisible();
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
     await expectNoViolations(page);
 
