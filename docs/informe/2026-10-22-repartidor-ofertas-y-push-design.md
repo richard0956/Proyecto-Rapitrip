@@ -19,6 +19,15 @@ Decisiones tomadas con el negocio:
 - **Modelo A:** cada oferta va a **un repartidor a la vez**. Si rechaza o no responde a tiempo, la coordinación la ofrece a otro.
 - Los demás parámetros (sección 2) son valores por defecto propuestos; se pueden cambiar sin rehacer el diseño.
 
+## 1.1 Principio: plataforma 100 % web
+
+No hay aplicación nativa ni tienda de aplicaciones. El repartidor usa una **página web** (`apps/courier`) y la notificación la envía la plataforma web de Rapitrip mediante **Web Push**, un estándar de los navegadores, sin Firebase ni servicios de terceros propios.
+
+- **Quién envía:** la coordinación propone en la consola, el servidor encola el aviso y la función de borde `send-push` lo envía al navegador del repartidor.
+- **Dónde llega:** Android (Chrome), computador (Chrome, Edge, Firefox; Safari en macOS 13 o más) y iPhone (iOS 16.4 o más).
+- **Única diferencia por dispositivo:** en iPhone el permiso de avisos exige antes «Añadir a pantalla de inicio» (la misma web, instalada una vez). En Android y computador basta con abrir la página y aceptar los avisos.
+- La app debe poder usarse también desde un computador, sin depender de funciones exclusivas del móvil.
+
 ## 2. Parámetros por defecto
 
 | Parámetro | Valor | Dónde se cambia |
