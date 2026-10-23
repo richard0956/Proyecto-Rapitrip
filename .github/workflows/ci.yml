@@ -92,6 +92,9 @@ jobs:
       - name: Compilar la tienda
         run: pnpm --filter @rapitrip/store build
 
+      - name: Compilar la app del repartidor
+        run: pnpm --filter @rapitrip/courier build
+
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium
 
@@ -163,6 +166,9 @@ jobs:
 
       - name: Compilar la tienda
         run: pnpm --filter @rapitrip/store build
+
+      - name: Compilar la app del repartidor
+        run: pnpm --filter @rapitrip/courier build
 
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium

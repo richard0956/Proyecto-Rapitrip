@@ -327,3 +327,19 @@ Cuando la coordinación propone un pedido, el teléfono del repartidor recibe un
 - **Auditoría:** `courier.push_registered` y `courier.push_unregistered`, sin direcciones de dispositivos.
 - **Pruebas:** `570_push_notifications.test.sql` (43 aserciones) y `supabase/functions/_shared/webpush_test.ts` (Deno: descifrado de ida y vuelta con un receptor independiente, firma VAPID y respuestas del servicio push).
 - **Pendiente:** el service worker y la pantalla «Activar avisos» (etapa 7); disparar `send-push` desde la acción «Proponer a repartidor» de la consola (etapa 8); programar `send-push` cada minuto en el programador.
+
+
+## 18. Repartidor, etapa 7: aplicación `apps/courier`
+
+Aplicación web móvil (PWA) del repartidor, en el puerto 3002, con su propia cookie de sesión (`rapitrip-courier-auth`) y su propio proyecto de Vercel. No tiene backend propio: llama directamente a las funciones de las etapas 1 a 6 con la sesión del repartidor (sin segundo factor, sesión de hasta 12 horas).
+
+- **Variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (ver `.env.example`). El enlace de la invitación apunta a `COURIER_APP_URL` (funciones de borde).
+- **Pantallas:** `/ingresar` y `/aceptar-invitacion` (acceso); `/` (disponibilidad, propuesta con cuenta regresiva y pedidos abiertos, se actualiza cada 15 s); `/pedidos/[id]` (tienda, entrega, productos, recoger, entregar, «no pude entregar», avisos, devolver); `/historial` (entregas, km y efectivo por rendir); `/perfil` (datos, avisos push, cerrar sesión). Una cuenta sin rol `repartidor` no entra (se cierra su sesión recién abierta).
+- **Evidencias desde el teléfono:** la foto se toma con la cámara trasera (campo de archivo con `capture`, sin permisos extra), se reduce a 1600 px y menos de 450 KB, se calcula su SHA-256, se toma la **ubicación solo en ese instante** (si el teléfono la da; si no, la foto sale igual y queda marcada) y se guarda en una **cola local (IndexedDB)** que la sube sola al volver la señal, aunque se cierre la aplicación. «Confirmar recogida» y «Confirmar entrega» quedan bloqueados hasta que la foto esté en el servidor.
+- **Service worker (`public/sw.js`):** muestra los avisos push (y cierra la notificación de una propuesta cancelada), lleva a la aplicación al tocarlos y muestra `offline.html` si se abre sin conexión. No guarda datos de pedidos en caché.
+- **Avisos push:** pantalla «Perfil → Activar avisos». En iPhone exige instalar la aplicación («Añadir a pantalla de inicio»); la pantalla lo explica.
+- **Mapas:** botones «Cómo llegar» que abren la aplicación de mapas del teléfono con el punto exacto (o la dirección); no hay mapa embebido (la aplicación se mantiene liviana).
+- **Seguridad:** CSP propia, cámara y ubicación permitidas solo a esta aplicación, `Cache-Control: no-store` en `sw.js`.
+- **Accesibilidad:** axe (WCAG 2.2 AA) sin violaciones en las 12 pantallas y estados revisados (ingreso, invitación, inicio con y sin propuesta, diálogo de rechazo, recoger, entregar, «no pude entregar», historial, perfil y no encontrada) con ancho de teléfono.
+- **Pruebas:** 88 de Vitest (lógica, cola de fotos, subida de evidencia, formularios de recoger, entregar, propuesta e ingreso). Verificado además en un navegador con tamaño de teléfono contra un servidor simulado de Supabase: ingreso, disponibilidad, aceptar, recoger con código incorrecto y luego correcto, entregar en efectivo, historial, perfil, aviso sin conexión y pantalla sin conexión.
+- **Pendiente:** recuperar contraseña (hoy se pide a coordinación una invitación nueva); pruebas de punta a punta con el backend real y en iPhone/Android físicos (etapa 9).
