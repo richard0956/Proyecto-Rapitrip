@@ -4,6 +4,8 @@ Managua, 22 de octubre de 2026
 Tipo de documento: diseño acordado, previo a construir. **No hay código todavía.**
 Complementa a `Informe_Fase_5_App_Repartidor.md`. Donde este documento y ese informe se contradigan, manda este.
 
+> **Actualización 23-oct-2026:** tras los cambios de `main` (migraciones 33 a 70), la numeración de migraciones, el plan por etapas y las evidencias están en `2026-10-23-repartidor-revision-evidencias-y-consolas.md`, que prevalece sobre las secciones 9 y 10 de este documento.
+
 ---
 
 ## 1. Qué cambia respecto al informe de Fase 5
