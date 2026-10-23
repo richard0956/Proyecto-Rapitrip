@@ -1,11 +1,12 @@
 "use client";
 
-import { Alert, Badge, Button, Card, CardHeader, EmptyState, pillStyles } from "@rapitrip/ui";
-import { Clock } from "lucide-react";
+import { Alert, Badge, Button, Card, DataTable, Dialog, EmptyState, Field, pillStyles, type Column } from "@rapitrip/ui";
+import { Clock, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
+import { normalizeText } from "@/lib/directory";
 import { classLabel, etaText, type DeliveryClass } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
 import { orderGroup, orderStatusLabel, orderStatusTone, paymentLabel, shopActions, type OrderGroup, type OrderStatus, type ShopAction } from "@/lib/orders";
@@ -44,6 +45,8 @@ export function OrdersWorkspace({ rows, setStatus, loadDistance }: { rows: Order
   const router = useRouter();
   const [tab, setTab] = useState<OrderGroup>("confirmar");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [store, setStore] = useState("");
 
   // Los pedidos nuevos llegan solos: se refresca cada 30 segundos mientras la pestaña está visible.
   useEffect(() => {
@@ -54,56 +57,85 @@ export function OrdersWorkspace({ rows, setStatus, loadDistance }: { rows: Order
   }, [router]);
 
   const counts = useMemo(() => ({ confirmar: rows.filter((r) => orderGroup(r.status) === "confirmar").length, curso: rows.filter((r) => orderGroup(r.status) === "curso").length, terminados: rows.filter((r) => orderGroup(r.status) === "terminados").length }), [rows]);
-  const visible = rows.filter((row) => orderGroup(row.status) === tab);
+  const stores = useMemo(() => [...new Set(rows.map((row) => row.store))].sort((a, b) => a.localeCompare(b)), [rows]);
+  const needle = normalizeText(query);
+  // Con una búsqueda escrita se mira en todos los estados: así se encuentra un pedido viejo sin saber en qué pestaña quedó.
+  const visible = useMemo(
+    () =>
+      rows.filter((row) => {
+        if (store !== "" && row.store !== store) return false;
+        if (needle === "") return orderGroup(row.status) === tab;
+        return String(row.number).includes(needle) || normalizeText(row.store).includes(needle) || row.items.some((item) => normalizeText(item.name).includes(needle));
+      }),
+    [rows, tab, store, needle],
+  );
   const selected = rows.find((row) => row.id === selectedId) ?? null;
 
+  const columns: Column<OrderRow>[] = [
+    {
+      header: "Pedido",
+      cell: (row) => (
+        <button type="button" onClick={() => setSelectedId(row.id)} className="rounded-campo text-left font-bold text-hoja underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+          Pedido {row.number}
+        </button>
+      ),
+    },
+    { header: "Tienda", cell: (row) => row.store },
+    { header: "Fecha", cell: (row) => row.createdAt },
+    { header: "Productos", cell: (row) => <span className="tabular-nums">{row.itemCount}</span> },
+    { header: "Total", cell: (row) => <span className="font-bold tabular-nums">{formatMoney(row.total)}</span> },
+    { header: "Entrega", cell: (row) => classLabel(row.deliveryClass) },
+    { header: "Estado", cell: (row) => <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge> },
+  ];
+
   return (
-    <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <Card>
-        <div role="tablist" aria-label="Estado de los pedidos" className="mb-4 flex flex-wrap gap-2">
+    <Card>
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="w-full sm:max-w-xs">
+          <Field type="search" label="Buscar pedido" hideLabel icon={<Search className="size-4" />} placeholder="Número, tienda o producto…" value={query} onChange={(event) => setQuery(event.target.value)} />
+        </div>
+        <div role="tablist" aria-label="Estado de los pedidos" className="flex flex-wrap gap-2">
           {tabs.map((item) => (
-            <button key={item.key} type="button" role="tab" aria-selected={tab === item.key} onClick={() => setTab(item.key)} className={pillStyles(tab === item.key)}>
+            <button key={item.key} type="button" role="tab" aria-selected={needle === "" && tab === item.key} onClick={() => { setTab(item.key); setQuery(""); }} className={pillStyles(needle === "" && tab === item.key)}>
               {item.label}
               <span className="tabular-nums opacity-90">{counts[item.key]}</span>
             </button>
           ))}
         </div>
-        {visible.length === 0 ? (
-          <EmptyState title="Sin pedidos">{tabs.find((item) => item.key === tab)?.empty}</EmptyState>
+        {stores.length > 1 ? (
+          <>
+            <label className="sr-only" htmlFor="pedidos-tienda">
+              Tienda
+            </label>
+            <select id="pedidos-tienda" value={store} onChange={(event) => setStore(event.target.value)} className="min-h-10 rounded-full border border-borde-campo bg-papel px-3.5 text-[13px] font-bold text-tinta">
+              <option value="">Todas las tiendas</option>
+              {stores.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </>
+        ) : null}
+      </div>
+      {needle !== "" ? <p className="mb-3 text-[13px] text-tinta-suave">Resultados de la búsqueda en todos los estados.</p> : null}
+      {visible.length === 0 ? (
+        needle !== "" ? (
+          <EmptyState title="Ningún pedido coincide">
+            <Button variant="secondary" onClick={() => setQuery("")}>
+              Limpiar búsqueda
+            </Button>
+          </EmptyState>
         ) : (
-          <ul className="flex flex-col divide-y divide-borde">
-            {visible.map((row) => {
-              const active = row.id === selectedId;
-              return (
-                <li key={row.id}>
-                  <button type="button" aria-pressed={active} onClick={() => setSelectedId(active ? null : row.id)} className={`flex w-full flex-wrap items-center justify-between gap-3 rounded-campo px-2 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja ${active ? "bg-menta/50" : "hover:bg-calido/60"}`}>
-                    <span className="min-w-0">
-                      <span className="block text-sm font-bold text-tinta">Pedido {row.number}</span>
-                      <span className="block truncate text-xs text-tinta-suave">
-                        {row.store} · {row.itemCount} {row.itemCount === 1 ? "producto" : "productos"} · {row.createdAt}
-                      </span>
-                    </span>
-                    <span className="flex items-center gap-3">
-                      <span className="text-sm font-bold tabular-nums text-tinta">{formatMoney(row.total)}</span>
-                      <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Card>
-
-      {selected ? (
-        <OrderDetail key={selected.id} row={selected} setStatus={setStatus} loadDistance={loadDistance} onMoved={(to) => setTab(orderGroup(to))} />
+          <EmptyState title="Sin pedidos">{tabs.find((item) => item.key === tab)?.empty}</EmptyState>
+        )
       ) : (
-        <Card>
-          <CardHeader title="Detalle del pedido" />
-          <EmptyState title="Ninguno elegido">Selecciona un pedido para ver sus productos y responderlo.</EmptyState>
-        </Card>
+        <DataTable caption="Pedidos" columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" />
       )}
-    </div>
+      <Dialog open={selected !== null} onClose={() => setSelectedId(null)} title={selected ? `Pedido ${selected.number}` : "Pedido"} wide>
+        {selected ? <OrderDetail key={selected.id} row={selected} setStatus={setStatus} loadDistance={loadDistance} onMoved={(to) => { setTab(orderGroup(to)); setQuery(""); }} /> : null}
+      </Dialog>
+    </Card>
   );
 }
 
@@ -128,8 +160,13 @@ function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow;
   }
 
   return (
-    <Card outerClassName="xl:sticky xl:top-6" className="p-5">
-      <CardHeader title={`Pedido ${row.number}`} subtitle={`${row.store} · ${row.createdAt}`} actions={<Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>} />
+    <div>
+      <p className="mb-3.5 flex items-center justify-between gap-3 text-sm text-tinta-suave">
+        <span>
+          {row.store} · {row.createdAt}
+        </span>
+        <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>
+      </p>
       <p className="mb-3.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
         <Badge tone={row.deliveryClass === "express" ? "positive" : "neutral"}>{classLabel(row.deliveryClass)}</Badge>
         {etaText(row.deliveryClass, row.etaMinDays, row.etaMaxDays)}
@@ -203,6 +240,6 @@ function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow;
           }}
         />
       ) : null}
-    </Card>
+    </div>
   );
 }

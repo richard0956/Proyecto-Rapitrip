@@ -150,7 +150,7 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
 
     await signInAndEnroll(page, director.email, director.password);
     await expect(page).toHaveURL(/\/admin$/);
-    await page.goto(`${CONSOLE_URL}/admin/catalogo`);
+    await page.goto(`${CONSOLE_URL}/admin/catalogo?pestana=categorias`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catálogo maestro");
     await page.getByLabel("Nueva categoría").fill(categoria);
     await page.getByRole("button", { name: "Agregar" }).click();
@@ -188,7 +188,8 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     const director = await createSuperadmin();
     await signInAndEnroll(page, director.email, director.password);
     await expect(page).toHaveURL(/\/admin$/);
-    await page.goto(`${CONSOLE_URL}/admin/comercios`);
+    // La cuenta de prueba es un vendedor propio (sin RUC): está en Vendedores, no en Comercios
+    await page.goto(`${CONSOLE_URL}/admin/vendedores`);
     await page.getByRole("link", { name: businessName }).click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(businessName, { timeout: 30_000 });
     await expect(page.getByText("Tienda a suspender")).toBeVisible();
@@ -238,32 +239,131 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await expect(page.getByText(/Responde antes de/)).toBeVisible();
     await page.getByRole("button", { name: "Confirmar", exact: true }).click();
     await expect(page.getByText(`Pedido ${n1}: confirmado.`)).toBeVisible();
-    // Tras responder, la lista pasa sola a «En curso» y el pedido sigue seleccionado.
-    await expect(page.getByRole("tab", { name: /En curso/, selected: true })).toBeVisible();
+    // El detalle se abre en un modal que sigue abierto al responder: se avanza el pedido desde ahí.
     await page.getByRole("button", { name: "Empezar a preparar" }).click();
     await expect(page.getByText(`Pedido ${n1}: preparando.`)).toBeVisible();
     await page.getByRole("button", { name: "Marcar como listo" }).click();
     await expect(page.getByText(`Pedido ${n1}: listo.`)).toBeVisible();
     await expect(page.getByText("Coordinación se encarga de la entrega.")).toBeVisible();
     expect(await orderState(client, first)).toBe("listo/pendiente");
+    // Al cerrar el modal, la lista ya quedó en «En curso», donde está el pedido.
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tab", { name: /En curso/, selected: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toBeVisible();
 
     // Rechazar el segundo exige motivo y devuelve el stock
     await page.getByRole("tab", { name: /Por confirmar/ }).click();
     await page.getByRole("button", { name: new RegExp(`Pedido ${n2}(?!\\d)`) }).click();
     await page.getByRole("button", { name: "Rechazar", exact: true }).click();
-    const dialog = page.getByRole("dialog");
+    const dialog = page.getByRole("dialog", { name: new RegExp(`Rechazar pedido ${n2}(?!\d)`) });
     await expect(dialog.getByRole("button", { name: "Rechazar", exact: true })).toBeDisabled();
     await dialog.getByLabel("Motivo").fill("sin existencias reales");
     await dialog.getByRole("button", { name: "Rechazar", exact: true }).click();
     await expect.poll(() => orderState(client, second), { timeout: 15_000 }).toBe("rechazado/pendiente");
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
-    await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
     await expect(page.getByText("Motivo: sin existencias reales")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
 
     // Inicio: nada por confirmar y la venta de hoy es la del pedido confirmado (2 × 150 + 50 de envío de la zona 1)
     await page.goto(`${CONSOLE_URL}/comercio`);
     await expect(page.getByText("Ventas de hoy")).toBeVisible();
     await expect(page.getByText(/350/).first()).toBeVisible();
+    await expectNoViolations(page);
+  });
+});
+
+test.describe("@backend consola · dashboard del comercio", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("el comercio ve sus pedidos por confirmar, sus ventas y su inventario filtrable, sin datos de otro comercio", async ({ page }) => {
+    test.setTimeout(180_000);
+    const shop = await openShop("Café con dashboard");
+    const other = await openShop("Otro comercio", { product: "Té ajeno" });
+    const client = await signedInClient();
+    // Uno queda por confirmar y el otro ya está confirmado: solo ese cuenta como venta y da algo que graficar
+    await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    const sold = await placeOrder(client, shop.storeId, shop.variantId, 2, "efectivo");
+    expect((await shop.owner.rpc("set_order_status", { p_order: sold, p_to: "confirmado" })).error).toBeNull();
+
+    await signIn(page, shop.account.email, shop.account.password);
+    await fillCode(page, totp(shop.ownerSecret));
+    await expect(page).toHaveURL(/\/comercio$/, { timeout: 30_000 });
+    await expect(page.getByText("Pedidos por confirmar")).toBeVisible();
+    await expect(page.getByText(/1 pedido espera tu confirmación/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Mes" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("img", { name: /Ventas por día/ })).toBeVisible();
+    await expectNoViolations(page);
+
+    // Inventario: con stock suficiente no hay nada por reponer; «Todos» muestra la variante con su estado
+    await expect(page.getByText("Nada que reponer")).toBeVisible();
+    await page.getByRole("link", { name: "Todos" }).click();
+    await expect(page).toHaveURL(/inventario=todos/);
+    await expect(page.getByRole("cell", { name: /Café molido/ })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Disponible" })).toBeVisible();
+
+    // Una tienda ajena en la URL se ignora: no aparece nada del otro comercio
+    await page.goto(`${CONSOLE_URL}/comercio?tienda=${other.storeId}&inventario=todos`);
+    await expect(page.getByRole("cell", { name: /Café molido/ })).toBeVisible();
+    await expect(page.getByText("Té ajeno")).toHaveCount(0);
+  });
+});
+
+test.describe("@backend consola · pedidos, tiendas y catálogo del comercio", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("pedidos en tabla con búsqueda y modal de detalle; ventas por tienda con productos estrella; catálogo con filtros y flujo por producto", async ({ page }) => {
+    test.setTimeout(240_000);
+    const unique = Date.now();
+    const product = `Café flujo ${unique}`;
+    const shop = await openShop("Comercio de métricas", { store: `Tienda ${unique}`, product });
+    const client = await signedInClient();
+    const pending = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    const sold = await placeOrder(client, shop.storeId, shop.variantId, 3, "efectivo");
+    expect((await shop.owner.rpc("set_order_status", { p_order: sold, p_to: "confirmado" })).error).toBeNull();
+    const numberOf = async (id: string) => String((await client.from("orders_list").select("number").eq("id", id).single()).data!.number);
+    const [nPending, nSold] = [await numberOf(pending), await numberOf(sold)];
+
+    await signIn(page, shop.account.email, shop.account.password);
+    await fillCode(page, totp(shop.ownerSecret));
+    await expect(page).toHaveURL(/\/comercio$/, { timeout: 30_000 });
+
+    // Pedidos: tabla, búsqueda en todos los estados y modal con el detalle
+    await page.goto(`${CONSOLE_URL}/comercio/pedidos`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos", { timeout: 30_000 });
+    await expect(page.getByRole("columnheader", { name: "Estado" })).toBeVisible();
+    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${nPending}(?!\d)`) })).toBeVisible();
+    await page.getByRole("searchbox", { name: "Buscar pedido" }).fill(nSold);
+    await expect(page.getByText("Resultados de la búsqueda en todos los estados.")).toBeVisible();
+    await page.getByRole("button", { name: new RegExp(`Pedido ${nSold}(?!\d)`) }).click();
+    const modal = page.getByRole("dialog", { name: new RegExp(`Pedido ${nSold}(?!\d)`) });
+    await expect(modal.getByText(`${product} · 500 g`)).toBeVisible();
+    await expectNoViolations(page);
+    await page.keyboard.press("Escape");
+
+    // Mis tiendas: con una sola tienda, el gráfico de lo vendido y los productos estrella de la tienda
+    await page.goto(`${CONSOLE_URL}/comercio/tiendas`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mis tiendas", { timeout: 30_000 });
+    await expect(page.getByRole("img", { name: /Ventas por día/ })).toBeVisible();
+    const storeCard = page.getByRole("link", { name: new RegExp(`Tienda ${unique}`) });
+    await expect(storeCard.getByText("Productos estrella")).toBeVisible();
+    await expect(storeCard.getByText(product)).toBeVisible();
+    await expect(storeCard.getByText("3 u.")).toBeVisible();
+    await expectNoViolations(page);
+
+    // Catálogo: cifras, filtros y flujo del producto
+    await page.goto(`${CONSOLE_URL}/comercio/catalogo`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Catálogo", { timeout: 30_000 });
+    await expect(page.getByText("Unidades apartadas")).toBeVisible();
+    const card = page.getByRole("link", { name: new RegExp(product) });
+    await expect(card.getByText(/3 vendidas · 1 pedido/)).toBeVisible();
+    await page.getByRole("button", { name: /Sin ventas/ }).click();
+    await expect(page.getByText("Ningún producto coincide")).toBeVisible();
+    await page.getByRole("button", { name: "Limpiar filtros" }).click();
+    await page.getByRole("button", { name: `Ver flujo de ${product}` }).click();
+    const flow = page.getByRole("dialog", { name: `Flujo de ${product}` });
+    await expect(flow.getByText("Apartadas", { exact: true })).toBeVisible();
+    await expect(flow.getByRole("img", { name: /Unidades vendidas por día/ })).toBeVisible({ timeout: 30_000 });
     await expectNoViolations(page);
   });
 });

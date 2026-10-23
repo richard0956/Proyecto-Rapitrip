@@ -45,7 +45,8 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await page.getByRole("button", { name: "Crear acceso" }).click();
     await expect(page).toHaveURL(/\/login\?invitacion=ok$/);
     await signInAndEnroll(page, email, PASSWORD);
-    await expect(page).toHaveURL(/\/coordinacion$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+    await page.goto(`${CONSOLE_URL}/coordinacion`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos");
     await expect(page.getByRole("tab", { name: /Para despachar\s*\d+/ })).toBeVisible();
     await expectNoViolations(page);
@@ -81,5 +82,60 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     expect(await stockOf(shop.owner, shop.variantId)).toBe(9);
     await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
     await expect(page.getByText("Motivo: el cliente no responde")).toBeVisible();
+  });
+});
+
+/** Necesita las Edge Functions sirviéndose (`supabase functions serve`): la persona de coordinación acepta su invitación con `accept-invitation`. */
+test.describe("@backend coordinación · resumen del día", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("el coordinador ve el resumen, filtra las excepciones y descarga el informe del día en CSV", async ({ page }) => {
+    test.setTimeout(180_000);
+    const unique = Date.now();
+    const shop = await openShop("Comercio del resumen", { store: `Tienda ${unique}`, product: `Café ${unique}` });
+    const client = await signedInClient();
+    const first = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    for (const to of ["confirmado", "preparando", "listo"]) {
+      const { error } = await shop.owner.rpc("set_order_status", { p_order: first, p_to: to });
+      expect(error).toBeNull();
+    }
+
+    const director = await createSuperadmin();
+    const api = await consoleClient(director.email, director.password);
+    const email = uniqueEmail("coordinador");
+    const token = await createInvitation(api, email, "coordinador");
+    const accepted = await fetch(`${process.env.SUPABASE_URL}/functions/v1/accept-invitation`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token, password: PASSWORD, full_name: "Coordinación del Resumen" }),
+    });
+    expect(accepted.status).toBe(200);
+    await signInAndEnroll(page, email, PASSWORD);
+    await expect(page).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Resumen del día", { timeout: 30_000 });
+    await expect(page.getByRole("link", { name: "Resumen" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Pedidos", exact: true })).not.toHaveAttribute("aria-current");
+    await expect(page.getByText("Pedidos activos")).toBeVisible();
+    await expectNoViolations(page);
+
+    // Coordinación no lee las tiendas: el selector sale de los pedidos del día
+    await expect(page.getByLabel("Tienda")).toContainText(`Tienda ${unique}`);
+    await expect(page.getByLabel("Repartidor")).toBeVisible();
+
+    // El pedido listo sin repartidor es una excepción: aparece al filtrar y lleva su alerta
+    await page.getByRole("link", { name: /Con excepción/ }).click();
+    await expect(page).toHaveURL(/filtro=excepcion/);
+    const row = page.getByRole("row", { name: new RegExp(`Tienda ${unique}`) });
+    await expect(row).toBeVisible();
+    await expect(row.getByText("Listo sin repartidor")).toBeVisible();
+
+    // El informe del día es un CSV con el pedido
+    const report = await page.request.get(`${CONSOLE_URL}/coordinacion/informe`);
+    expect(report.status()).toBe(200);
+    expect(report.headers()["content-type"]).toContain("text/csv");
+    expect(report.headers()["content-disposition"]).toContain("pedidos-");
+    const body = await report.text();
+    expect(body).toContain("Número,Tienda,Canal,Pago,Subtotal,Envío,Total,Estado,Creado");
+    expect(body).toContain(`Tienda ${unique}`);
   });
 });

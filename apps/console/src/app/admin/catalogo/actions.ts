@@ -1,6 +1,6 @@
 "use server";
 
-import { deliveryLimitsSchema, masterItemSchema, reasonSchema } from "@rapitrip/validation";
+import { deliveryLimitsSchema, masterItemSchema, productSchema, reasonSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
@@ -73,5 +73,38 @@ export async function setDeliveryLimits(input: unknown): Promise<ActionResult> {
   if (error) return failure(error);
   revalidatePath("/admin/catalogo");
   revalidatePath("/comercio/catalogo");
+  return { ok: true };
+}
+
+/** El administrador edita nombre, descripción y clasificación de un producto de cualquier comercio (la base de datos le da ese permiso y lo audita). */
+export async function updateProductAsAdmin(id: string, input: unknown): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = productSchema.safeParse(input);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("update_product", {
+    p_product: parsedId.data,
+    p_name: parsed.data.name,
+    p_description: parsed.data.description ?? undefined,
+    p_category: parsed.data.category_id ?? undefined,
+    p_brand: parsed.data.brand_id ?? undefined,
+    p_type: parsed.data.product_type_id ?? undefined,
+  });
+  if (error) return failure(error);
+  revalidatePath("/admin/catalogo");
+  return { ok: true };
+}
+
+/** Ocultar (vuelve a borrador) o archivar un producto, con motivo. Publicar sigue siendo decisión del comercio. */
+export async function setProductStatusAsAdmin(id: string, input: { status: "borrador" | "archivado"; reason: string }): Promise<ActionResult> {
+  const parsed = z.object({ id: idSchema, status: z.enum(["borrador", "archivado"]), reason: reasonSchema }).safeParse({ id, ...input });
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("set_product_status", { p_product: parsed.data.id, p_status: parsed.data.status, p_reason: parsed.data.reason });
+  if (error) return failure(error);
+  revalidatePath("/admin/catalogo");
   return { ok: true };
 }

@@ -16,7 +16,7 @@ const itemBase = "flex min-h-9 items-center gap-2.5 rounded-campo px-2.5 py-2 te
 
 function isActive(pathname: string, item: NavItem) {
   const paths = [item.href, ...(item.also ?? [])];
-  return paths.some((path) => pathname === path || (path !== "/admin" && pathname.startsWith(`${path}/`)));
+  return paths.some((path) => pathname === path || (!item.exact && path !== "/admin" && pathname.startsWith(`${path}/`)));
 }
 
 function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {

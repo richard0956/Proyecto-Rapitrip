@@ -57,7 +57,8 @@ test.describe("@backend pedido de punta a punta", () => {
     expect(accepted.status).toBe(200);
     const coordination = await (await browser.newContext()).newPage();
     await signInAndEnroll(coordination, coordEmail, PASSWORD);
-    await expect(coordination).toHaveURL(/\/coordinacion$/, { timeout: 30_000 });
+    await expect(coordination).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+    await coordination.goto(`${CONSOLE_URL}/coordinacion`);
     await coordination.getByRole("button", { name: order }).click();
     await expect(coordination.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
     await coordination.getByLabel("Repartidor").selectOption({ label: `${courierName} · moto` });

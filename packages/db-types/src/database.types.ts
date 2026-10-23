@@ -415,6 +415,9 @@ export type Database = {
 "audit_script_action":
 { Args: { "p_action": string,"p_reason": string,"p_target": string }; Returns: undefined
                            },
+"avg_prep_minutes":
+{ Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: number
+                           },
 "begin_accept_invitation":
 { Args: { "p_token_hash": string }; Returns: Json
                            },
@@ -523,6 +526,11 @@ export type Database = {
 "delete_store_exception":
 { Args: { "p_date": string,"p_store": string }; Returns: undefined
                            },
+"delivered_totals":
+{ Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
+              "delivery_fees": number,"orders": number,"products": number
+            }[]
+                           },
 "delivery_store_point":
 { Args: { "p_store": string }; Returns: {
               "latitude": number,"longitude": number
@@ -574,6 +582,19 @@ export type Database = {
               "dest_latitude": number,"dest_longitude": number,"store_latitude": number,"store_longitude": number,"store_name": string
             }[]
                            },
+"orders_by_status":
+{ Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
+              "orders": number,"status": string
+            }[]
+                           },
+"overdue_confirmations":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
+"payments_by_day":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "day": string,"method": string,"total": number
+            }[]
+                           },
 "pending_cash_returns":
 { Args: Record<PropertyKey, never>; Returns: {
               "decided_at": string,"order_number": number,"request_id": string,"store_name": string,"total": number
@@ -582,6 +603,21 @@ export type Database = {
 "pending_courier_cash":
 { Args: Record<PropertyKey, never>; Returns: {
               "delivered_at": string,"order_id": string,"order_number": number,"payment_ref": string,"store_name": string,"total": number
+            }[]
+                           },
+"product_daily":
+{ Args: { "p_from": string,"p_product": string,"p_to": string }; Returns: {
+              "day": string,"orders": number,"units": number
+            }[]
+                           },
+"product_sales":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "product_id": string,"sales": number,"units": number
+            }[]
+                           },
+"product_stats":
+{ Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
+              "cancelled_units": number,"orders": number,"product_id": string,"reserved_units": number,"sales": number,"units": number
             }[]
                            },
 "quote_cart":
@@ -635,6 +671,11 @@ export type Database = {
 "reopen_store":
 { Args: { "p_store": string }; Returns: undefined
                            },
+"repeat_rejections":
+{ Args: { "p_days"?: number,"p_min"?: number }; Returns: {
+              "commerce_id": string,"rejections": number,"store_name": string
+            }[]
+                           },
 "report_incident":
 { Args: { "p_description": string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion" }; Returns: string
                            },
@@ -654,6 +695,16 @@ export type Database = {
                            },
 "revoke_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
+                           },
+"sales_by_day":
+{ Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
+              "day": string,"orders": number,"sales": number
+            }[]
+                           },
+"sales_by_store":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "orders": number,"sales": number,"store_id": string,"store_name": string
+            }[]
                            },
 "save_address":
 { Args: { "p_address": string,"p_id": string,"p_label": string,"p_latitude"?: number,"p_longitude"?: number,"p_make_default"?: boolean,"p_phone"?: string,"p_reference"?: string }; Returns: string
@@ -721,11 +772,21 @@ export type Database = {
 "set_variant_status":
 { Args: { "p_status": string,"p_variant": string }; Returns: undefined
                            },
+"store_top_products":
+{ Args: { "p_from": string,"p_per_store"?: number,"p_to": string }; Returns: {
+              "product_name": string,"rank": number,"sales": number,"store_id": string,"units": number
+            }[]
+                           },
 "submit_commerce_request":
 { Args: { "p_business_name": string,"p_details"?: Json }; Returns: string
                            },
 "suspend_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
+                           },
+"top_products":
+{ Args: { "p_from": string,"p_limit"?: number,"p_store"?: string,"p_to": string }; Returns: {
+              "product_name": string,"sales": number,"units": number
+            }[]
                            },
 "touch_session":
 { Args: Record<PropertyKey, never>; Returns: undefined

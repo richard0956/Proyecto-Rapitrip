@@ -30,7 +30,7 @@ export default async function SolicitudesPage() {
 
   return (
     <>
-      <PageHeader title="Solicitudes de comercio" description="Revisa los datos y documentos antes de afiliar un comercio." />
+      <PageHeader title="Solicitudes" description="Comercios (empresas con RUC) y vendedores propios que piden afiliarse. Revisa los datos antes de aprobar." />
       {error ? <Alert tone="error" className="mb-5">No pudimos cargar las solicitudes. Recarga la página.</Alert> : null}
       <RequestsWorkspace rows={rows} approve={approveRequest} reject={rejectRequest} />
     </>

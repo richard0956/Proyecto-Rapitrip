@@ -34,3 +34,10 @@ export type SearchParams = Promise<Record<string, string | string[] | undefined>
 export function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
+
+/** Un día `AAAA-MM-DD` que existe en el calendario (el formato solo no basta: `2026-13-45` lo cumple). */
+export function realDay(value: string | undefined): string | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value ? value : undefined;
+}

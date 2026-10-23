@@ -34,9 +34,12 @@ export function areaForRole(role: AppRole | null): ConsoleArea | null {
   return role ? areaByRole[role] : null;
 }
 
+/** Coordinación y caja entran por su resumen (`/resumen`); la pantalla de trabajo sigue en la raíz de su área. */
+const homeByArea: Record<ConsoleArea, string> = { admin: "/admin", comercio: "/comercio", coordinacion: "/coordinacion/resumen", caja: "/caja/resumen" };
+
 export function homePathForRole(role: AppRole | null): string {
   const area = areaForRole(role);
-  return area ? `/${area}` : "/sin-acceso";
+  return area ? homeByArea[area] : "/sin-acceso";
 }
 
 export function canAccessArea(role: AppRole | null, area: ConsoleArea): boolean {

@@ -4,6 +4,7 @@ import { productDeliverySchema, productSchema, reasonSchema, variantSchema } fro
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
+import { fillDays, parsePeriod } from "@/lib/dashboard";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -170,4 +171,23 @@ export async function removeProductImage(productId: string, imageId: string): Pr
   if (removed.error) console.error("[imagen:borrado]", removed.error.message);
   refresh(parsed.data.product);
   return { ok: true };
+}
+
+export type ProductFlowResult = { ok: true; labels: string[]; units: number[]; orders: number[] } | { ok: false; error: string };
+
+/** Unidades y pedidos por día de un producto en el periodo (hasta hoy). Se usa con `.bind(null, periodo)` desde la página. */
+export async function productFlow(periodKey: string, productId: string): Promise<ProductFlowResult> {
+  const parsedId = idSchema.safeParse(productId);
+  if (!parsedId.success) return { ok: false, error: "Producto inválido." };
+  await requireConsoleAccess("comercio");
+  const period = parsePeriod(periodKey);
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("product_daily", { p_product: parsedId.data, p_from: period.from, p_to: period.to });
+  if (error) return { ok: false, error: "No pudimos cargar el flujo del producto." };
+  const todayEnd = parsePeriod("hoy").to;
+  const upTo = period.to < todayEnd ? period.to : todayEnd;
+  const rows = data ?? [];
+  const units = fillDays(rows.map((row) => ({ day: row.day, value: Number(row.units) })), period.from, upTo);
+  const orders = fillDays(rows.map((row) => ({ day: row.day, value: Number(row.orders) })), period.from, upTo);
+  return { ok: true, labels: units.map((point) => point.day.slice(8)), units: units.map((point) => point.value), orders: orders.map((point) => point.value) };
 }

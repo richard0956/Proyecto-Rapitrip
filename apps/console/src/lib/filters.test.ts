@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayEndExclusive, dayStart, first, optionalCursor, optionalDay, optionalUuid, queryString } from "./filters";
+import { dayEndExclusive, dayStart, first, optionalCursor, optionalDay, optionalUuid, queryString, realDay } from "./filters";
 
 describe("filtros de la URL", () => {
   it("convierte un día en un rango [inicio, día siguiente)", () => {
@@ -26,5 +26,13 @@ describe("filtros de la URL", () => {
   it("toma el primer valor si el parámetro se repite", () => {
     expect(first(["a", "b"])).toBe("a");
     expect(first("a")).toBe("a");
+  });
+
+  it("realDay descarta fechas con formato válido pero imposibles", () => {
+    expect(realDay("2026-10-17")).toBe("2026-10-17");
+    expect(realDay("2026-02-29")).toBeUndefined();
+    expect(realDay("2026-13-45")).toBeUndefined();
+    expect(realDay("ayer")).toBeUndefined();
+    expect(realDay(undefined)).toBeUndefined();
   });
 });

@@ -16,8 +16,8 @@ describe("roles", () => {
 
   it("mapea rol a ruta de inicio", () => {
     expect(homePathForRole("superadmin")).toBe("/admin");
-    expect(homePathForRole("cajero")).toBe("/caja");
-    expect(homePathForRole("coordinador")).toBe("/coordinacion");
+    expect(homePathForRole("cajero")).toBe("/caja/resumen");
+    expect(homePathForRole("coordinador")).toBe("/coordinacion/resumen");
     expect(homePathForRole("comercio")).toBe("/comercio");
     expect(homePathForRole("cliente")).toBe("/sin-acceso");
     expect(homePathForRole(null)).toBe("/sin-acceso");

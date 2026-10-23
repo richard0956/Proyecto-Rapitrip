@@ -27,6 +27,7 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
   const failed = stores.error || products.error || accounts.error;
   if (failed) console.error("[comercio:detalle]", stores.error?.message, products.error?.message, accounts.error?.message);
 
+  const isCompany = commerce.data.kind === "empresa";
   const suspended = commerce.data.status === "suspendido";
   const counts = new Map<string, { published: number; draft: number }>();
   for (const row of products.data ?? []) {
@@ -44,9 +45,9 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
         title={commerce.data.name}
         description={`Afiliado desde ${formatDate(commerce.data.created_at)} · ${commerce.data.kind === "empresa" ? `Empresa, RUC ${commerce.data.ruc}` : "Vendedor propio"}.`}
         actions={
-          <Link href="/admin/comercios" className={buttonStyles({ variant: "ghost" })}>
+          <Link href={isCompany ? "/admin/comercios" : "/admin/vendedores"} className={buttonStyles({ variant: "ghost" })}>
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Comercios
+            {isCompany ? "Comercios" : "Vendedores"}
           </Link>
         }
       />

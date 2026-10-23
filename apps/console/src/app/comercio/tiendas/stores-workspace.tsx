@@ -6,14 +6,16 @@ import { MapPin, Plus, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
+import { formatMoney } from "@/lib/money";
 import { storeState } from "@/lib/stores";
 import type { CreateStoreResult } from "./actions";
 
-export type StoreRow = { id: string; name: string; address: string | null; status: string | null; closed_until: string | null; open_now: boolean | null; hour_ranges: number; located: boolean };
+export type StoreMetrics = { sales: number; orders: number; topProducts: { name: string; units: number }[] };
+export type StoreRow = { id: string; name: string; address: string | null; status: string | null; closed_until: string | null; open_now: boolean | null; hour_ranges: number; located: boolean; metrics?: StoreMetrics };
 
 type NewStoreValues = { name: string; address: string; phone: string; latitude: number; longitude: number };
 
-export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (values: NewStoreValues) => Promise<CreateStoreResult> }) {
+export function StoresWorkspace({ rows, create, periodLabel = "este mes" }: { rows: StoreRow[]; create: (values: NewStoreValues) => Promise<CreateStoreResult>; periodLabel?: string }) {
   const [creating, setCreating] = useState(false);
   return (
     <Card>
@@ -43,6 +45,7 @@ export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (v
                   </p>
                   {!row.located ? <p className="mt-2 text-xs font-bold text-durazno-texto">Marca su ubicación en el mapa: sin ella no recibe pedidos.</p> : null}
                   {row.status === "activa" && row.hour_ranges === 0 ? <p className="mt-2 text-xs font-bold text-durazno-texto">Define su horario para que pueda abrir.</p> : null}
+                  {row.metrics ? <StoreMetricsBlock metrics={row.metrics} periodLabel={periodLabel} /> : null}
                 </Link>
               </li>
             );
@@ -51,6 +54,42 @@ export function StoresWorkspace({ rows, create }: { rows: StoreRow[]; create: (v
       )}
       <NewStore open={creating} onClose={() => setCreating(false)} create={create} />
     </Card>
+  );
+}
+
+/** Ventas de la tienda en el periodo y sus productos estrella. */
+function StoreMetricsBlock({ metrics, periodLabel }: { metrics: StoreMetrics; periodLabel: string }) {
+  if (metrics.orders === 0) return <p className="mt-3 rounded-campo bg-papel px-3 py-2 text-xs text-tinta-suave ring-1 ring-borde">Sin ventas {periodLabel}</p>;
+  return (
+    <div className="mt-3 rounded-campo bg-papel p-3 ring-1 ring-borde">
+      <dl className="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <dt className="text-tinta-suave">Ventas</dt>
+          <dd className="text-sm font-extrabold tabular-nums text-tinta">{formatMoney(metrics.sales)}</dd>
+        </div>
+        <div>
+          <dt className="text-tinta-suave">Pedidos</dt>
+          <dd className="text-sm font-extrabold tabular-nums text-tinta">{metrics.orders} {metrics.orders === 1 ? "pedido" : "pedidos"}</dd>
+        </div>
+        <div>
+          <dt className="text-tinta-suave">Ticket promedio</dt>
+          <dd className="text-sm font-extrabold tabular-nums text-tinta">{formatMoney(metrics.sales / metrics.orders)}</dd>
+        </div>
+      </dl>
+      {metrics.topProducts.length > 0 ? (
+        <>
+          <p className="mb-1 mt-3 text-micro font-bold uppercase text-tinta-suave">Productos estrella</p>
+          <ul className="flex flex-col gap-1 text-xs">
+            {metrics.topProducts.map((product) => (
+              <li key={product.name} className="flex items-center justify-between gap-2">
+                <span className="truncate font-semibold text-tinta">{product.name}</span>
+                <span className="tabular-nums text-tinta-suave">{product.units} u.</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </div>
   );
 }
 
