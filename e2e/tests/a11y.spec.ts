@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { expectNoViolations } from "../support/axe";
-import { CONSOLE_URL, STORE_URL } from "../support/urls";
+import { CONSOLE_URL, COURIER_URL, STORE_URL } from "../support/urls";
 
 /** Pantallas públicas (no necesitan sesión ni backend). Las autenticadas se revisan en los flujos con backend. */
 const pages = [
@@ -9,6 +9,9 @@ const pages = [
   { name: "consola · invitación con enlace válido", url: `${CONSOLE_URL}/aceptar-invitacion?token=${"a".repeat(43)}` },
   { name: "consola · cuenta sin acceso", url: `${CONSOLE_URL}/sin-acceso` },
   { name: "consola · sesión expirada", url: `${CONSOLE_URL}/sesion-expirada` },
+  { name: "repartidor · ingresar", url: `${COURIER_URL}/ingresar` },
+  { name: "repartidor · invitación con enlace inválido", url: `${COURIER_URL}/aceptar-invitacion` },
+  { name: "repartidor · invitación con enlace válido", url: `${COURIER_URL}/aceptar-invitacion?token=${"a".repeat(43)}` },
   { name: "tienda · inicio", url: `${STORE_URL}/` },
   { name: "tienda · ingresar", url: `${STORE_URL}/ingresar` },
   { name: "tienda · ingresar con sesión vencida", url: `${STORE_URL}/ingresar?next=/vende&expirada=1` },

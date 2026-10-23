@@ -156,7 +156,31 @@ Las migraciones empiezan en la 71. Cada una con su pgTAP.
 | **6. Push** ✅ *hecha el 23-oct-2026* | 77 | Suscripciones, cola, `send-push`, claves VAPID | Una oferta nueva suena en el teléfono (Android y iPhone instalado) |
 | **7. App `apps/courier`** ✅ *hecha el 23-oct-2026* | — | Todas las pantallas móviles, cámara, ubicación puntual, cola local de subida | Recorrido completo desde un teléfono real |
 | **8. Consolas** ✅ *hecha el 23-oct-2026* | 78 (lecturas y excepciones) | Todo lo de la sección 4 | Coordinación y administración operan y auditan el ciclo completo |
-| **9. Pruebas y salida** | — | E2E en móvil, red lenta, axe, CI, lista de prueba manual de push y cámara | CI en verde; prueba de humo con un repartidor real |
+| **9. Pruebas y salida** ✅ *hecha el 23-oct-2026* | — | E2E en móvil, red lenta, axe, CI, lista de prueba manual de push y cámara | CI en verde; prueba de humo con un repartidor real |
+
+### Prueba manual y puesta en marcha
+
+**Prueba de humo con un repartidor real** (lo que el CI no puede ver):
+
+1. Android (Chrome) e iPhone (Safari 16.4+): abrir la app del repartidor, «Añadir a pantalla de inicio», entrar y activar los avisos en Perfil. En iPhone los avisos solo llegan con la app instalada.
+2. Coordinación propone un pedido: debe sonar el aviso con la app cerrada, y al tocarlo abrir la propuesta con la cuenta regresiva (3 min).
+3. Cámara trasera en recogida y en entrega; permitir ubicación y probar también negándola (la foto sale igual, marcada para revisión).
+4. Modo avión a mitad de la entrega: la foto queda «Guardada · se sube al volver la señal» y el botón sigue bloqueado hasta que sube.
+5. Código equivocado cinco veces: se bloquea; coordinación lo libera con motivo.
+6. Cliente: ve su código de entrega y la foto de su entrega; comercio: su código de recogida y la foto de recogida, nunca la de entrega.
+
+**Puesta en marcha** (en orden):
+
+1. `pnpm db:reset && pnpm db:test` con pgTAP real y `pnpm fn:test` con Deno; luego `pnpm db:types` para regenerar los tipos (hoy editados a mano).
+2. Aplicar las migraciones 71–78 al proyecto.
+3. `node scripts/generate-vapid-keys.mjs` y cargar `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (secretos de las funciones) y `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (app del repartidor).
+4. Desplegar `invite-courier`, `send-push`, `purge-evidence` y `accept-invitation`; definir `COURIER_APP_URL`.
+5. Programar con `x-outbox-secret`: `send-push` cada minuto y `purge-evidence` una vez al día.
+6. Crear el proyecto de Vercel para `apps/courier` (puerto 3002 en local), con su dominio y las variables públicas de Supabase.
+7. Dominio verificado en Resend para las invitaciones.
+8. Revisión legal (Ley 787) de las fotos y los datos de ubicación; redactar el aviso para repartidores y clientes.
+
+**Conocido y pendiente:** recuperar contraseña del repartidor; incluir las evidencias en la exportación de datos personales del cliente; la prueba pgTAP 440 es intermitente (anterior a esta fase).
 
 Se mantiene del informe F5: no hay seguimiento continuo de ubicación, la asignación automática queda fuera y las liquidaciones al repartidor son de la fase de liquidaciones.
 

@@ -94,3 +94,13 @@ Se omite solo si falta alguna variable o si la clave no es de prueba (`sk_test_`
 
 - `tests/tienda-catalogo.spec.ts` (sin backend): axe en `/tiendas`, la tienda, el producto y el carrito vacío (escritorio y móvil) y el recorrido catálogo → carrito → «Pagar» pide ingresar. Usa `support/catalog-mock.mjs`, un Supabase de mentira que `playwright.config.ts` levanta en el puerto 54321 cuando no hay `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`.
 - `tests/tienda-pedido.spec.ts` (`@backend`): el cliente ingresa, confirma un pedido en efectivo, lo ve en «Mis pedidos» y lo cancela; el stock vuelve. El pago con tarjeta queda en `pagos.spec.ts`.
+
+### App del repartidor (Fase 9)
+
+- `tests/repartidor.spec.ts` (`@backend`, `pnpm e2e:repartidor`, también dentro de `e2e:operaciones`): con un Pixel 5 emulado, el repartidor entra (sin segundo factor), recibe la propuesta que coordinación le manda, la acepta, recoge con foto y código del comercio (un código erróneo no avanza), entrega con foto, código del cliente y monto cobrado, y se comprueba la cadena de evidencias (huella SHA-256) y la visibilidad por rol: el comercio no ve la foto de entrega y el cliente no ve la de recogida. Coordinación, comercio y cliente actúan por API; sus pantallas tienen sus propias pruebas. El repartidor se vincula con `create_courier_invitation` + `finish_accept_invitation` (service role), sin Edge Functions.
+- `tests/a11y.spec.ts` incluye las pantallas públicas del repartidor (ingresar e invitación) en escritorio y móvil; las autenticadas se revisan dentro del spec anterior.
+- La app se sirve en `http://localhost:3002` (`playwright.config.ts` la levanta con las demás).
+
+### Lo que no se puede probar en el CI (prueba manual en dispositivos)
+
+Ver `docs/informe/2026-10-23-repartidor-revision-evidencias-y-consolas.md`, sección «Prueba manual y puesta en marcha»: avisos push reales en Android e iPhone con la app instalada, cámara trasera, GPS y red lenta.
