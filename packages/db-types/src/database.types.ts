@@ -294,6 +294,34 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"order_evidence_list": {
+                  Row: {
+                    "courier_id": string | null,"distance_m": number | null,"file_path": string | null,"flag_reason": string | null,"flagged": boolean | null,"id": string | null,"kind": string | null,"note": string | null,"order_id": string | null,"purged_at": string | null,"sha256": string | null,"taken_at": string | null,"units_count": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
+                         }
+                        Update: {
+                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
+                         }
+                        Relationships: [
+                          
+                        ]
+                },"order_evidence_status": {
+                  Row: {
+                    "complete": boolean | null,"courier_id": string | null,"failed_attempts": number | null,"flagged_count": number | null,"has_delivery": boolean | null,"has_pickup": boolean | null,"number": number | null,"order_id": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "complete"?: boolean | null,"courier_id"?: string | null,"failed_attempts"?: number | null,"flagged_count"?: number | null,"has_delivery"?: boolean | null,"has_pickup"?: boolean | null,"number"?: number | null,"order_id"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "complete"?: boolean | null,"courier_id"?: string | null,"failed_attempts"?: number | null,"flagged_count"?: number | null,"has_delivery"?: boolean | null,"has_pickup"?: boolean | null,"number"?: number | null,"order_id"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
                 },"order_offers_list": {
                   Row: {
                     "courier_id": string | null,"expires_at": string | null,"id": string | null,"offered_at": string | null,"offered_by": string | null,"order_id": string | null,"reject_reason": string | null,"responded_at": string | null,"status": string | null
@@ -726,6 +754,34 @@ export type Database = {
 { Args: { "p_order": string }; Returns: {
               "active_orders": number,"courier_id": string,"department": string,"full_name": string,"vehicle_class": string
             }[]
+                           },
+"courier_add_evidence":
+{ Args: { "p_kind": string,"p_latitude"?: number,"p_longitude"?: number,"p_note"?: string,"p_order": string,"p_path": string,"p_sha256": string,"p_units"?: number }; Returns: string
+                           },
+"courier_order_evidence":
+{ Args: { "p_order": string }; Returns: {
+              "evidence_id": string,"flag_reason": string,"flagged": boolean,"kind": string,"note": string,"taken_at": string,"units_count": number
+            }[]
+                           },
+"evidence_pending_purge":
+{ Args: { "p_limit"?: number }; Returns: {
+              "evidence_id": string,"file_path": string
+            }[]
+                           },
+"mark_evidence_purged":
+{ Args: { "p_ids": string[] }; Returns: number
+                           },
+"my_delivery_code":
+{ Args: { "p_order": string }; Returns: string
+                           },
+"order_pickup_code":
+{ Args: { "p_order": string }; Returns: string
+                           },
+"reset_order_code_attempts":
+{ Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: undefined
+                           },
+"set_evidence_settings":
+{ Args: { "p_alert_distance_m": number,"p_delivery_code": boolean,"p_delivery_photo": boolean,"p_pickup_code": boolean,"p_pickup_photo": boolean,"p_retention_days": number }; Returns: undefined
                            },
 "read_courier_document":
 { Args: { "p_id": string }; Returns: string

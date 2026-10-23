@@ -174,6 +174,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `courier-document-url`: enlace firmado de 60 segundos al documento de un repartidor (lectura auditada).
 - `export-data`: exportación cifrada de datos, con motivo.
 - `purge-exports`: elimina exportaciones vencidas.
+- `purge-evidence`: elimina las fotos de entrega vencidas (ver sección 15).
 - `send-outbox`: envía los correos encolados (con `MAIL_MODE=log` solo los imprime).
 - `stripe-checkout`: crea la sesión de pago de Stripe de un pedido propio (el navegador solo envía el id; el monto sale de la base de datos).
 - `stripe-webhook`: recibe los eventos de Stripe (`checkout.session.completed` y `checkout.session.expired`), verifica la firma y aplica el resultado; reembolsa pagos tardíos, dobles o de otro monto. Sin verificación JWT.
@@ -182,6 +183,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 ## 8. Almacenamiento
 
 - `courier-documents` (privado): documentos de identidad de repartidores; sube la administración.
+- `entregas` (privado): fotos de recogida y entrega; las sube el repartidor a su carpeta y se conservan 90 días (sección 15).
 - `product-images` (público, 2 MB, JPEG/PNG/WebP): imágenes de productos bajo la ruta `<tienda>/<producto>/<archivo>`; escribe el comercio dueño de la tienda o la administración, con sesión de consola.
 
 ## 9. Migraciones
@@ -221,7 +223,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` y `540_order_offers.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` y `550_delivery_evidence.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -278,3 +280,19 @@ La coordinación **propone** un pedido a **un** repartidor a la vez; él acepta,
 - **Auditoría:** `order.offer_created`, `order.offer_accepted`, `order.offer_rejected`, `order.offer_expired`, `order.offer_cancelled`, además de `order.courier_assigned` con `via = oferta`.
 - **Pendiente:** el aviso push al repartidor (etapa 6) y la pantalla de coordinación (etapa 8).
 - **Pruebas:** `540_order_offers.test.sql` (47 aserciones).
+
+
+## 15. Repartidor, etapa 4: evidencias de la entrega (migración 75)
+
+Cada pedido deja una cadena de evidencias desde que el comercio se lo entrega al repartidor hasta que éste lo entrega. Esta etapa crea los datos y las reglas de lectura; `courier_pick_up` y `courier_deliver` (etapa 5) las exigirán para avanzar el pedido.
+
+- **Reglas (`sales.evidence_settings`, una fila):** foto y código obligatorios en recogida y entrega, distancia de alerta (150 m) y conservación (**90 días**, decisión E6). Las cambia la administración con `set_evidence_settings(...)`; las lee coordinación y administración.
+- **Códigos (`sales.order_codes`, sin acceso directo):** al quedar un pedido `listo` se generan un código de **recogida** (lo ve el comercio con `order_pickup_code`, solo con el pedido `listo`) y uno de **entrega** (lo ve el cliente con `my_delivery_code`, solo `en_camino`). La coordinación no ve ninguno. `private.verify_order_code(pedido, tipo, código)` devuelve `ok`, `incorrecto`, `bloqueado` (5 intentos fallidos) o `sin_codigo`; devuelve en vez de lanzar para que el intento quede contado. `reset_order_code_attempts` lo libera con motivo. Los códigos nunca se escriben en la auditoría.
+- **Evidencias (`sales.delivery_evidence`):** tipos `recogida`, `entrega`, `fallida`, `devolucion_tienda`; hora del servidor; huella SHA-256 de la foto; ubicación puntual opcional que solo sirve de alerta (`sin_ubicacion`, `lejos_del_punto`) y no sale hacia las pantallas (los permisos de columna excluyen latitud y longitud). **De solo adición:** un trigger impide editar o borrar, salvo el mantenimiento de retención y anonimización. Una sola recogida y una sola entrega por pedido.
+- **Registrar:** `courier_add_evidence(...)` (repartidor): valida pedido propio, estado (`recogida` con el pedido `listo`; `entrega` y `fallida` `en_camino`; `devolucion_tienda` tras una fallida), ruta `<ficha>/<pedido>/<archivo>`, foto ya subida y huella. Idempotente por (pedido, tipo, huella). `courier_order_evidence(pedido)` le devuelve lo ya subido para retomar si se cae la señal.
+- **Quién ve qué:** vista `order_evidence_list` (coordinación y administración: todo; cliente: `entrega` y `fallida` de sus pedidos; comercio: `recogida` y `devolucion_tienda` de los suyos) y `order_evidence_status` (solo coordinación: qué falta y cuántas marcas tiene cada pedido, según las reglas vigentes).
+- **Fotos:** bucket privado `entregas` (JPEG, PNG o WebP, hasta 1 MB). El repartidor sube solo a `<su ficha>/…`; cada quien abre con enlaces firmados lo que puede ver según la regla anterior.
+- **Retención:** `evidence_pending_purge()` y `mark_evidence_purged(ids)` (solo `service_role`) y la función de borde `purge-evidence` (secreto `OUTBOX_SECRET`, programarla como `purge-exports`) eliminan las fotos vencidas y dejan la huella, la hora y las marcas. No se borra mientras haya una devolución abierta sobre el pedido. Al anonimizar a un cliente, sus fotos pasan a eliminarse en la siguiente pasada.
+- **Auditoría:** `order.evidence_added`, `order.evidence_purged`, `order.code_reset`, `evidence.settings_changed`, sin rutas, coordenadas ni códigos.
+- **Pendiente:** exportación de datos personales con las evidencias del cliente; pantalla de evidencias en las consolas (etapa 8).
+- **Pruebas:** `550_delivery_evidence.test.sql` (76 aserciones).
