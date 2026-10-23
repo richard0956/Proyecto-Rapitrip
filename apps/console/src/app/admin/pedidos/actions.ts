@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
 import { requireConsoleAccess } from "@/lib/guard";
+import { loadOrderTrace, type TraceResult } from "@/lib/order-trace-server";
 import { toRoutePoints, type RouteResult } from "@/lib/order-route";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -31,4 +32,12 @@ export async function orderRoute(id: string): Promise<RouteResult> {
   const row = data?.[0];
   if (error || !row) return { ok: false, error: "No pudimos cargar la ruta." };
   return { ok: true, points: toRoutePoints(row) };
+}
+
+/** Historial, evidencias y cobro de un pedido, con las fotos firmadas por 5 minutos. */
+export async function orderTrace(id: string): Promise<TraceResult> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("admin");
+  return loadOrderTrace(await serverSupabase(), parsed.data);
 }

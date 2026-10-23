@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field } from "@rapitrip/ui";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
@@ -61,6 +62,9 @@ function ReturnItem({ row }: { row: ReturnRow }) {
         <span className="min-w-0">
           <span className="block font-bold text-tinta">Pedido {row.orderNumber} · {formatMoney(row.total)} · {row.method === "tarjeta" ? "Tarjeta" : "Efectivo"}</span>
           <span className="block text-xs text-tinta-suave">{row.store} · solicitada {row.requestedAt}{row.decidedAt ? ` · decidida ${row.decidedAt}` : ""}</span>
+          <Link href={`/admin/pedidos?pedido=${row.orderNumber}`} className="text-xs font-bold text-hoja underline-offset-2 hover:underline">
+            Ver las evidencias de la entrega
+          </Link>
         </span>
         <Badge tone={statusTone[row.status]}>{statusLabel[row.status]}</Badge>
       </div>

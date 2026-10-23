@@ -7,7 +7,7 @@ import { serverSupabase } from "./supabase";
 export async function loadCourierStats(period: Period): Promise<{ rows: CourierStat[]; failed: boolean }> {
   const supabase = await serverSupabase();
   const [couriers, stats] = await Promise.all([
-    supabase.from("couriers_list").select("id, full_name, phone, vehicle_type, status, created_at").order("full_name"),
+    supabase.from("couriers_list").select("id, full_name, phone, vehicle_type, status, created_at, user_id, available, push_enabled").order("full_name"),
     supabase.rpc("courier_stats", { p_from: period.from, p_to: period.to }),
   ]);
   const failed = Boolean(couriers.error || stats.error);
@@ -31,6 +31,9 @@ export async function loadCourierStats(period: Period): Promise<{ rows: CourierS
         activeOrders: Number(stat?.active_orders ?? 0),
         cashPending: Number(stat?.cash_pending ?? 0),
         cashPendingOrders: Number(stat?.cash_pending_orders ?? 0),
+        hasAccount: row.user_id !== null,
+        available: row.available === true,
+        push: row.push_enabled === true,
       },
     ];
   });

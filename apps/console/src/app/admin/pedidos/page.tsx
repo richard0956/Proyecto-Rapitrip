@@ -4,7 +4,7 @@ import { requireConsoleAccess } from "@/lib/guard";
 import { orderStatuses, type OrderStatus } from "@/lib/orders";
 import { formatStoreDateTime } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
-import { cancelOrder, orderRoute } from "./actions";
+import { cancelOrder, orderRoute, orderTrace } from "./actions";
 import { OrdersBoard, type AdminOrder } from "./orders-board";
 
 export const metadata = { title: "Pedidos" };
@@ -73,7 +73,7 @@ export default async function PedidosAdminPage({ searchParams }: { searchParams:
     <>
       <PageHeader title="Pedidos" description="Todos los pedidos de la tienda web y las ventas de mostrador. Los últimos 200." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo. Recarga la página.</Alert> : null}
-      <OrdersBoard rows={rows} initialNumber={pedido && /^\d{1,9}$/.test(pedido) ? Number(pedido) : null} cancel={cancelOrder} loadRoute={orderRoute} />
+      <OrdersBoard rows={rows} initialNumber={pedido && /^\d{1,9}$/.test(pedido) ? Number(pedido) : null} cancel={cancelOrder} loadRoute={orderRoute} loadTrace={orderTrace} />
     </>
   );
 }

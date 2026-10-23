@@ -225,7 +225,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` `550_delivery_evidence.test.sql` `560_courier_actions.test.sql` y `570_push_notifications.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` `550_delivery_evidence.test.sql` `560_courier_actions.test.sql` `570_push_notifications.test.sql` y `580_evidence_settings_view.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -343,3 +343,31 @@ Aplicación web móvil (PWA) del repartidor, en el puerto 3002, con su propia co
 - **Accesibilidad:** axe (WCAG 2.2 AA) sin violaciones en las 12 pantallas y estados revisados (ingreso, invitación, inicio con y sin propuesta, diálogo de rechazo, recoger, entregar, «no pude entregar», historial, perfil y no encontrada) con ancho de teléfono.
 - **Pruebas:** 88 de Vitest (lógica, cola de fotos, subida de evidencia, formularios de recoger, entregar, propuesta e ingreso). Verificado además en un navegador con tamaño de teléfono contra un servidor simulado de Supabase: ingreso, disponibilidad, aceptar, recoger con código incorrecto y luego correcto, entregar en efectivo, historial, perfil, aviso sin conexión y pantalla sin conexión.
 - **Pendiente:** recuperar contraseña (hoy se pide a coordinación una invitación nueva); pruebas de punta a punta con el backend real y en iPhone/Android físicos (etapa 9).
+
+
+## 19. Repartidor, etapa 8: conexión con las consolas y la tienda (migración 78)
+
+Todo lo que hace el repartidor desde su teléfono se ve y se gestiona desde las consolas que ya existían; no hay un sistema paralelo.
+
+**Base de datos (migración 78):** vista `evidence_settings_list` (las reglas de evidencia, para coordinación y administración). Prueba `580_evidence_settings_view.test.sql` (7 aserciones).
+
+**Tienda (cliente):** en `/pedidos/[id]`, con el pedido **en camino** el cliente ve su **código de entrega** (`my_delivery_code`) con la advertencia de no compartirlo antes de recibir; con el pedido **entregado** ve la **foto de su entrega** (enlace firmado por 5 minutos) o, pasados 3 meses, la constancia de que se eliminó.
+
+**Coordinación (`/coordinacion`):**
+- **Proponer a repartidor** (`OfferPanel`): lista de quienes pueden recibirla (`offerable_couriers`), envío (`offer_order_to_courier`) y retiro. Tras proponer o retirar, la consola pide a `send-push` que vacíe la cola; si ese disparo falla, el programador la recoge cada minuto. «Asignar directamente» queda como excepción (se indica quién no tiene cuenta).
+- **Estado en la lista:** «Propuesta a X», «Rechazada por X», «Sin respuesta de X» y «Aviso del repartidor».
+- **Avisos del repartidor** (`IssuesPanel`): los abiertos del pedido, con una pista de qué hacer; «no cabe» ofrece reclasificar desde el mismo aviso; «Marcar como atendido» pide qué se hizo (`resolve_delivery_issue`).
+- **Evidencia saltada:** despachar o entregar por un repartidor con cuenta sin su evidencia abre un diálogo que pide el motivo y reintenta (la base de datos lo audita como `order.evidence_skipped`).
+- **Liberar códigos bloqueados** (`reset_order_code_attempts`) para la recogida o la entrega.
+- **Historial y evidencias** (`OrderTrace`): línea de tiempo con estados, propuestas, evidencias y avisos (lo rechazado, vencido o marcado salta a la vista), fotos con enlace firmado de 5 minutos y, en efectivo, lo cobrado y la diferencia.
+- **Efectivo de repartidores** pasa a `/coordinacion/efectivo` (la ruta `/repartidor` redirige): totales por rendir, recibido y diferencias; el botón de registrar efectivo queda solo para repartidores sin cuenta.
+- **Repartidores:** cada fila muestra si tiene cuenta, si está disponible y si tiene los avisos activados.
+
+**Administración:**
+- **Pedidos:** el mismo historial y evidencias. **Devoluciones:** enlace a las evidencias de la entrega del pedido.
+- **Excepciones:** avisos de repartidores abiertos, pedidos sin la evidencia completa, fotos marcadas (últimos 7 días), entregas más rápidas de 3 minutos desde la recogida y repartidores con 3 o más propuestas vencidas en 24 horas.
+- **Configuración** (`/admin/configuracion`): reglas de evidencia (qué foto y qué código se exigen, distancia de alerta, días de conservación) con `set_evidence_settings`.
+
+**Comercio:** con el pedido **listo**, el **código de recogida** (`order_pickup_code`) para mostrárselo al repartidor; ya recogido, la **foto de recogida**. El comercio no ve la de entrega (muestra el domicilio del cliente).
+
+**Pruebas:** 222 en la consola y 169 en la tienda (Vitest). La compilación de la consola atrapó un error que los tipos no ven (un archivo de acciones del servidor solo puede exportar funciones): el esquema de las reglas vive en `lib/evidence-settings.ts`.

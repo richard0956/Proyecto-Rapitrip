@@ -45,7 +45,17 @@ export function CouriersBoard({ rows, basePath, periodLabel, create }: Props) {
         </Link>
       ),
     },
-    { header: "Estado", cell: (row) => <Badge tone={row.status === "activo" ? "positive" : "warning"}>{row.status === "activo" ? "Activo" : "Inactivo"}</Badge> },
+    {
+      header: "Estado",
+      cell: (row) => (
+        <span className="flex flex-wrap gap-1.5">
+          <Badge tone={row.status === "activo" ? "positive" : "warning"}>{row.status === "activo" ? "Activo" : "Inactivo"}</Badge>
+          {row.hasAccount === false ? <Badge tone="neutral">Sin cuenta</Badge> : null}
+          {row.hasAccount && row.status === "activo" ? <Badge tone={row.available ? "positive" : "neutral"}>{row.available ? "Disponible" : "No disponible"}</Badge> : null}
+          {row.hasAccount && row.status === "activo" && !row.push ? <Badge tone="warning">Sin avisos</Badge> : null}
+        </span>
+      ),
+    },
     { header: `Entregas (${periodLabel})`, cell: (row) => <span className="tabular-nums">{row.deliveries}</span> },
     { header: "Kilómetros", cell: (row) => <span className="tabular-nums">{formatKm(row.km)}</span> },
     { header: "Tiempo promedio", cell: (row) => <span className="tabular-nums">{formatMinutes(row.avgMinutes)}</span> },

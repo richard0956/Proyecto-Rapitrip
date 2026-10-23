@@ -150,6 +150,20 @@ export type Database = {
                         Relationships: [
                           
                         ]
+                },"evidence_settings_list": {
+                  Row: {
+                    "alert_distance_m": number | null,"require_delivery_code": boolean | null,"require_delivery_photo": boolean | null,"require_pickup_code": boolean | null,"require_pickup_photo": boolean | null,"retention_days": number | null,"updated_at": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "alert_distance_m"?: number | null,"require_delivery_code"?: boolean | null,"require_delivery_photo"?: boolean | null,"require_pickup_code"?: boolean | null,"require_pickup_photo"?: boolean | null,"retention_days"?: number | null,"updated_at"?: string | null
+                         }
+                        Update: {
+                           "alert_distance_m"?: number | null,"require_delivery_code"?: boolean | null,"require_delivery_photo"?: boolean | null,"require_pickup_code"?: boolean | null,"require_pickup_photo"?: boolean | null,"retention_days"?: number | null,"updated_at"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
                 },"inventory_list": {
                   Row: {
                     "available": boolean | null,"commerce_id": string | null,"low_stock_threshold": number | null,"product_id": string | null,"product_name": string | null,"product_status": string | null,"quantity": number | null,"sku": string | null,"stock_state": string | null,"store_id": string | null,"store_name": string | null,"track_stock": boolean | null,"updated_at": string | null,"variant_id": string | null,"variant_name": string | null,"variant_status": string | null
