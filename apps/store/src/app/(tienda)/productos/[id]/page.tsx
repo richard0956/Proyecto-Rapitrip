@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductImage } from "@/components/product-image";
 import { getProduct, isUuid } from "@/lib/catalog";
-import { formatMoney, productImageUrl } from "@/lib/money";
+import { kindLabel } from "@/lib/catalog-filters";
+import { productImageUrl } from "@/lib/money";
 import { siteUrl } from "@/lib/site-url";
 import { AddToCart } from "./add-to-cart";
 
@@ -51,8 +52,8 @@ export default async function ProductoPage({ params }: Props) {
     <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <nav aria-label="Ruta de navegación" className="text-[13px] text-tinta-suave">
-        <Link href="/tiendas" className="font-bold text-hoja hover:underline">
-          Tiendas
+        <Link href="/catalogo" className="font-bold text-hoja hover:underline">
+          Catálogo
         </Link>{" "}
         /{" "}
         <Link href={`/tiendas/${product.store.id}`} className="font-bold text-hoja hover:underline">
@@ -77,7 +78,11 @@ export default async function ProductoPage({ params }: Props) {
 
         <section className="flex flex-col gap-4">
           <div>
-            {product.category_name ? <Badge tone="neutral">{product.category_name}</Badge> : null}
+            <div className="flex flex-wrap gap-2">
+              {product.category_name ? <Badge tone="neutral">{product.category_name}</Badge> : null}
+              {product.brand_name ? <Badge tone="neutral">{product.brand_name}</Badge> : null}
+              {product.store.commerce_kind ? <Badge tone={product.store.commerce_kind === "empresa" ? "positive" : "neutral"}>{kindLabel(product.store.commerce_kind)}</Badge> : null}
+            </div>
             <h1 className="mt-2 text-[28px] font-extrabold leading-tight tracking-tight text-tinta sm:text-[34px]">{product.name}</h1>
             <p className="mt-1 text-[13.5px] text-tinta-suave">
               Vendido por{" "}
@@ -85,7 +90,7 @@ export default async function ProductoPage({ params }: Props) {
                 {product.store.name}
               </Link>
               {" · "}
-              {product.store.delivery_fee > 0 ? `Envío ${formatMoney(product.store.delivery_fee)}` : "Envío gratis"}
+              Envío según la distancia
             </p>
           </div>
           {product.description ? <p className="max-w-[60ch] whitespace-pre-line text-[15px] leading-relaxed text-tinta-suave">{product.description}</p> : null}

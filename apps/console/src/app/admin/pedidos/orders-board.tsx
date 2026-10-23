@@ -8,6 +8,8 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
 import { orderStatusLabel, orderStatusTone, orderStatuses, paymentLabel, type OrderStatus } from "@/lib/orders";
+import { OrderRoute } from "@/components/order-route";
+import type { RouteResult } from "@/lib/order-route";
 
 export type AdminOrder = {
   id: string;
@@ -32,7 +34,7 @@ export type AdminOrder = {
 
 const closed: OrderStatus[] = ["entregado", "cancelado", "rechazado"];
 
-export function OrdersBoard({ rows, initialNumber, cancel }: { rows: AdminOrder[]; initialNumber: number | null; cancel: (id: string, reason: string) => Promise<ActionResult> }) {
+export function OrdersBoard({ rows, initialNumber, cancel, loadRoute }: { rows: AdminOrder[]; initialNumber: number | null; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult> }) {
   const [status, setStatus] = useState("");
   const [channel, setChannel] = useState("");
   const [query, setQuery] = useState("");
@@ -91,7 +93,7 @@ export function OrdersBoard({ rows, initialNumber, cancel }: { rows: AdminOrder[
       </Card>
 
       {selected ? (
-        <AdminDetail key={selected.id} row={selected} cancel={cancel} />
+        <AdminDetail key={selected.id} row={selected} cancel={cancel} loadRoute={loadRoute} />
       ) : (
         <Card>
           <CardHeader title="Detalle" />
@@ -102,7 +104,7 @@ export function OrdersBoard({ rows, initialNumber, cancel }: { rows: AdminOrder[
   );
 }
 
-function AdminDetail({ row, cancel }: { row: AdminOrder; cancel: (id: string, reason: string) => Promise<ActionResult> }) {
+function AdminDetail({ row, cancel, loadRoute }: { row: AdminOrder; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult> }) {
   const router = useRouter();
   const [asking, setAsking] = useState(false);
   const canCancel = row.channel === "web" && !closed.includes(row.status);
@@ -135,6 +137,7 @@ function AdminDetail({ row, cancel }: { row: AdminOrder; cancel: (id: string, re
           {row.notes ? <p className="mt-1 text-xs text-tinta-suave">Nota: {row.notes}</p> : null}
         </div>
       ) : null}
+      {row.channel === "web" && row.address ? <OrderRoute orderId={row.id} load={loadRoute} /> : null}
       <ul className="mb-3.5 flex flex-col divide-y divide-borde text-sm">
         {row.items.map((item) => (
           <li key={item.name} className="flex items-start justify-between gap-3 py-1.5">

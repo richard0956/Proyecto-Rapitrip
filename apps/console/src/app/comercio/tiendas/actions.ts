@@ -1,6 +1,6 @@
 "use server";
 
-import { reasonSchema, storeExceptionSchema, storeHoursSchema, storeSchema, temporaryClosureSchema } from "@rapitrip/validation";
+import { departmentSchema, locationSchema, reasonSchema, storeExceptionSchema, storeHoursSchema, storeSchema, temporaryClosureSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
@@ -26,14 +26,20 @@ async function ownCommerceId() {
 
 export type CreateStoreResult = { ok: true; id: string } | { ok: false; error: string };
 
+/** Crea la tienda y fija su ubicación. La ubicación es obligatoria: sin ella la tienda no puede recibir pedidos a domicilio. */
 export async function createStore(input: unknown): Promise<CreateStoreResult> {
   const parsed = storeSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  const location = locationSchema.safeParse(input);
+  if (!location.success || location.data.latitude === null || location.data.longitude === null) return { ok: false, error: "Marca la ubicación de la tienda en el mapa." };
   await requireConsoleAccess("comercio");
   const { supabase, commerceId } = await ownCommerceId();
   if (!commerceId) return { ok: false, error: "Tu cuenta no tiene un comercio activo." };
   const { data, error } = await supabase.rpc("create_store", { p_commerce: commerceId, p_name: parsed.data.name, p_address: parsed.data.address ?? undefined, p_phone: parsed.data.phone ?? undefined });
   if (error) return failure(error) as { ok: false; error: string };
+  // Si esto fallara, la tienda ya existe: el editor avisa que le falta la ubicación y se puede fijar ahí.
+  const placed = await supabase.rpc("set_store_location", { p_store: data, p_latitude: location.data.latitude, p_longitude: location.data.longitude });
+  if (placed.error) console.error("[tiendas] ubicación", placed.error.message);
   refresh();
   return { ok: true, id: data };
 }
@@ -46,6 +52,38 @@ export async function updateStore(id: string, input: unknown): Promise<ActionRes
   await requireConsoleAccess("comercio");
   const supabase = await serverSupabase();
   const { error } = await supabase.rpc("update_store", { p_store: parsedId.data, p_name: parsed.data.name, p_address: parsed.data.address ?? undefined, p_phone: parsed.data.phone ?? undefined });
+  if (error) return failure(error);
+  refresh(parsedId.data);
+  return { ok: true };
+}
+
+/** Fija la ubicación (pin) de la tienda; con latitud y longitud nulas la quita. La base de datos exige que caiga dentro de Nicaragua. */
+export async function setStoreLocation(id: string, input: unknown): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = locationSchema.safeParse(input);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("set_store_location", {
+    p_store: parsedId.data,
+    p_latitude: parsed.data.latitude as number,
+    p_longitude: parsed.data.longitude as number,
+  });
+  if (error) return failure(error);
+  refresh(parsedId.data);
+  return { ok: true };
+}
+
+/** Fija el departamento de la tienda: con él la cotización sabe si un envío a otro departamento es programado. */
+export async function setStoreDepartment(id: string, department: string): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = departmentSchema.safeParse(department);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: "Elige el departamento de la tienda." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("set_store_department", { p_store: parsedId.data, p_department: parsed.data });
   if (error) return failure(error);
   refresh(parsedId.data);
   return { ok: true };

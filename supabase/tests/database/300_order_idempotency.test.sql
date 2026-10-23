@@ -13,6 +13,7 @@ select tests.grant_role((select id from tu where k = 'com'), 'comercio', (select
 
 select tests.authenticate_as((select id from tu where k = 'com'));
 select set_config('t.store', public.create_store((select id from tc where k = 'a'), 'Tienda A')::text, true);
+select public.set_store_location(current_setting('t.store')::uuid, 12.136400, -86.251400);
 select public.set_store_hours(current_setting('t.store')::uuid,
   (select jsonb_agg(jsonb_build_object('weekday', d, 'opens', '00:00', 'closes', '23:59')) from generate_series(0, 6) d));
 select set_config('t.prod', public.create_product(current_setting('t.store')::uuid, 'Café')::text, true);
@@ -25,21 +26,21 @@ reset role;
 select tests.authenticate_as((select id from tu where k = 'cli'));
 select set_config('t.o1', public.create_order(current_setting('t.store')::uuid,
   format('[{"variant_id":"%s","quantity":3}]', current_setting('t.var'))::jsonb,
-  'efectivo', 'Barrio Central, casa 4', '88881111', null, '11111111-1111-1111-1111-111111111111')::text, true);
+  'efectivo', 'Barrio Central, casa 4', '88881111', null, '11111111-1111-1111-1111-111111111111', 12.136400, -86.251400)::text, true);
 select set_config('t.o1b', public.create_order(current_setting('t.store')::uuid,
   format('[{"variant_id":"%s","quantity":3}]', current_setting('t.var'))::jsonb,
-  'efectivo', 'Barrio Central, casa 4', '88881111', null, '11111111-1111-1111-1111-111111111111')::text, true);
+  'efectivo', 'Barrio Central, casa 4', '88881111', null, '11111111-1111-1111-1111-111111111111', 12.136400, -86.251400)::text, true);
 select is(current_setting('t.o1b'), current_setting('t.o1'), 'repetir la misma referencia devuelve el mismo pedido');
 select is((select count(*)::int from public.orders_list), 1, 'y no se crea un segundo pedido');
 
 select set_config('t.o2', public.create_order(current_setting('t.store')::uuid,
   format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb,
-  'efectivo', 'Barrio Central, casa 4', '88881111', null, '22222222-2222-2222-2222-222222222222')::text, true);
+  'efectivo', 'Barrio Central, casa 4', '88881111', null, '22222222-2222-2222-2222-222222222222', 12.136400, -86.251400)::text, true);
 select isnt(current_setting('t.o2'), current_setting('t.o1'), 'otra referencia crea otro pedido');
 
-select lives_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111')$$,
+select lives_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$,
   current_setting('t.store'), format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))),
-  'sin referencia sigue funcionando como antes (seis argumentos)');
+  'sin referencia sigue funcionando (solo piden el pin)');
 select throws_ok($$select private.create_order_core(null, null, null, null, null)$$, null::text, null::text,
   'el núcleo no es invocable por el cliente');
 reset role;
@@ -51,7 +52,7 @@ select is((select quantity from commerce.inventory where variant_id = current_se
 select tests.authenticate_as((select id from tu where k = 'cli2'));
 select set_config('t.o3', public.create_order(current_setting('t.store')::uuid,
   format('[{"variant_id":"%s","quantity":1}]', current_setting('t.var'))::jsonb,
-  'efectivo', 'Barrio Central, casa 9', '88882222', null, '11111111-1111-1111-1111-111111111111')::text, true);
+  'efectivo', 'Barrio Central, casa 9', '88882222', null, '11111111-1111-1111-1111-111111111111', 12.136400, -86.251400)::text, true);
 select isnt(current_setting('t.o3'), current_setting('t.o1'), 'la referencia es por cliente: otro cliente no recibe el pedido ajeno');
 select is((select count(*)::int from public.orders_list), 1, 'cada cliente ve solo el suyo');
 reset role;

@@ -4,6 +4,7 @@ import { reasonSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
+import { saleInputSchema, toSaleRpcArgs } from "@/lib/cash";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -25,7 +26,7 @@ export async function openCashSession(opening: number): Promise<ActionResult> {
   return { ok: true };
 }
 
-export type CloseResult = { ok: true; expected: number; counted: number; difference: number } | { ok: false; error: string };
+export type CloseResult = { ok: true; expected: number; counted: number; difference: number; incidentsCount: number } | { ok: false; error: string };
 
 export async function closeCashSession(input: { counted: number; note?: string }): Promise<CloseResult> {
   const parsed = z.object({ counted: money, note: z.string().trim().max(200).optional() }).safeParse(input);
@@ -35,25 +36,47 @@ export async function closeCashSession(input: { counted: number; note?: string }
   const { data, error } = await supabase.rpc("close_cash_session", { p_counted: parsed.data.counted, p_note: parsed.data.note || undefined });
   if (error) return failure(error) as { ok: false; error: string };
   refresh();
-  const result = data as { expected: number; counted: number; difference: number };
-  return { ok: true, expected: Number(result.expected), counted: Number(result.counted), difference: Number(result.difference) };
+  const result = data as { expected: number; counted: number; difference: number; incidents_count: number };
+  return { ok: true, expected: Number(result.expected), counted: Number(result.counted), difference: Number(result.difference), incidentsCount: Number(result.incidents_count) };
 }
 
-const saleSchema = z.object({
-  store: z.string().uuid(),
-  method: z.enum(["efectivo", "tarjeta"]),
-  items: z.array(z.object({ variant_id: z.string().uuid(), quantity: z.number().int().min(1).max(99) })).min(1).max(30),
-});
-
 export async function createCounterSale(input: unknown): Promise<ActionResult> {
-  const parsed = saleSchema.safeParse(input);
-  if (!parsed.success) return invalidInput;
+  const parsed = saleInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos de la venta." };
   await requireConsoleAccess("caja");
   const supabase = await serverSupabase();
-  const { error } = await supabase.rpc("create_counter_sale", { p_store: parsed.data.store, p_items: parsed.data.items, p_payment_method: parsed.data.method });
+  const { error } = await supabase.rpc("create_counter_sale", toSaleRpcArgs(parsed.data));
   if (error) return failure(error);
   refresh();
   return { ok: true };
+}
+
+/** Recibe del repartidor el efectivo de un pedido entregado. Queda en el turno abierto del cajero. */
+export async function receiveCourierCash(orderId: string): Promise<ActionResult> {
+  const parsed = z.string().uuid().safeParse(orderId);
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("caja");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("receive_courier_cash", { p_order: parsed.data });
+  if (error) return failure(error);
+  refresh();
+  return { ok: true };
+}
+
+export type CashIncident = { kind: string; detail: string; commerceName: string | null; orderNumber: number | null };
+
+/** Incidencias de un turno, agrupables por comercio. La base de datos decide quién las ve. */
+export async function loadCashIncidents(sessionId: string): Promise<{ ok: true; incidents: CashIncident[] } | { ok: false; error: string }> {
+  const parsed = z.string().uuid().safeParse(sessionId);
+  if (!parsed.success) return { ok: false, error: "turno inválido" };
+  await requireConsoleAccess("caja");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("cash_session_incidents_for", { p_session: parsed.data });
+  if (error) return failure(error) as { ok: false; error: string };
+  return {
+    ok: true,
+    incidents: (data ?? []).map((row) => ({ kind: row.kind, detail: row.detail, commerceName: row.commerce_name, orderNumber: row.order_number === null ? null : Number(row.order_number) })),
+  };
 }
 
 export async function voidCounterSale(id: string, reason: string): Promise<ActionResult> {
@@ -62,6 +85,18 @@ export async function voidCounterSale(id: string, reason: string): Promise<Actio
   await requireConsoleAccess("caja");
   const supabase = await serverSupabase();
   const { error } = await supabase.rpc("void_counter_sale", { p_order: parsed.data.id, p_reason: parsed.data.reason });
+  if (error) return failure(error);
+  refresh();
+  return { ok: true };
+}
+
+/** Devuelve al cliente el efectivo de una devolución aprobada. Sale del turno abierto del cajero. */
+export async function returnCashToCustomer(requestId: string): Promise<ActionResult> {
+  const parsed = z.string().uuid().safeParse(requestId);
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("caja");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("return_cash_to_customer", { p_request: parsed.data });
   if (error) return failure(error);
   refresh();
   return { ok: true };

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@rapitrip/db-types": "workspace:*",
+    "@rapitrip/maps": "workspace:*",
     "@rapitrip/supabase": "workspace:*",
     "@rapitrip/ui": "workspace:*",
     "@rapitrip/validation": "workspace:*",

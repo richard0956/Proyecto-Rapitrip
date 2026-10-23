@@ -4,12 +4,16 @@ import { Alert, Badge, Button, Card, CardHeader, EmptyState, SelectField, pillSt
 import { MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { OrderRoute } from "@/components/order-route";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
+import { courierFits, type VehicleClass } from "@/lib/courier-fit";
+import { classLabel, etaText, type DeliveryClass } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
+import type { RouteResult } from "@/lib/order-route";
 import { coordActions, coordTab, orderStatusLabel, orderStatusTone, paymentLabel, type CoordAction, type CoordTab, type OrderStatus } from "@/lib/orders";
 
-export type Courier = { id: string; name: string; vehicle: string; phone: string };
+export type Courier = { id: string; name: string; vehicle: string; phone: string; vehicleClass: VehicleClass | null; department: string | null };
 export type DispatchOrder = {
   id: string;
   number: number;
@@ -27,6 +31,12 @@ export type DispatchOrder = {
   phone: string | null;
   notes: string | null;
   items: { name: string; quantity: number; total: number }[];
+  deliveryClass: DeliveryClass;
+  originDepartment: string | null;
+  destinationDepartment: string | null;
+  etaMinDays: number | null;
+  etaMaxDays: number | null;
+  reclassifiedReason: string | null;
 };
 
 const tabs: { key: CoordTab; label: string; empty: string }[] = [
@@ -42,9 +52,11 @@ type Props = {
   couriers: Courier[];
   setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>;
   assign: (id: string, courierId: string) => Promise<ActionResult>;
+  reclassify: (id: string, reason: string) => Promise<ActionResult>;
+  loadRoute: (id: string) => Promise<RouteResult>;
 };
 
-export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) {
+export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassify, loadRoute }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<CoordTab>("listos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -69,7 +81,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
           {tabs.map((item) => (
             <button key={item.key} type="button" role="tab" aria-selected={tab === item.key} onClick={() => setTab(item.key)} className={pillStyles(tab === item.key)}>
               {item.label}
-              <span className="tabular-nums opacity-80">{count(item.key)}</span>
+              <span className="tabular-nums opacity-90">{count(item.key)}</span>
             </button>
           ))}
         </div>
@@ -91,6 +103,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
                     </span>
                     <span className="flex items-center gap-3">
                       <span className="text-sm font-bold tabular-nums text-tinta">{formatMoney(row.total)}</span>
+                      <Badge tone={row.deliveryClass === "express" ? "positive" : "neutral"}>{classLabel(row.deliveryClass)}</Badge>
                       <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>
                     </span>
                   </button>
@@ -102,7 +115,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
       </Card>
 
       {selected ? (
-        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} onMoved={(to) => setTab(coordTab(to))} />
+        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} onMoved={(to) => setTab(coordTab(to))} />
       ) : (
         <Card>
           <CardHeader title="Detalle del pedido" />
@@ -113,15 +126,19 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign }: Props) 
   );
 }
 
-function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
+function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRoute, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
   const router = useRouter();
   const [courier, setCourier] = useState(row.courierId ?? "");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [asking, setAsking] = useState<CoordAction | null>(null);
+  const [reclassifying, setReclassifying] = useState(false);
   const [pending, start] = useTransition();
   const actions = coordActions(row.status);
   const canAssign = ["confirmado", "preparando", "listo", "en_camino"].includes(row.status);
   const assigned = row.courierId !== null;
+  // Solo se ofrecen los repartidores que pueden llevar este pedido (la base de datos vuelve a comprobarlo al asignar).
+  const eligible = couriers.filter((item) => courierFits(row, item).ok);
+  const canReclassify = row.deliveryClass === "express" && ["por_confirmar", "confirmado", "preparando", "listo"].includes(row.status);
 
   function saveCourier() {
     setMessage(null);
@@ -167,6 +184,17 @@ function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Prop
         )}
       </div>
 
+      <p className="mb-3.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
+        <Badge tone={row.deliveryClass === "express" ? "positive" : "neutral"}>{classLabel(row.deliveryClass)}</Badge>
+        {etaText(row.deliveryClass, row.etaMinDays, row.etaMaxDays)}
+      </p>
+      {row.deliveryClass === "programado" ? (
+        <Alert className="mb-3.5">Pedido programado: lo lleva un repartidor con vehículo{row.originDepartment ? " del departamento de la tienda" : ""}.</Alert>
+      ) : null}
+      {row.reclassifiedReason ? <Alert tone="warning" className="mb-3.5">Reclasificado a programado: {row.reclassifiedReason}</Alert> : null}
+
+      {row.address ? <OrderRoute orderId={row.id} load={loadRoute} /> : null}
+
       <ul className="mb-3.5 flex flex-col divide-y divide-borde text-sm">
         {row.items.map((item) => (
           <li key={item.name} className="flex items-start justify-between gap-3 py-1.5">
@@ -189,14 +217,20 @@ function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Prop
       {canAssign ? (
         <div className="mb-3.5 flex flex-col gap-2.5">
           <SelectField label="Repartidor" value={courier} onChange={(e) => setCourier(e.target.value)}>
-            <option value="">{couriers.length === 0 ? "No hay repartidores activos" : "Elige un repartidor"}</option>
-            {couriers.map((item) => (
+            <option value="">{eligible.length === 0 ? "No hay repartidores compatibles" : "Elige un repartidor"}</option>
+            {eligible.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
                 {item.vehicle ? ` · ${item.vehicle}` : ""}
               </option>
             ))}
           </SelectField>
+          {eligible.length < couriers.length ? (
+            <p className="text-xs text-tinta-suave">
+              {couriers.length - eligible.length} repartidor(es) activos no aparecen porque no pueden llevar este pedido
+              {row.deliveryClass === "programado" ? " (se necesita un vehículo del departamento de la tienda)" : ""}.
+            </p>
+          ) : null}
           <Button variant="secondary" onClick={saveCourier} disabled={pending || !courier || courier === row.courierId} className="self-start">
             {assigned ? "Cambiar repartidor" : "Asignar repartidor"}
           </Button>
@@ -204,6 +238,14 @@ function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Prop
       ) : null}
 
       {message ? <Alert tone={message.ok ? "info" : "error"} className="mb-3.5">{message.text}</Alert> : null}
+      {canReclassify ? (
+        <div className="mb-3.5">
+          <Button variant="secondary" disabled={pending} onClick={() => setReclassifying(true)}>
+            Reclasificar a programado
+          </Button>
+          <p className="mt-1 text-xs text-tinta-suave">Úsalo si el pedido no cabe en una moto. Se le quita el repartidor y pasa a vehículo.</p>
+        </div>
+      ) : null}
       {actions.length > 0 ? (
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-wrap gap-2.5">
@@ -219,6 +261,20 @@ function DispatchDetail({ row, couriers, setStatus, assign, onMoved }: Omit<Prop
         <p className="text-[12.5px] text-tinta-suave">Este pedido ya terminó.</p>
       )}
 
+      {reclassifying ? (
+        <ReasonDialog
+          open
+          onClose={() => setReclassifying(false)}
+          title={`Reclasificar pedido ${row.number}`}
+          description="Pasa a entrega programada con vehículo. El cliente conserva lo que pagó y se le muestra el nuevo plazo. Queda registrado quién lo hizo y por qué."
+          confirmLabel="Reclasificar"
+          onConfirm={async (reason) => {
+            const result = await reclassify(row.id, reason);
+            if (result.ok) router.refresh();
+            return result;
+          }}
+        />
+      ) : null}
       {asking ? (
         <ReasonDialog
           open

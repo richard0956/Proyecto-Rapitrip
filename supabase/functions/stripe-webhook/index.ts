@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { refundPayment, StripeError, verifyStripeSignature } from "../_shared/stripe.ts";
+import { refundPayment, StripeError, stripeEventTarget, verifyStripeSignature } from "../_shared/stripe.ts";
 
 const HANDLED = new Set(["checkout.session.completed", "checkout.session.expired"]);
 
@@ -36,25 +36,29 @@ Deno.serve(async (req) => {
   if (!HANDLED.has(event.type)) return reply({ received: true, ignored: event.type });
 
   const object = event.data?.object ?? {};
-  const orderId = (object.client_reference_id as string | undefined) ?? object.metadata?.order_id;
-  if (typeof orderId !== "string" || !/^[0-9a-f-]{36}$/i.test(orderId)) return reply({ received: true, ignored: "sin pedido" });
+  // Una compra pagada de una vez lleva `metadata.checkout_id`; un pedido suelto, `client_reference_id` (o `metadata.order_id`).
+  const target = stripeEventTarget(object);
+  if (!target) return reply({ received: true, ignored: "sin pedido" });
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
     auth: { persistSession: false },
   });
 
-  const { data, error } = await admin.rpc("apply_stripe_event", {
+  const common = {
     p_event_id: event.id,
     p_type: event.type,
-    p_order: orderId,
     p_session: (object.id as string | undefined) ?? null,
     p_intent: (object.payment_intent as string | undefined) ?? null,
     p_amount: typeof object.amount_total === "number" ? object.amount_total : null,
     p_currency: (object.currency as string | undefined) ?? null,
     p_paid: object.payment_status === "paid",
-  });
+  };
+  const { data, error } =
+    target.kind === "checkout"
+      ? await admin.rpc("apply_stripe_checkout_event", { ...common, p_checkout: target.id })
+      : await admin.rpc("apply_stripe_event", { ...common, p_order: target.id });
   if (error) {
-    console.error("[stripe-webhook] apply_stripe_event", error.message);
+    console.error(`[stripe-webhook] ${target.kind === "checkout" ? "apply_stripe_checkout_event" : "apply_stripe_event"}`, error.message);
     return reply({ error: "no se pudo registrar el evento" }, 500);
   }
 

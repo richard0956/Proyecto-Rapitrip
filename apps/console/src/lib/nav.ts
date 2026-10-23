@@ -9,6 +9,8 @@ export type NavItem = {
   icon: NavIcon;
   /** Rutas adicionales que también marcan este ítem como activo. */
   also?: string[];
+  /** Solo está activo en su ruta exacta (no en las subrutas): para la pantalla de trabajo que convive con un `/resumen`. */
+  exact?: boolean;
   roles?: AppRole[];
   /** Pantallas de fases posteriores: se muestran, pero todavía no llevan a ninguna parte. */
   soon?: boolean;
@@ -22,8 +24,9 @@ export const adminNav: NavSection[] = [
     label: "Administración",
     items: [
       { href: "/admin/usuarios", label: "Usuarios y roles", icon: "users" },
-      { href: "/admin/solicitudes", label: "Solicitudes de comercio", icon: "file" },
-      { href: "/admin/comercios", label: "Comercios y tiendas", icon: "store" },
+      { href: "/admin/solicitudes", label: "Solicitudes", icon: "file" },
+      { href: "/admin/comercios", label: "Comercios", icon: "store" },
+      { href: "/admin/vendedores", label: "Vendedores", icon: "user" },
       { href: "/admin/catalogo", label: "Catálogo maestro", icon: "layers" },
       { href: "/admin/repartidores", label: "Repartidores", icon: "truck" },
       { href: "/admin/configuracion", label: "Configuración", icon: "settings", soon: true },
@@ -41,6 +44,7 @@ export const adminNav: NavSection[] = [
     label: "Finanzas",
     items: [
       { href: "/admin/caja", label: "Caja y venta", icon: "cash" },
+      { href: "/admin/devoluciones", label: "Devoluciones", icon: "receipt" },
       { href: "/admin/liquidaciones", label: "Liquidaciones", icon: "receipt", soon: true },
     ],
   },
@@ -54,8 +58,8 @@ export const adminNav: NavSection[] = [
   },
 ];
 
-export const cajaNav: NavSection[] = [{ items: [{ href: "/caja", label: "Caja y venta", icon: "cash" }] }];
-export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion", label: "Pedidos", icon: "orders" }] }];
+export const cajaNav: NavSection[] = [{ items: [{ href: "/caja/resumen", label: "Resumen", icon: "home" }, { href: "/caja", label: "Caja y venta", icon: "cash", exact: true }] }];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion/resumen", label: "Resumen", icon: "home" }, { href: "/coordinacion", label: "Pedidos", icon: "orders", exact: true }, { href: "/coordinacion/repartidores", label: "Repartidores", icon: "truck" }, { href: "/repartidor", label: "Efectivo de repartidores", icon: "cash" }] }];
 export const comercioNav: NavSection[] = [
   {
     items: [
@@ -70,3 +74,5 @@ export const comercioNav: NavSection[] = [
 
 /** Los enlaces de cuenta van al pie de la barra, separados del resto. */
 export const accountItem: NavItem = { href: "/cuenta", label: "Mi cuenta", icon: "user" };
+
+// Coordinación y caja entran por su resumen; su pantalla de trabajo queda como ítem exacto.

@@ -1,17 +1,22 @@
 import { Alert, Badge, Card } from "@rapitrip/ui";
+import { MapView } from "@rapitrip/maps";
 import { Check, Circle, MapPin, Smartphone, StickyNote } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { isUuid } from "@/lib/catalog";
+import { withinReturnWindow, type ReturnStatus } from "@/lib/returns";
+import { classLabel, etaText } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
 import { awaitingPaymentConfirmation, customerCanCancel, isFinalStatus, isOrderStatus, orderStatusHint, orderStatusLabel, orderStatusTone, progressIndex, progressSteps, remainingText } from "@/lib/orders";
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
 import { startCardPayment } from "../../checkout/actions";
-import { cancelOrder } from "../actions";
+import { cancelOrder, requestReturn } from "../actions";
 import { AutoRefresh } from "./auto-refresh";
 import { OrderActions } from "./order-actions";
+import { ReturnForm } from "./return-form";
+import { ReturnStatusCard } from "./return-status";
 import { PaymentWatch } from "./payment-watch";
 
 export const metadata: Metadata = { title: "Mi pedido", robots: { index: false } };
@@ -35,11 +40,19 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
   const [{ data: items }, { data: events }, { data: delivery }] = await Promise.all([
     supabase.from("order_items_list").select("id, variant_id, product_name, variant_name, unit_price, quantity, line_total").eq("order_id", id).order("product_name"),
     supabase.from("order_events_list").select("id, to_status, reason, created_at").eq("order_id", id).order("id"),
-    supabase.from("order_delivery_list").select("address, phone, notes").eq("order_id", id).maybeSingle(),
+    supabase.from("order_delivery_list").select("address, phone, notes, latitude, longitude").eq("order_id", id).maybeSingle(),
   ]);
 
+  // Un pedido de una compra con tarjeta y varios pedidos se paga junto con los demás, desde la pantalla de la compra.
+  const { data: purchase } = order.checkout_id ? await supabase.from("my_checkouts").select("payment_status").eq("id", order.checkout_id).maybeSingle() : { data: null };
+  const paidWithPurchase = purchase?.payment_status === "pendiente" || purchase?.payment_status === "pagado";
+
+  const { data: returnRows } = await supabase.rpc("my_return_request", { p_order: id });
+  const returnRequest = returnRows?.[0] ?? null;
+
   const waitingPayment = status === "pendiente_pago";
-  const left = waitingPayment || status === "por_confirmar" ? remainingText(order.expires_at) : null;
+  const left = waitingPayment || status === "por_confirmar" || status === "en_validacion" ? remainingText(order.expires_at) : null;
+  const deliveryClass = order.delivery_class === "programado" ? ("programado" as const) : ("express" as const);
   const payExpired = waitingPayment && !left;
   const confirming = awaitingPaymentConfirmation(pago, status);
   const step = progressIndex(status);
@@ -63,6 +76,13 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
       <p className="mt-1 text-[14px] text-tinta-suave">
         {order.store_name} · {order.created_at ? fecha.format(new Date(order.created_at)) : ""}
       </p>
+      {!finalStatus ? (
+        <p className="mt-2 flex flex-wrap items-center gap-2 text-[14px] text-tinta">
+          <Badge tone={deliveryClass === "express" ? "positive" : "neutral"}>{classLabel({ delivery_class: deliveryClass })}</Badge>
+          {etaText({ delivery_class: deliveryClass, eta_min_days: order.eta_min_days ?? null, eta_max_days: order.eta_max_days ?? null })}
+          {order.reclassified_at ? <span className="text-tinta-suave">· Lo pasamos a entrega programada porque no cabía en una moto; conservas lo que pagaste.</span> : null}
+        </p>
+      ) : null}
 
       <div className="mt-5 flex max-w-3xl flex-col gap-3">
         {confirming ? <PaymentWatch /> : <Alert tone={status === "cancelado" || status === "rechazado" ? "warning" : "info"}>{orderStatusHint[status]}</Alert>}
@@ -71,6 +91,7 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
         {payExpired ? <Alert tone="warning">El tiempo para pagar venció y el pedido se cancelará en breve; los productos vuelven al inventario. Puedes hacer uno nuevo.</Alert> : null}
         {waitingPayment && left ? <p className="text-[13px] font-bold text-durazno-texto">Te quedan {left} para pagar.</p> : null}
         {status === "por_confirmar" && left ? <p className="text-[13px] text-tinta-suave">El comercio tiene {left} para responder.</p> : null}
+        {status === "en_validacion" && left ? <p className="text-[13px] text-tinta-suave">El comercio tiene hasta {left} para terminar de validar tu pedido.</p> : null}
         {order.status_reason && (status === "cancelado" || status === "rechazado") ? <p className="text-[14px] text-tinta">Motivo: {order.status_reason}</p> : null}
         {order.courier_id && !finalStatus ? <p className="text-[13.5px] font-bold text-hoja">Ya hay un repartidor asignado a tu pedido.</p> : null}
         {status === "cancelado" && order.payment_method === "tarjeta" && order.payment_status === "pagado" ? <Alert>Pagaste con tarjeta: el reembolso se procesa automáticamente.</Alert> : null}
@@ -147,17 +168,30 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
             ) : (
               <p className="mt-2 text-sm text-tinta-suave">Los datos de entrega ya no están disponibles.</p>
             )}
+            {delivery && delivery.latitude != null && delivery.longitude != null ? (
+              <div className="mt-4">
+                <MapView ariaLabel="Mapa del punto de entrega" markers={[{ id: "destino", label: "Punto de entrega", point: { lat: delivery.latitude, lng: delivery.longitude } }]} />
+              </div>
+            ) : null}
           </Card>
         </div>
 
         <div className="flex flex-col gap-5">
           <Card className="p-6">
             <h2 className="text-base font-bold text-tinta">Acciones</h2>
+            {paidWithPurchase && waitingPayment ? (
+              <Alert className="mt-3">
+                Este pedido se paga junto con el resto de tu compra.{" "}
+                <Link href={`/compras/${order.checkout_id}`} className="font-bold underline">
+                  Ir a pagar la compra
+                </Link>
+              </Alert>
+            ) : null}
             <div className="mt-3">
               <OrderActions
                 orderId={order.id!}
                 canCancel={customerCanCancel(status)}
-                canPay={waitingPayment && order.payment_method === "tarjeta" && !payExpired}
+                canPay={waitingPayment && order.payment_method === "tarjeta" && !payExpired && !paidWithPurchase}
                 repeat={
                   items && items.length > 0
                     ? { storeId: order.store_id!, storeName: order.store_name ?? "", items: items.filter((i) => i.variant_id).map((i) => ({ variantId: i.variant_id!, quantity: i.quantity ?? 1 })) }
@@ -168,6 +202,19 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
               />
             </div>
           </Card>
+
+          {returnRequest ? (
+            <ReturnStatusCard
+              status={returnRequest.status as ReturnStatus}
+              paymentMethod={order.payment_method === "tarjeta" ? "tarjeta" : "efectivo"}
+              reason={returnRequest.reason ?? ""}
+              photoCount={Number(returnRequest.photo_count ?? 0)}
+              decisionNote={returnRequest.decision_note}
+              requestedAt={fecha.format(new Date(returnRequest.requested_at))}
+            />
+          ) : status === "entregado" && withinReturnWindow(order.delivered_at) && profile.id ? (
+            <ReturnForm orderId={order.id!} customerId={profile.id} request={requestReturn} />
+          ) : null}
 
           <Card className="p-6">
             <h2 className="text-base font-bold text-tinta">Historial</h2>

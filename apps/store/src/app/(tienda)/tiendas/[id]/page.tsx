@@ -1,17 +1,18 @@
-import { Alert, Badge, EmptyState, pillStyles } from "@rapitrip/ui";
-import { Clock, MapPin, Search, Truck } from "lucide-react";
+import { Alert, Badge, EmptyState } from "@rapitrip/ui";
+import { Clock, MapPin, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActiveFilters, CatalogFilters } from "@/components/catalog-filters";
 import { Pager } from "@/components/pager";
 import { ProductCard } from "@/components/product-card";
-import { getCategories, getProducts, getStore, isUuid, PAGE_SIZE } from "@/lib/catalog";
+import { SortSelect } from "@/components/sort-select";
+import { getCategories, getStore, isUuid, PAGE_SIZE, searchProducts } from "@/lib/catalog";
+import { activeFilterCount, filtersHref, kindLabel, parseFilters } from "@/lib/catalog-filters";
 import { hoursRows } from "@/lib/hours";
-import { formatMoney } from "@/lib/money";
-import { buildQuery, parsePage, parseQuery } from "@/lib/search-params";
 import { siteUrl } from "@/lib/site-url";
 
-type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ q?: string; categoria?: string; pagina?: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
   const { id } = await params;
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   if (!store) return { title: "Tienda no encontrada", robots: { index: false } };
   return {
     title: store.name,
-    description: `Catálogo de ${store.name} en Rapitrip. ${store.delivery_fee > 0 ? `Envío ${formatMoney(store.delivery_fee)}.` : "Envío gratis."}`,
+    description: `Catálogo de ${store.name} en Rapitrip. Envío según la distancia.`,
     alternates: { canonical: `/tiendas/${store.id}` },
   };
 }
@@ -33,11 +34,13 @@ export default async function TiendaPage({ params, searchParams }: Props) {
   const store = await getStore(id);
   if (!store) notFound();
 
-  const query = parseQuery(search.q);
-  const categoryId = isUuid(search.categoria) ? search.categoria : null;
-  const page = parsePage(search.pagina);
-  const [categories, products] = await Promise.all([getCategories(id), getProducts(id, categoryId, query, page)]);
-  const href = (p: number) => `/tiendas/${id}${buildQuery({ q: query, categoria: categoryId, pagina: p })}`;
+  const filters = parseFilters({ ...search, tienda: id });
+  const [categories, products] = await Promise.all([getCategories(id), searchProducts(filters, id, filters.pagina)]);
+  const base = `/tiendas/${id}`;
+  const total = products[0]?.total_count ?? 0;
+  // En la página de una tienda la tienda ya está fijada: no es un filtro que se pueda quitar.
+  const shown = { ...filters, tienda: null };
+  const href = (p: number) => filtersHref(base, shown, { pagina: p });
   const rows = hoursRows(store.hours);
 
   const jsonLd = {
@@ -60,6 +63,7 @@ export default async function TiendaPage({ params, searchParams }: Props) {
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-tinta sm:text-[34px]">{store.name}</h1>
         <Badge tone={store.open_now ? "positive" : "neutral"}>{store.open_now ? "Abierta" : "Cerrada"}</Badge>
+        {products[0] ? <Badge tone={products[0].commerce_kind === "empresa" ? "positive" : "neutral"}>{kindLabel(products[0].commerce_kind)}</Badge> : null}
       </div>
       <ul className="mt-3 flex flex-col gap-1.5 text-[13.5px] text-tinta-suave">
         {store.address ? (
@@ -70,7 +74,7 @@ export default async function TiendaPage({ params, searchParams }: Props) {
         ) : null}
         <li className="flex items-center gap-2">
           <Truck aria-hidden="true" className="size-4 shrink-0" />
-          {store.delivery_fee > 0 ? `Envío ${formatMoney(store.delivery_fee)}` : "Envío gratis"}
+          Envío según la distancia
         </li>
       </ul>
 
@@ -97,47 +101,32 @@ export default async function TiendaPage({ params, searchParams }: Props) {
         </dl>
       </details>
 
-      <form action={`/tiendas/${id}`} method="get" role="search" className="mt-6 flex max-w-md items-center gap-2">
-        <label htmlFor="buscar" className="sr-only">
-          Buscar en {store.name}
-        </label>
-        <div className="flex min-h-11 flex-1 items-center gap-2 rounded-full border border-borde-campo bg-white px-4 focus-within:border-hoja focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-hoja">
-          <Search aria-hidden="true" className="size-4 shrink-0 text-tinta-suave" />
-          <input id="buscar" name="q" type="search" maxLength={80} defaultValue={query ?? ""} placeholder="Buscar productos" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-tinta-suave" />
-        </div>
-        {categoryId ? <input type="hidden" name="categoria" value={categoryId} /> : null}
-        <button type="submit" className="min-h-11 rounded-full bg-hoja px-5 text-sm font-bold text-white transition-colors hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
-          Buscar
-        </button>
-      </form>
-
-      {categories.length > 0 ? (
-        <nav aria-label="Categorías" className="mt-4 flex flex-wrap gap-2">
-          <Link href={`/tiendas/${id}${buildQuery({ q: query })}`} aria-current={!categoryId ? "page" : undefined} className={pillStyles(!categoryId)}>
-            Todas
-          </Link>
-          {categories.map((category) => (
-            <Link key={category.id} href={`/tiendas/${id}${buildQuery({ q: query, categoria: category.id })}`} aria-current={categoryId === category.id ? "page" : undefined} className={pillStyles(categoryId === category.id)}>
-              {category.name} ({category.product_count})
-            </Link>
-          ))}
-        </nav>
-      ) : null}
-
-      {products.length === 0 ? (
-        <div className="mt-8">
-          <EmptyState title={query || categoryId ? "No encontramos productos con ese filtro" : "Esta tienda no tiene productos disponibles"}>
-            {query || categoryId ? "Prueba con otra búsqueda o quita el filtro." : "Vuelve más tarde."}
-          </EmptyState>
-        </div>
-      ) : (
-        <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </ul>
-      )}
-      <Pager page={page} hasNext={products.length === PAGE_SIZE} href={href} />
+      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
+        <aside aria-label="Filtros">
+          <CatalogFilters base={base} filters={shown} categories={categories} />
+        </aside>
+        <section aria-label="Productos de la tienda" className="flex min-w-0 flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p role="status" className="text-[14px] font-bold text-tinta">
+              {total === 0 ? "Sin resultados" : `${total} ${total === 1 ? "producto" : "productos"}`}
+            </p>
+            <SortSelect value={filters.orden} />
+          </div>
+          <ActiveFilters base={base} filters={shown} categories={categories} />
+          {products.length === 0 ? (
+            <EmptyState title={activeFilterCount(shown) > 0 ? "No encontramos productos con esos filtros" : "Esta tienda no tiene productos disponibles"}>
+              {activeFilterCount(shown) > 0 ? "Prueba con otra búsqueda o quita algún filtro." : "Vuelve más tarde."}
+            </EmptyState>
+          ) : (
+            <ul className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} showStore={false} />
+              ))}
+            </ul>
+          )}
+          <Pager page={filters.pagina} hasNext={filters.pagina * PAGE_SIZE < total} href={href} />
+        </section>
+      </div>
     </main>
   );
 }

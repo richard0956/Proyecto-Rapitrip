@@ -77,3 +77,7 @@ verify_jwt = false
 
 [functions.process-refunds]
 verify_jwt = false
+
+# Sin analítica local (Logflare/Vector): consume cientos de MB y con poca memoria en Docker reinicia la base de datos. Solo daba la vista de registros de Studio.
+[analytics]
+enabled = false

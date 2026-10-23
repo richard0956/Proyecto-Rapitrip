@@ -15,6 +15,8 @@ export async function openShop(label = "Café de pruebas", names: { store?: stri
   const { client: owner, secret } = await consoleSession(account.email, account.password);
   const { data: role } = await owner.from("my_roles").select("commerce_id").eq("role", "comercio").single();
   const storeId = must(await owner.rpc("create_store", { p_commerce: role!.commerce_id!, p_name: names.store ?? "Tienda de pruebas" })) as string;
+  // El pin de la tienda es obligatorio para recibir pedidos: centro de Managua.
+  must(await owner.rpc("set_store_location", { p_store: storeId, p_latitude: 12.1364, p_longitude: -86.2514 }));
   must(await owner.rpc("set_store_hours", { p_store: storeId, p_hours: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, opens: "00:00", closes: "23:59" })) }));
   const productId = must(await owner.rpc("create_product", { p_store: storeId, p_name: names.product ?? "Café molido" })) as string;
   const variantId = must(await owner.rpc("create_variant", { p_product: productId, p_name: "500 g", p_sku: "CAFE-500", p_price: 150 })) as string;
@@ -40,6 +42,9 @@ export async function placeOrder(client: SupabaseClient, storeId: string, varian
     p_payment_method: method,
     p_address: "Barrio Central, casa 4",
     p_phone: "88881111",
+    // Pin del destino (obligatorio): el mismo centro de Managua, zona 1 (envío de 50).
+    p_latitude: 12.1364,
+    p_longitude: -86.2514,
   });
   if (error) throw new Error(error.message);
   return data as string;

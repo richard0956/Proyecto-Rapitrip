@@ -8,7 +8,7 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 
 type Kind = "categoria" | "marca" | "tipo_producto" | "atributo";
-export type MasterRow = { id: string; kind: Kind; name: string; parentId: string | null; status: "activo" | "inactivo" };
+export type MasterRow = { id: string; kind: Kind; name: string; parentId: string | null; status: "activo" | "inactivo"; programadoOnly: boolean };
 
 const kinds: { key: Kind; label: string; singular: string; hint: string }[] = [
   { key: "categoria", label: "Categorías", singular: "categoría", hint: "Agrupan productos (admiten un nivel de subcategorías)." },
@@ -22,9 +22,10 @@ type Props = {
   create: (input: { kind: Kind; name: string; parent_id?: string | null }) => Promise<ActionResult>;
   rename: (id: string, name: string) => Promise<ActionResult>;
   setStatus: (id: string, input: { status: "activo" | "inactivo"; reason: string }) => Promise<ActionResult>;
+  setProgramadoOnly: (id: string, value: boolean) => Promise<ActionResult>;
 };
 
-export function MasterCatalog({ rows, create, rename, setStatus }: Props) {
+export function MasterCatalog({ rows, create, rename, setStatus, setProgramadoOnly }: Props) {
   const router = useRouter();
   const [kind, setKind] = useState<Kind>("categoria");
   const [name, setName] = useState("");
@@ -56,7 +57,7 @@ export function MasterCatalog({ rows, create, rename, setStatus }: Props) {
         {kinds.map((item) => (
           <button key={item.key} type="button" role="tab" aria-selected={kind === item.key} onClick={() => { setKind(item.key); setMessage(null); setParentId(""); }} className={pillStyles(kind === item.key)}>
             {item.label}
-            <span className="tabular-nums opacity-80">{rows.filter((row) => row.kind === item.key).length}</span>
+            <span className="tabular-nums opacity-90">{rows.filter((row) => row.kind === item.key).length}</span>
           </button>
         ))}
       </div>
@@ -90,12 +91,12 @@ export function MasterCatalog({ rows, create, rename, setStatus }: Props) {
         <ul className="flex flex-col divide-y divide-borde">
           {roots.map((root) => (
             <li key={root.id}>
-              <ItemRow row={root} rename={rename} setStatus={setStatus} />
+              <ItemRow row={root} rename={rename} setStatus={setStatus} setProgramadoOnly={setProgramadoOnly} />
               {children(root.id).length > 0 ? (
                 <ul className="mb-2 ml-5 flex flex-col border-l-2 border-menta-borde pl-3">
                   {children(root.id).map((child) => (
                     <li key={child.id}>
-                      <ItemRow row={child} rename={rename} setStatus={setStatus} nested />
+                      <ItemRow row={child} rename={rename} setStatus={setStatus} setProgramadoOnly={setProgramadoOnly} nested />
                     </li>
                   ))}
                 </ul>
@@ -108,7 +109,7 @@ export function MasterCatalog({ rows, create, rename, setStatus }: Props) {
   );
 }
 
-function ItemRow({ row, rename, setStatus, nested }: { row: MasterRow; rename: Props["rename"]; setStatus: Props["setStatus"]; nested?: boolean }) {
+function ItemRow({ row, rename, setStatus, setProgramadoOnly, nested }: { row: MasterRow; rename: Props["rename"]; setStatus: Props["setStatus"]; setProgramadoOnly: Props["setProgramadoOnly"]; nested?: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(row.name);
@@ -116,6 +117,16 @@ function ItemRow({ row, rename, setStatus, nested }: { row: MasterRow; rename: P
   const [dialog, setDialog] = useState(false);
   const [pending, start] = useTransition();
   const next = row.status === "activo" ? "inactivo" : "activo";
+  const isCategory = row.kind === "categoria";
+
+  function toggleProgramado() {
+    setError(null);
+    start(async () => {
+      const result = await setProgramadoOnly(row.id, !row.programadoOnly);
+      if (!result.ok) return setError(result.error);
+      router.refresh();
+    });
+  }
 
   function save(event: FormEvent) {
     event.preventDefault();
@@ -148,10 +159,16 @@ function ItemRow({ row, rename, setStatus, nested }: { row: MasterRow; rename: P
             {nested ? <CornerDownRight className="size-4 shrink-0 text-tinta-suave" aria-hidden="true" /> : null}
             <span className="truncate">{row.name}</span>
             <Badge tone={row.status === "activo" ? "positive" : "warning"}>{row.status === "activo" ? "Activo" : "Inactivo"}</Badge>
+            {isCategory && row.programadoOnly ? <Badge tone="neutral">Solo programado</Badge> : null}
           </p>
         )}
         {!editing ? (
           <div className="flex items-center gap-1.5">
+            {isCategory && !nested ? (
+              <Button variant="ghost" onClick={toggleProgramado} disabled={pending} className="min-h-10 px-3" title="Los productos de esta categoría (y de sus subcategorías) no pueden ser express">
+                {row.programadoOnly ? "Permitir express" : "Solo programado"}
+              </Button>
+            ) : null}
             <Button variant="ghost" onClick={() => setEditing(true)} aria-label={`Renombrar ${row.name}`} className="min-h-10 px-3">
               <Pencil className="size-4" aria-hidden="true" />
             </Button>

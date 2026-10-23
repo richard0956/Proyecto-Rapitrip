@@ -16,6 +16,7 @@ export async function setCommerceStatus(id: string, input: { status: "activo" | 
   const { error } = await supabase.rpc("set_commerce_status", { p_commerce: parsed.data.id, p_status: parsed.data.status, p_reason: parsed.data.reason });
   if (error) return failure(error);
   revalidatePath("/admin/comercios");
+  revalidatePath("/admin/vendedores");
   revalidatePath(`/admin/comercios/${parsed.data.id}`);
   return { ok: true };
 }

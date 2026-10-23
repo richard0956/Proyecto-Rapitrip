@@ -34,12 +34,14 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
 
   const items = signedIn
     ? [
+        { href: "/catalogo", label: "Catálogo" },
         { href: "/tiendas", label: "Tiendas" },
         { href: "/pedidos", label: "Mis pedidos" },
         { href: "/perfil", label: "Mi perfil" },
         { href: "/vende", label: "Vende en Rapitrip" },
       ]
     : [
+        { href: "/catalogo", label: "Catálogo" },
         { href: "/tiendas", label: "Tiendas" },
         { href: "/ingresar", label: "Ingresar" },
         { href: "/registro", label: "Crear cuenta" },
@@ -54,6 +56,9 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
         </Link>
 
         <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
+          <Link href="/catalogo" className={linkStyle}>
+            Catálogo
+          </Link>
           <Link href="/tiendas" className={linkStyle}>
             Tiendas
           </Link>

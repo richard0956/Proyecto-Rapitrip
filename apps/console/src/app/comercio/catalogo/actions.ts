@@ -1,9 +1,10 @@
 "use server";
 
-import { productSchema, reasonSchema, variantSchema } from "@rapitrip/validation";
+import { productDeliverySchema, productSchema, reasonSchema, variantSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
+import { fillDays, parsePeriod } from "@/lib/dashboard";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -58,6 +59,30 @@ export async function updateProduct(id: string, input: unknown): Promise<ActionR
   return { ok: true };
 }
 
+/** Peso, medidas y tipo de entrega del producto. La base de datos vuelve a validar los límites vigentes de express. */
+export async function setProductDelivery(id: string, input: unknown): Promise<ActionResult> {
+  const parsedId = idSchema.safeParse(id);
+  const parsed = productDeliverySchema.safeParse(input);
+  if (!parsedId.success) return invalidInput;
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  // Los nulos viajan como nulos: la función no tiene valores por defecto para el peso ni las medidas.
+  const orNull = (value: number | null) => value as unknown as number;
+  const { error } = await supabase.rpc("set_product_delivery", {
+    p_product: parsedId.data,
+    p_eligible: parsed.data.express_eligible,
+    p_weight_kg: orNull(parsed.data.weight_kg),
+    p_length_cm: orNull(parsed.data.length_cm),
+    p_width_cm: orNull(parsed.data.width_cm),
+    p_height_cm: orNull(parsed.data.height_cm),
+    p_validation_days: parsed.data.validation_days ?? undefined,
+  });
+  if (error) return failure(error);
+  refresh(parsedId.data);
+  return { ok: true };
+}
+
 export async function setProductStatus(id: string, input: { status: "borrador" | "publicado" | "archivado"; reason?: string }): Promise<ActionResult> {
   const parsed = z
     .object({ id: idSchema, status: z.enum(["borrador", "publicado", "archivado"]), reason: reasonSchema.optional() })
@@ -99,6 +124,18 @@ export async function updateVariant(productId: string, variantId: string, input:
   return { ok: true };
 }
 
+/** Quita el descuento de una presentación: queda el precio actual como precio normal. */
+export async function removeVariantDiscount(productId: string, variantId: string): Promise<ActionResult> {
+  const parsed = z.object({ product: idSchema, variant: idSchema }).safeParse({ product: productId, variant: variantId });
+  if (!parsed.success) return invalidInput;
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("remove_variant_discount", { p_variant: parsed.data.variant });
+  if (error) return failure(error);
+  refresh(parsed.data.product);
+  return { ok: true };
+}
+
 export async function setVariantStatus(productId: string, variantId: string, status: "activa" | "inactiva"): Promise<ActionResult> {
   const parsed = z.object({ product: idSchema, variant: idSchema, status: z.enum(["activa", "inactiva"]) }).safeParse({ product: productId, variant: variantId, status });
   if (!parsed.success) return invalidInput;
@@ -134,4 +171,23 @@ export async function removeProductImage(productId: string, imageId: string): Pr
   if (removed.error) console.error("[imagen:borrado]", removed.error.message);
   refresh(parsed.data.product);
   return { ok: true };
+}
+
+export type ProductFlowResult = { ok: true; labels: string[]; units: number[]; orders: number[] } | { ok: false; error: string };
+
+/** Unidades y pedidos por día de un producto en el periodo (hasta hoy). Se usa con `.bind(null, periodo)` desde la página. */
+export async function productFlow(periodKey: string, productId: string): Promise<ProductFlowResult> {
+  const parsedId = idSchema.safeParse(productId);
+  if (!parsedId.success) return { ok: false, error: "Producto inválido." };
+  await requireConsoleAccess("comercio");
+  const period = parsePeriod(periodKey);
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("product_daily", { p_product: parsedId.data, p_from: period.from, p_to: period.to });
+  if (error) return { ok: false, error: "No pudimos cargar el flujo del producto." };
+  const todayEnd = parsePeriod("hoy").to;
+  const upTo = period.to < todayEnd ? period.to : todayEnd;
+  const rows = data ?? [];
+  const units = fillDays(rows.map((row) => ({ day: row.day, value: Number(row.units) })), period.from, upTo);
+  const orders = fillDays(rows.map((row) => ({ day: row.day, value: Number(row.orders) })), period.from, upTo);
+  return { ok: true, labels: units.map((point) => point.day.slice(8)), units: units.map((point) => point.value), orders: orders.map((point) => point.value) };
 }

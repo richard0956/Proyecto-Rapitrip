@@ -105,13 +105,14 @@ export async function createInvitation(client: SupabaseClient, email: string, ro
 }
 
 /** Cuenta de comercio lista para usar: solicitud enviada por el cliente y aprobada por un director. */
-export async function createCommerceAccount(businessName = "Comercio E2E") {
+/** `details` permite pedir una empresa: `{ business_kind: "empresa", ruc: "J0310000123456" }`; por omisión es un vendedor propio. */
+export async function createCommerceAccount(businessName = "Comercio E2E", details: Record<string, string> = {}) {
   const email = uniqueEmail("comercio");
   await createUser(email, { fullName: "Dueña de Comercio" });
   const customer = createClient(url!, anon!, options);
   const { error: signInError } = await customer.auth.signInWithPassword({ email, password: PASSWORD });
   if (signInError) throw signInError;
-  const { data: request, error: requestError } = await customer.rpc("submit_commerce_request", { p_business_name: businessName, p_details: {} });
+  const { data: request, error: requestError } = await customer.rpc("submit_commerce_request", { p_business_name: businessName, p_details: details });
   if (requestError || !request) throw requestError ?? new Error("No se pudo enviar la solicitud");
 
   const director = await createSuperadmin();

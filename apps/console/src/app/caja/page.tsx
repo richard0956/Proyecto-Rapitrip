@@ -3,8 +3,8 @@ import { PageHeader } from "@/components/shell";
 import { formatDateTime } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
-import { closeCashSession, createCounterSale, openCashSession, voidCounterSale } from "./actions";
-import { CashWorkspace, type CatalogRow, type Sale, type Shift } from "./cash-workspace";
+import { closeCashSession, createCounterSale, loadCashIncidents, openCashSession, receiveCourierCash, returnCashToCustomer, voidCounterSale } from "./actions";
+import { CashWorkspace, type CashReturn, type CatalogRow, type PendingCash, type Sale, type Shift } from "./cash-workspace";
 
 export const metadata = { title: "Caja y venta" };
 
@@ -26,8 +26,16 @@ export default async function CajaPage() {
 
   let catalog: CatalogRow[] = [];
   let sales: Sale[] = [];
+  let pendingCash: PendingCash[] = [];
+  let pendingReturns: CashReturn[] = [];
   let failed = Boolean(shifts.error);
   if (open?.id) {
+    const pending = await supabase.rpc("pending_courier_cash");
+    if (pending.error) console.error("[caja:efectivo-repartidor]", pending.error.message);
+    const returns = await supabase.rpc("pending_cash_returns");
+    if (returns.error) console.error("[caja:devoluciones]", returns.error.message);
+    pendingReturns = (returns.data ?? []).flatMap((row) => (row.request_id ? [{ requestId: row.request_id, orderNumber: Number(row.order_number), store: row.store_name ?? "", total: Number(row.total ?? 0), decidedAt: formatDateTime(row.decided_at) }] : []));
+    pendingCash = (pending.data ?? []).map((row) => ({ orderId: row.order_id, orderNumber: Number(row.order_number), store: row.store_name ?? "", total: Number(row.total ?? 0), code: row.payment_ref ?? "", deliveredAt: formatDateTime(row.delivered_at) }));
     const [cat, orders] = await Promise.all([
       supabase.rpc("counter_catalog"),
       supabase.from("orders_list").select("id, number, store_name, status, payment_method, total, created_at").eq("cash_session_id", open.id).order("created_at", { ascending: false }),
@@ -44,7 +52,7 @@ export default async function CajaPage() {
     <>
       <PageHeader title="Caja y venta" description="Abre tu turno, registra las ventas de mostrador y cierra contando el efectivo." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo. Recarga la página antes de vender.</Alert> : null}
-      <CashWorkspace shift={open ? toShift(open) : null} history={history} catalog={catalog} sales={sales} actions={{ openCashSession, closeCashSession, createCounterSale, voidCounterSale }} />
+      <CashWorkspace shift={open ? toShift(open) : null} history={history} catalog={catalog} sales={sales} pendingCash={pendingCash} pendingReturns={pendingReturns} actions={{ openCashSession, closeCashSession, createCounterSale, voidCounterSale, receiveCourierCash, loadCashIncidents, returnCashToCustomer }} />
     </>
   );
 }

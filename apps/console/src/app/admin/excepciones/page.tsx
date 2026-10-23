@@ -21,11 +21,11 @@ export default async function ExcepcionesPage() {
   const [orders, events] = await Promise.all([
     supabase
       .from("orders_list")
-      .select("id, number, channel, store_name, status, payment_status, courier_id, updated_at")
+      .select("id, number, channel, store_name, status, payment_status, courier_id, updated_at, delivery_class")
       .in("status", ["por_confirmar", "listo", "en_camino", "cancelado", "rechazado"])
       .order("updated_at", { ascending: false })
       .limit(300),
-    supabase.from("payment_events_list").select("event_id, order_number, outcome, received_at").order("received_at", { ascending: false }).limit(50),
+    supabase.from("payment_events_list").select("event_id, order_number, outcome, received_at, for_checkout").order("received_at", { ascending: false }).limit(50),
   ]);
   const failed = orders.error || events.error;
   if (failed) console.error("[excepciones]", orders.error?.message, events.error?.message);
@@ -35,7 +35,7 @@ export default async function ExcepcionesPage() {
     const status = orderStatuses.find((value): value is OrderStatus => value === row.status);
     if (!status || row.number === null || !row.updated_at) return [];
     stores.set(Number(row.number), row.store_name ?? "");
-    return [{ number: Number(row.number), status, paymentStatus: row.payment_status, courierId: row.courier_id, updatedAt: row.updated_at, channel: row.channel }];
+    return [{ number: Number(row.number), status, paymentStatus: row.payment_status, courierId: row.courier_id, updatedAt: row.updated_at, channel: row.channel, deliveryClass: row.delivery_class === "programado" ? ("programado" as const) : ("express" as const) }];
   });
   const found = classifyExceptions(rows);
   const stripe = events.data ?? [];
@@ -80,7 +80,7 @@ export default async function ExcepcionesPage() {
               {stripe.map((event) => (
                 <li key={event.event_id} className="flex flex-wrap items-center justify-between gap-3 py-2.5 text-sm">
                   <span className="min-w-0">
-                    <span className="block font-bold text-tinta">{event.order_number ? `Pedido ${event.order_number}` : "Pedido desconocido"}</span>
+                    <span className="block font-bold text-tinta">{event.order_number ? `Pedido ${event.order_number}` : event.for_checkout ? "Compra con varios pedidos" : "Pedido desconocido"}</span>
                     <span className="block truncate text-xs text-tinta-suave">{event.outcome?.replace("reembolsar_", "pago ")} · {event.event_id}</span>
                   </span>
                   <span className="shrink-0 text-xs text-tinta-suave">{formatStoreDateTime(event.received_at)}</span>

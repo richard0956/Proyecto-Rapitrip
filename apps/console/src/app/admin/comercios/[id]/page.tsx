@@ -16,16 +16,18 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
   if (!z.string().uuid().safeParse(id).success) notFound();
   await requireConsoleAccess("admin");
   const supabase = await serverSupabase();
-  const [commerce, stores, products, accounts] = await Promise.all([
-    supabase.from("commerces_list").select("id, name, status, created_at").eq("id", id).maybeSingle(),
+  const [commerce, stores, products, accounts, reclass] = await Promise.all([
+    supabase.from("commerces_list").select("id, name, status, created_at, kind, ruc").eq("id", id).maybeSingle(),
     supabase.from("stores_list").select("id, name, address, status, closed_until, open_now").eq("commerce_id", id).order("name"),
     supabase.from("products_list").select("id, store_id, status").eq("commerce_id", id),
     supabase.from("accounts_staff").select("full_name, email, role_status").eq("role", "comercio").eq("commerce_id", id),
+    supabase.from("commerce_reclassification_stats").select("reclassified, express_total").eq("commerce_id", id).maybeSingle(),
   ]);
   if (!commerce.data || !commerce.data.id || !commerce.data.name) notFound();
   const failed = stores.error || products.error || accounts.error;
   if (failed) console.error("[comercio:detalle]", stores.error?.message, products.error?.message, accounts.error?.message);
 
+  const isCompany = commerce.data.kind === "empresa";
   const suspended = commerce.data.status === "suspendido";
   const counts = new Map<string, { published: number; draft: number }>();
   for (const row of products.data ?? []) {
@@ -41,11 +43,11 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
     <>
       <PageHeader
         title={commerce.data.name}
-        description={`Afiliado desde ${formatDate(commerce.data.created_at)}.`}
+        description={`Afiliado desde ${formatDate(commerce.data.created_at)} · ${commerce.data.kind === "empresa" ? `Empresa, RUC ${commerce.data.ruc}` : "Vendedor propio"}.`}
         actions={
-          <Link href="/admin/comercios" className={buttonStyles({ variant: "ghost" })}>
+          <Link href={isCompany ? "/admin/comercios" : "/admin/vendedores"} className={buttonStyles({ variant: "ghost" })}>
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Comercios
+            {isCompany ? "Comercios" : "Vendedores"}
           </Link>
         }
       />
@@ -92,6 +94,17 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
               {suspended ? "Mientras esté suspendido, su cuenta no puede entrar y sus tiendas figuran cerradas. Nada se borra." : "Suspender un comercio bloquea el acceso de su cuenta y cierra sus tiendas. Se puede revertir."}
             </p>
             <StatusControl id={commerce.data.id} name={commerce.data.name} suspended={suspended} setStatus={setCommerceStatus} />
+          </Card>
+          <Card className="p-5">
+            <CardHeader title="Pedidos express reclasificados" subtitle="Últimos 30 días" />
+            {reclass.data && Number(reclass.data.express_total ?? 0) > 0 ? (
+              <p className="text-sm text-tinta">
+                <span className="block text-[22px] font-extrabold tabular-nums">{Number(reclass.data.reclassified ?? 0)} de {Number(reclass.data.express_total ?? 0)}</span>
+                <span className="text-[12.5px] text-tinta-suave">Pedidos que coordinación pasó a programado porque no cabían en una moto. Si son muchos, revisa cómo clasifica sus productos.</span>
+              </p>
+            ) : (
+              <p className="text-[12.5px] text-tinta-suave">Sin pedidos express en los últimos 30 días.</p>
+            )}
           </Card>
           <Card className="p-5">
             <CardHeader title="Cuenta del comercio" />

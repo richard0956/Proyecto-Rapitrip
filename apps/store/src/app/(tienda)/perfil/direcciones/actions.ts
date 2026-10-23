@@ -4,7 +4,8 @@ import { failure, isSessionExpired } from "@rapitrip/supabase";
 import { customerAddressSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { expiredResult, type CustomerResult } from "@/lib/result";
+import { departmentOfPoint } from "@/lib/department";
+import { expiredMessage, expiredResult, type CustomerResult } from "@/lib/result";
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -20,7 +21,14 @@ export async function saveAddress(input: unknown): Promise<CustomerResult> {
   const supabase = await serverSupabase();
   const { id } = idParsed.data;
   const { label, address, reference, phone, make_default, latitude, longitude } = parsed.data;
-  const { error } = await supabase.rpc("save_address", {
+  // El departamento sale del pin (el cliente no lo elige). Se averigua antes de guardar para no dejar la dirección a medias.
+  let department: string | null = null;
+  if (latitude !== null && longitude !== null) {
+    const where = await departmentOfPoint(supabase, latitude, longitude, expiredMessage);
+    if (!where.ok) return where.expired ? expiredResult : { ok: false, error: where.error };
+    department = where.department;
+  }
+  const { data: savedId, error } = await supabase.rpc("save_address", {
     p_id: (id ?? null) as string,
     p_label: label,
     p_address: address,
@@ -32,6 +40,9 @@ export async function saveAddress(input: unknown): Promise<CustomerResult> {
   });
   if (isSessionExpired(error)) return expiredResult;
   if (error) return failure(error);
+  // `set_address_department` fija el departamento ya deducido; nulo lo quita.
+  const withDepartment = await supabase.rpc("set_address_department", { p_id: savedId ?? (id as string), p_department: department as string });
+  if (withDepartment.error) return failure(withDepartment.error);
   revalidatePath(PATH);
   return { ok: true, message: id ? "Dirección actualizada." : "Dirección guardada." };
 }

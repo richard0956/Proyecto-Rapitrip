@@ -1,6 +1,7 @@
 import type { Database } from "@rapitrip/db-types";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_cache } from "next/cache";
+import type { CatalogFilters, CommerceKind } from "./catalog-filters";
 
 /**
  * Lectura pública del catálogo: funciones `catalog_*` y `quote_cart` de la base de datos, con la llave anónima y sin cookies.
@@ -19,6 +20,9 @@ export type StoreSummary = {
   closed_until: string | null;
   closed_reason: string | null;
   product_count: number;
+  /** Solo lo devuelve `catalog_search_stores`. */
+  commerce_kind?: CommerceKind;
+  categories?: string[];
 };
 
 export type StoreDetail = {
@@ -45,7 +49,25 @@ export type ProductSummary = {
   cover_path: string | null;
 };
 
-export type ProductVariant = { id: string; name: string; price: number; available: boolean; max_per_order: number | null };
+/** Tarjeta de producto del catálogo con filtros (`catalog_search_products`). */
+export type CatalogProduct = ProductSummary & {
+  variant_count: number;
+  /** La variante disponible más barata: la que agrega el botón rápido de la tarjeta. */
+  quick_variant_id: string;
+  quick_variant_name: string;
+  quick_max: number | null;
+  commerce_kind: CommerceKind;
+  store_open: boolean;
+  created_at: string;
+  brand_name: string | null;
+  total_count: number;
+  /** Precio anterior de la presentación más barata, si está en descuento. */
+  compare_price: number | null;
+  /** El mayor descuento entre las presentaciones disponibles (0 si no hay). */
+  discount_pct: number;
+};
+
+export type ProductVariant = { id: string; name: string; price: number; available: boolean; max_per_order: number | null; compare_at_price?: number | null; discount_pct?: number };
 
 export type ProductDetail = {
   id: string;
@@ -53,7 +75,8 @@ export type ProductDetail = {
   description: string | null;
   category_id: string | null;
   category_name: string | null;
-  store: { id: string; name: string; delivery_fee: number; open_now: boolean; closed_until: string | null; closed_reason: string | null };
+  brand_name?: string | null;
+  store: { id: string; name: string; delivery_fee: number; open_now: boolean; commerce_kind?: CommerceKind; closed_until: string | null; closed_reason: string | null };
   images: string[];
   variants: ProductVariant[];
 };
@@ -143,6 +166,47 @@ export const getProducts = unstable_cache(
       "productos",
     ) as ProductSummary[],
   ["catalog-products"],
+  options,
+);
+
+/** Catálogo con la barra de filtros. `store` fija una tienda (la página de la tienda); el resto viene de la URL. */
+export const searchProducts = unstable_cache(
+  async (filters: Omit<CatalogFilters, "pagina" | "tienda">, store: string | null, page: number) =>
+    must(
+      await publicSupabase().rpc("catalog_search_products", {
+        ...(store ? { p_store: store } : {}),
+        ...(filters.categoria ? { p_category: filters.categoria } : {}),
+        ...(filters.q ? { p_query: filters.q } : {}),
+        ...(filters.min !== null ? { p_min_price: filters.min } : {}),
+        ...(filters.max !== null ? { p_max_price: filters.max } : {}),
+        ...(filters.tipo ? { p_kind: filters.tipo } : {}),
+        ...(filters.abiertas ? { p_open_only: true } : {}),
+        ...(filters.descuento ? { p_discount_only: true } : {}),
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE,
+      }),
+      "productos",
+    ) as CatalogProduct[],
+  ["catalog-search-products"],
+  options,
+);
+
+/** Tiendas con filtros (búsqueda por nombre, tipo de vendedor, categoría y solo abiertas). */
+export const searchStores = unstable_cache(
+  async (filters: Pick<CatalogFilters, "q" | "tipo" | "categoria" | "abiertas">, page: number, limit: number = PAGE_SIZE) =>
+    must(
+      await publicSupabase().rpc("catalog_search_stores", {
+        p_open_only: filters.abiertas,
+        ...(filters.q ? { p_query: filters.q } : {}),
+        ...(filters.tipo ? { p_kind: filters.tipo } : {}),
+        ...(filters.categoria ? { p_category: filters.categoria } : {}),
+        p_limit: limit,
+        p_offset: (page - 1) * limit,
+      }),
+      "tiendas",
+    ) as StoreSummary[],
+  ["catalog-search-stores"],
   options,
 );
 

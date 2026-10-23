@@ -4,8 +4,8 @@ import { Alert, Button, Dialog, TextareaField } from "@rapitrip/ui";
 import { CreditCard, RotateCcw, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { addToCart, emptyCart, type Cart } from "@/lib/cart";
-import { setCart } from "@/lib/cart-store";
+import { addToCart, type Cart } from "@/lib/cart";
+import { updateCart } from "@/lib/cart-store";
 import { saveDraft, takeDraft } from "@/lib/draft";
 import type { CustomerResult } from "@/lib/result";
 
@@ -80,9 +80,8 @@ export function OrderActions({ orderId, canCancel, canPay, repeat, cancel, pay }
 
   function doRepeat() {
     if (!repeat) return;
-    let cart: Cart = emptyCart;
-    for (const item of repeat.items) cart = addToCart(cart, { storeId: repeat.storeId, storeName: repeat.storeName, variantId: item.variantId, quantity: item.quantity }, { replaceOtherStore: true }).cart;
-    setCart(cart);
+    // Se suma al carrito actual: ya puede tener productos de otras tiendas.
+    updateCart((current) => repeat.items.reduce<Cart>((cart, item) => addToCart(cart, { storeId: repeat.storeId, storeName: repeat.storeName, variantId: item.variantId, quantity: item.quantity }).cart, current));
     router.push("/carrito");
   }
 

@@ -5,7 +5,8 @@ const reply = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
 /**
- * Reembolsa en Stripe los pedidos pagados con tarjeta que se cancelaron o rechazaron (`reembolso_pendiente`).
+ * Reembolsa en Stripe los pedidos pagados con tarjeta que se cancelaron o rechazaron (`reembolso_pendiente`): completo si el pedido
+ * se pagó solo, o por su parte si se pagó junto con otros pedidos de la misma compra.
  * La dispara un programador (cada minuto) o la consola tras cancelar; se protege con el secreto compartido de tareas internas.
  * Es seguro reintentar: el reembolso usa una clave de idempotencia por pedido.
  */
@@ -19,9 +20,10 @@ Deno.serve(async (req) => {
 
   let refunded = 0;
   let failed = 0;
-  for (const row of (rows ?? []) as { order_id: string; order_number: number; payment_intent_id: string }[]) {
+  for (const row of (rows ?? []) as { order_id: string; order_number: number; payment_intent_id: string; amount_cents: number | null }[]) {
     try {
-      const refund = await refundPayment(row.payment_intent_id, `refund-order-${row.order_id}`, `pedido ${row.order_number} cancelado`);
+      // `amount_cents` viene lleno cuando el pedido se pagó junto con otros: se devuelve solo su parte del cobro.
+      const refund = await refundPayment(row.payment_intent_id, `refund-order-${row.order_id}`, `pedido ${row.order_number} cancelado`, row.amount_cents);
       const { error: markError } = await admin.rpc("mark_order_refunded", { p_order: row.order_id, p_refund: refund.id });
       if (markError) throw new Error(markError.message);
       refunded++;

@@ -10,14 +10,15 @@ select is_empty($$
   select p.oid::regprocedure from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute')
-    and p.proname not in ('catalog_stores', 'catalog_store', 'catalog_categories', 'catalog_products', 'catalog_product', 'quote_cart')
+    and p.proname not in ('catalog_stores', 'catalog_store', 'catalog_categories', 'catalog_products', 'catalog_product', 'quote_cart', 'catalog_search_stores', 'catalog_search_products')
 $$, 'anon solo ejecuta las funciones públicas del catálogo (lista explícita)');
 
 select results_eq($$
-  select p.proname::text from pg_proc p
+  -- `name` trae la colación «C»: sin fijarla, comparar con los literales falla («could not determine which collation»).
+  select (p.proname::text collate "default") from pg_proc p
   join pg_namespace n on n.oid = p.pronamespace
   where n.nspname = 'public' and has_function_privilege('anon', p.oid, 'execute') order by 1
-$$, $$ values ('catalog_categories'), ('catalog_product'), ('catalog_products'), ('catalog_store'), ('catalog_stores'), ('quote_cart') $$,
+$$, $$ values ('catalog_categories'), ('catalog_product'), ('catalog_products'), ('catalog_search_products'), ('catalog_search_stores'), ('catalog_store'), ('catalog_stores'), ('quote_cart') $$,
   'la lista pública es exactamente la del catálogo: nada más');
 
 select is_empty($$

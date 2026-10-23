@@ -45,7 +45,8 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await page.getByRole("button", { name: "Crear acceso" }).click();
     await expect(page).toHaveURL(/\/login\?invitacion=ok$/);
     await signInAndEnroll(page, email, PASSWORD);
-    await expect(page).toHaveURL(/\/coordinacion$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+    await page.goto(`${CONSOLE_URL}/coordinacion`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos");
     await expect(page.getByRole("tab", { name: /Para despachar\s*\d+/ })).toBeVisible();
     await expectNoViolations(page);
@@ -81,5 +82,114 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     expect(await stockOf(shop.owner, shop.variantId)).toBe(9);
     await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
     await expect(page.getByText("Motivo: el cliente no responde")).toBeVisible();
+  });
+});
+
+/** Necesita las Edge Functions sirviéndose (`supabase functions serve`): la persona de coordinación acepta su invitación con `accept-invitation`. */
+test.describe("@backend coordinación · resumen del día", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("el coordinador ve el resumen, filtra las excepciones y descarga el informe del día en CSV", async ({ page }) => {
+    test.setTimeout(180_000);
+    const unique = Date.now();
+    const shop = await openShop("Comercio del resumen", { store: `Tienda ${unique}`, product: `Café ${unique}` });
+    const client = await signedInClient();
+    const first = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    for (const to of ["confirmado", "preparando", "listo"]) {
+      const { error } = await shop.owner.rpc("set_order_status", { p_order: first, p_to: to });
+      expect(error).toBeNull();
+    }
+
+    const director = await createSuperadmin();
+    const api = await consoleClient(director.email, director.password);
+    const email = uniqueEmail("coordinador");
+    const token = await createInvitation(api, email, "coordinador");
+    const accepted = await fetch(`${process.env.SUPABASE_URL}/functions/v1/accept-invitation`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token, password: PASSWORD, full_name: "Coordinación del Resumen" }),
+    });
+    expect(accepted.status).toBe(200);
+    await signInAndEnroll(page, email, PASSWORD);
+    await expect(page).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Resumen del día", { timeout: 30_000 });
+    await expect(page.getByRole("link", { name: "Resumen" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Pedidos", exact: true })).not.toHaveAttribute("aria-current");
+    await expect(page.getByText("Pedidos activos")).toBeVisible();
+    await expectNoViolations(page);
+
+    // Coordinación no lee las tiendas: el selector sale de los pedidos del día
+    await expect(page.getByLabel("Tienda")).toContainText(`Tienda ${unique}`);
+    await expect(page.getByLabel("Repartidor")).toBeVisible();
+
+    // El pedido listo sin repartidor es una excepción: aparece al filtrar y lleva su alerta
+    await page.getByRole("link", { name: /Con excepción/ }).click();
+    await expect(page).toHaveURL(/filtro=excepcion/);
+    const row = page.getByRole("row", { name: new RegExp(`Tienda ${unique}`) });
+    await expect(row).toBeVisible();
+    await expect(row.getByText("Listo sin repartidor")).toBeVisible();
+
+    // El informe del día es un CSV con el pedido
+    const report = await page.request.get(`${CONSOLE_URL}/coordinacion/informe`);
+    expect(report.status()).toBe(200);
+    expect(report.headers()["content-type"]).toContain("text/csv");
+    expect(report.headers()["content-disposition"]).toContain("pedidos-");
+    const body = await report.text();
+    expect(body).toContain("Número,Tienda,Canal,Pago,Subtotal,Envío,Total,Estado,Creado");
+    expect(body).toContain(`Tienda ${unique}`);
+  });
+});
+
+/** Necesita las Edge Functions sirviéndose (`supabase functions serve`): la persona de coordinación acepta su invitación con `accept-invitation`. */
+test.describe("@backend coordinación · repartidores", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("coordinación ve la flota, el ranking y la ficha de cada repartidor, pero no puede gestionarlos", async ({ page }) => {
+    test.setTimeout(240_000);
+    const unique = Date.now();
+    const shop = await openShop("Comercio de la flota", { store: `Tienda ${unique}`, product: `Café flota ${unique}` });
+    const client = await signedInClient();
+    const order = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    for (const to of ["confirmado", "preparando", "listo"]) expect((await shop.owner.rpc("set_order_status", { p_order: order, p_to: to })).error).toBeNull();
+
+    const director = await createSuperadmin();
+    const api = await consoleClient(director.email, director.password);
+    const courierName = `Repartidor flota ${unique}`;
+    const courierId = (await api.rpc("create_courier", { p_full_name: courierName, p_phone: "88880000", p_vehicle_type: "moto" })).data as string;
+    expect((await api.rpc("assign_order_courier", { p_order: order, p_courier: courierId })).error).toBeNull();
+    for (const to of ["en_camino", "entregado"]) expect((await api.rpc("set_order_status", { p_order: order, p_to: to })).error).toBeNull();
+
+    const email = uniqueEmail("coordinador");
+    const token = await createInvitation(api, email, "coordinador");
+    const accepted = await fetch(`${process.env.SUPABASE_URL}/functions/v1/accept-invitation`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token, password: PASSWORD, full_name: "Coordinación de la Flota" }),
+    });
+    expect(accepted.status).toBe(200);
+    await signInAndEnroll(page, email, PASSWORD);
+    await expect(page).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
+
+    await page.getByRole("link", { name: "Repartidores", exact: true }).click();
+    await expect(page).toHaveURL(/\/coordinacion\/repartidores$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Repartidores", { timeout: 30_000 });
+    await expect(page.getByRole("link", { name: "Repartidores", exact: true }).first()).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("heading", { name: "Más entregas" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Nuevo repartidor" })).toHaveCount(0);
+    await page.getByRole("searchbox", { name: "Buscar repartidor" }).fill(`flota ${unique}`);
+    await expectNoViolations(page);
+
+    await page.getByRole("link", { name: new RegExp(courierName) }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(courierName, { timeout: 30_000 });
+    await expect(page.getByText("Efectivo por rendir").first()).toBeVisible();
+    // El pedido de prueba se entrega en el mismo punto de la tienda (0 km): el gráfico lo explica en vez de dibujar una línea plana
+    await expect(page.getByText("Kilómetros por día")).toBeVisible();
+    await expect(page.getByRole("img", { name: /Entregas por día/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Gestionar repartidor" })).toHaveCount(0);
+    await expectNoViolations(page);
+
+    // La gestión sigue siendo solo del administrador
+    await page.goto(`${CONSOLE_URL}/admin/repartidores`);
+    await expect(page).toHaveURL(/\/sin-acceso$/);
   });
 });

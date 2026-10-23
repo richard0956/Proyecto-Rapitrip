@@ -43,7 +43,7 @@ test.describe("@backend consola · acceso y roles", () => {
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Hola");
 
-    for (const path of ["/admin", "/admin/usuarios", "/admin/solicitudes", "/admin/comercios", "/admin/repartidores", "/admin/auditoria", "/admin/accesos", "/admin/incidentes", "/admin/datos-personales", "/cuenta"]) {
+    for (const path of ["/admin", "/admin/usuarios", "/admin/solicitudes", "/admin/comercios", "/admin/vendedores", "/admin/repartidores", "/admin/auditoria", "/admin/accesos", "/admin/incidentes", "/admin/datos-personales", "/cuenta"]) {
       await page.goto(`${CONSOLE_URL}${path}`);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await expectNoViolations(page);
@@ -65,7 +65,7 @@ test.describe("@backend consola · acceso y roles", () => {
     await expect(page.getByRole("status").first()).toContainText("Tu acceso está listo");
 
     await signInAndEnroll(page, email, PASSWORD);
-    await expect(page).toHaveURL(/\/caja$/);
+    await expect(page).toHaveURL(/\/caja\/resumen$/);
 
     await page.goto(`${CONSOLE_URL}/admin`);
     await expect(page).toHaveURL(/\/sin-acceso$/);

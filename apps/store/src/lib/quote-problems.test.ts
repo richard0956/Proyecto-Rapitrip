@@ -29,7 +29,7 @@ describe("quote-problems", () => {
       { code: "producto_no_disponible", variant_id: V2 },
     ];
     const next = resolveProblems(cart, problems);
-    expect(next.lines).toEqual([{ variantId: V1, quantity: 3, seenPrice: null }]);
+    expect(next.lines).toEqual([{ storeId: S, storeName: null, variantId: V1, quantity: 3, seenPrice: null }]);
   });
 
   it("una variante agotada (máximo 0) se quita", () => {

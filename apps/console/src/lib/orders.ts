@@ -1,11 +1,12 @@
-export type OrderStatus = "pendiente_pago" | "por_confirmar" | "confirmado" | "preparando" | "listo" | "en_camino" | "entregado" | "cancelado" | "rechazado";
+export type OrderStatus = "pendiente_pago" | "por_confirmar" | "en_validacion" | "confirmado" | "preparando" | "listo" | "en_camino" | "entregado" | "cancelado" | "rechazado";
 export type OrderGroup = "confirmar" | "curso" | "terminados";
 
-export const orderStatuses: OrderStatus[] = ["pendiente_pago", "por_confirmar", "confirmado", "preparando", "listo", "en_camino", "entregado", "cancelado", "rechazado"];
+export const orderStatuses: OrderStatus[] = ["pendiente_pago", "por_confirmar", "en_validacion", "confirmado", "preparando", "listo", "en_camino", "entregado", "cancelado", "rechazado"];
 
 export const orderStatusLabel: Record<OrderStatus, string> = {
   pendiente_pago: "Esperando pago",
   por_confirmar: "Por confirmar",
+  en_validacion: "En validación",
   confirmado: "Confirmado",
   preparando: "Preparando",
   listo: "Listo",
@@ -18,6 +19,7 @@ export const orderStatusLabel: Record<OrderStatus, string> = {
 export const orderStatusTone: Record<OrderStatus, "neutral" | "warning" | "positive" | "danger"> = {
   pendiente_pago: "neutral",
   por_confirmar: "warning",
+  en_validacion: "warning",
   confirmado: "positive",
   preparando: "positive",
   listo: "positive",
@@ -28,18 +30,25 @@ export const orderStatusTone: Record<OrderStatus, "neutral" | "warning" | "posit
 };
 
 export function orderGroup(status: OrderStatus): OrderGroup {
-  if (status === "por_confirmar") return "confirmar";
+  if (status === "por_confirmar" || status === "en_validacion") return "confirmar";
   if (status === "entregado" || status === "cancelado" || status === "rechazado") return "terminados";
   return "curso";
 }
 
 export type ShopAction = { to: OrderStatus; label: string; reason?: boolean };
 
-/** Lo que el comercio puede hacer con un pedido (la base de datos vuelve a comprobarlo). Después de «listo», sigue coordinación. */
-export function shopActions(status: OrderStatus): ShopAction[] {
+/**
+ * Lo que el comercio puede hacer con un pedido (la base de datos vuelve a comprobarlo). Después de «listo», sigue coordinación.
+ * Un pedido programado puede pasar antes por validación (disponibilidad, armado, proveedor); uno express se confirma directo.
+ */
+export function shopActions(status: OrderStatus, deliveryClass: "express" | "programado" = "express"): ShopAction[] {
   switch (status) {
     case "por_confirmar":
-      return [{ to: "confirmado", label: "Confirmar" }, { to: "rechazado", label: "Rechazar", reason: true }];
+      return deliveryClass === "programado"
+        ? [{ to: "en_validacion", label: "Empezar a validar" }, { to: "confirmado", label: "Confirmar ya" }, { to: "rechazado", label: "Rechazar", reason: true }]
+        : [{ to: "confirmado", label: "Confirmar" }, { to: "rechazado", label: "Rechazar", reason: true }];
+    case "en_validacion":
+      return [{ to: "confirmado", label: "Confirmar (validado)" }, { to: "rechazado", label: "Rechazar", reason: true }];
     case "confirmado":
       return [{ to: "preparando", label: "Empezar a preparar" }, { to: "cancelado", label: "Cancelar", reason: true }];
     case "preparando":
@@ -73,7 +82,7 @@ export function coordTab(status: OrderStatus): CoordTab {
   if (status === "listo") return "listos";
   if (status === "en_camino") return "camino";
   if (status === "confirmado" || status === "preparando") return "preparacion";
-  if (status === "por_confirmar" || status === "pendiente_pago") return "espera";
+  if (status === "por_confirmar" || status === "en_validacion" || status === "pendiente_pago") return "espera";
   return "terminados";
 }
 
@@ -89,6 +98,7 @@ export function coordActions(status: OrderStatus): CoordAction[] {
     case "confirmado":
     case "preparando":
     case "por_confirmar":
+    case "en_validacion":
     case "pendiente_pago":
       return [{ to: "cancelado", label: "Cancelar pedido", reason: true }];
     default:
@@ -97,10 +107,10 @@ export function coordActions(status: OrderStatus): CoordAction[] {
 }
 
 /** Umbrales de las excepciones (minutos sin movimiento). El comercio tiene 45 para responder; se avisa a la mitad. */
-export const EXCEPTION_MINUTES = { sinRespuesta: 20, enCamino: 60 } as const;
+export const EXCEPTION_MINUTES = { sinRespuesta: 20, sinRespuestaProgramado: 720, enCamino: 60 } as const;
 
 export type ExceptionKind = "sin_repartidor" | "sin_respuesta" | "en_camino_largo" | "reembolso_pendiente";
-export type ExceptionOrder = { number: number; status: OrderStatus; paymentStatus: string | null; courierId: string | null; updatedAt: string; channel: string | null };
+export type ExceptionOrder = { number: number; status: OrderStatus; paymentStatus: string | null; courierId: string | null; updatedAt: string; channel: string | null; deliveryClass?: "express" | "programado" };
 
 /** Clasifica los pedidos de la tienda web que necesitan atención de la administración. Un pedido puede caer en más de una. */
 export function classifyExceptions(orders: ExceptionOrder[], now = Date.now()): Record<ExceptionKind, ExceptionOrder[]> {
@@ -108,7 +118,8 @@ export function classifyExceptions(orders: ExceptionOrder[], now = Date.now()): 
   const web = orders.filter((order) => order.channel === "web");
   return {
     sin_repartidor: web.filter((o) => o.status === "listo" && o.courierId === null),
-    sin_respuesta: web.filter((o) => o.status === "por_confirmar" && minutes(o) >= EXCEPTION_MINUTES.sinRespuesta),
+    // Un programado tiene 24 horas para que el comercio responda: se avisa a la mitad (12 horas), no a los 20 minutos.
+    sin_respuesta: web.filter((o) => o.status === "por_confirmar" && minutes(o) >= (o.deliveryClass === "programado" ? EXCEPTION_MINUTES.sinRespuestaProgramado : EXCEPTION_MINUTES.sinRespuesta)),
     en_camino_largo: web.filter((o) => o.status === "en_camino" && minutes(o) >= EXCEPTION_MINUTES.enCamino),
     reembolso_pendiente: web.filter((o) => o.paymentStatus === "reembolso_pendiente"),
   };

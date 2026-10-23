@@ -2,15 +2,21 @@ import { buttonStyles, ButtonIsland, Card, Eyebrow, Reveal } from "@rapitrip/ui"
 import { Check, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { HeroVisual } from "@/components/hero-visual";
+import { ProductCard } from "@/components/product-card";
 import { StoreCard } from "@/components/store-card";
 import { Steps } from "@/components/steps";
-import { getStores } from "@/lib/catalog";
+import { getStores, searchProducts } from "@/lib/catalog";
+import { parseFilters } from "@/lib/catalog-filters";
 
 const guarantees = ["Confirmamos tu correo antes de activar la cuenta", "Ingresas con tu correo o con tu cuenta de Google", "Cada persona ve solo lo que su rol permite"];
 
 export default async function Home() {
   // Si la lectura falla, la portada sigue mostrándose sin la lista de tiendas.
-  const stores = await getStores(true, 1).catch(() => []);
+  const [stores, products, deals] = await Promise.all([
+    getStores(true, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", orden: "recientes" }), null, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", descuento: "1", orden: "descuento" }), null, 1).catch(() => []),
+  ]);
   return (
     <main className="mx-auto max-w-[1040px] px-4 sm:px-8">
       <section aria-labelledby="titulo" className="grid grid-cols-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:py-6">
@@ -27,12 +33,12 @@ export default async function Home() {
             <p className="mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-tinta-suave">Explora las tiendas abiertas, arma tu carrito y paga en efectivo o con tarjeta. Solo necesitas una cuenta para confirmar tu pedido.</p>
           </Reveal>
           <Reveal index={3} className="mt-7 flex flex-wrap items-center gap-3">
-            <Link href="/tiendas" className={buttonStyles({ variant: "primary", className: "min-h-11 pr-5" })}>
-              Ver tiendas
+            <Link href="/catalogo" className={buttonStyles({ variant: "primary", className: "min-h-11 pr-5" })}>
+              Ver catálogo
               <ButtonIsland />
             </Link>
-            <Link href="/registro" className={buttonStyles({ variant: "secondary", className: "min-h-11" })}>
-              Crear cuenta
+            <Link href="/tiendas" className={buttonStyles({ variant: "secondary", className: "min-h-11" })}>
+              Ver tiendas
             </Link>
           </Reveal>
         </div>
@@ -54,6 +60,42 @@ export default async function Home() {
           <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {stores.slice(0, 3).map((store) => (
               <StoreCard key={store.id} store={store} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {deals.length > 0 ? (
+        <section aria-labelledby="ofertas" className="py-6 lg:py-10">
+          <div className="flex items-end justify-between gap-4">
+            <h2 id="ofertas" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
+              Con descuento
+            </h2>
+            <Link href="/catalogo?descuento=1&orden=descuento" className="text-[13.5px] font-bold text-hoja hover:underline">
+              Ver todos los descuentos
+            </Link>
+          </div>
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {deals.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {products.length > 0 ? (
+        <section aria-labelledby="novedades" className="py-6 lg:py-10">
+          <div className="flex items-end justify-between gap-4">
+            <h2 id="novedades" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
+              Novedades del catálogo
+            </h2>
+            <Link href="/catalogo" className="text-[13.5px] font-bold text-hoja hover:underline">
+              Ver el catálogo
+            </Link>
+          </div>
+          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            {products.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </ul>
         </section>

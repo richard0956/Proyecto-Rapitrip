@@ -1,22 +1,26 @@
 "use client";
 
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
-import { productImageRules } from "@rapitrip/validation";
+import { productImageRules, type ExpressLimits } from "@rapitrip/validation";
 import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, SelectField, TextareaField } from "@rapitrip/ui";
 import { Check, ImagePlus, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
+import { discountAfterChange } from "@/lib/discount";
 import { formatMoney } from "@/lib/money";
+import { ProductDeliveryCard, type DeliveryProduct } from "./product-delivery-card";
 
 type Status = "borrador" | "publicado" | "archivado";
 type Product = { id: string; storeId: string; name: string; description: string | null; categoryId: string | null; brandId: string | null; typeId: string | null; status: Status };
-type Variant = { id: string; name: string; sku: string; price: number; active: boolean };
+type Variant = { id: string; name: string; sku: string; price: number; compareAt: number | null; discountPct: number; active: boolean };
 type Image = { id: string; url: string };
 type Master = { id: string; kind: "categoria" | "marca" | "tipo_producto"; name: string };
 
 type Actions = {
+  setProductDelivery: (id: string, input: unknown) => Promise<ActionResult>;
+  removeVariantDiscount: (productId: string, variantId: string) => Promise<ActionResult>;
   updateProduct: (id: string, input: unknown) => Promise<ActionResult>;
   setProductStatus: (id: string, input: { status: Status; reason?: string }) => Promise<ActionResult>;
   createVariant: (productId: string, input: unknown) => Promise<ActionResult>;
@@ -32,12 +36,13 @@ const Feedback = ({ message }: { message: Message }) => (message ? <Alert tone={
 const statusLabel = { borrador: "Borrador", publicado: "Publicado", archivado: "Archivado" } as const;
 const statusTone = { borrador: "neutral", publicado: "positive", archivado: "warning" } as const;
 
-export function ProductEditor({ product, variants, images, master, disabled, actions }: { product: Product; variants: Variant[]; images: Image[]; master: Master[]; disabled: boolean; actions: Actions }) {
+export function ProductEditor({ product, delivery, limits, variants, images, master, disabled, actions }: { product: Product; delivery: DeliveryProduct; limits: ExpressLimits; variants: Variant[]; images: Image[]; master: Master[]; disabled: boolean; actions: Actions }) {
   const locked = product.status === "archivado";
   return (
     <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="flex flex-col gap-5">
         <DetailsCard product={product} master={master} locked={locked || disabled} update={actions.updateProduct} />
+        <ProductDeliveryCard product={delivery} limits={limits} locked={locked || disabled} save={actions.setProductDelivery} />
         <VariantsCard product={product} variants={variants} locked={locked || disabled} actions={actions} />
       </div>
       <div className="flex flex-col gap-5">
@@ -221,6 +226,19 @@ function VariantRow({ productId, variant, locked, actions }: { productId: string
   const [values, setValues] = useState({ name: variant.name, sku: variant.sku, price: String(variant.price) });
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // Avisa antes de guardar si el precio nuevo activa, cambia o quita un descuento (la base de datos aplica la misma regla).
+  const typed = values.price.trim() === "" ? NaN : Number(values.price);
+  const next = Number.isFinite(typed) && typed >= 0 ? discountAfterChange({ price: variant.price, compareAt: variant.compareAt }, typed) : null;
+  const preview = next && (next.pct > 0 || variant.discountPct > 0) && (next.compareAt !== variant.compareAt || next.pct !== variant.discountPct) ? next : null;
+
+  function dropDiscount() {
+    setError(null);
+    start(async () => {
+      const result = await actions.removeVariantDiscount(productId, variant.id);
+      if (!result.ok) return setError(result.error);
+      router.refresh();
+    });
+  }
 
   function save(event: FormEvent) {
     event.preventDefault();
@@ -251,6 +269,13 @@ function VariantRow({ productId, variant, locked, actions }: { productId: string
             <Field label="SKU" value={values.sku} onChange={(e) => setValues((v) => ({ ...v, sku: e.target.value }))} maxLength={40} />
             <Field label="Precio" type="number" inputMode="decimal" min="0" step="0.01" value={values.price} onChange={(e) => setValues((v) => ({ ...v, price: e.target.value }))} />
           </div>
+          {preview ? (
+            <Alert tone="info">
+              {preview.pct > 0
+                ? `Con este precio la presentación queda en descuento: -${preview.pct} % (antes ${formatMoney(preview.compareAt ?? 0)}). Se mostrará en el catálogo como producto con descuento.`
+                : "Con este precio se quita el descuento de la presentación."}
+            </Alert>
+          ) : null}
           {error ? <Alert tone="error">{error}</Alert> : null}
           <div className="flex gap-2">
             <Button variant="primary" type="submit" disabled={pending}>
@@ -278,9 +303,20 @@ function VariantRow({ productId, variant, locked, actions }: { productId: string
           <p className="text-xs text-tinta-suave">SKU {variant.sku}</p>
         </div>
         <div className="flex items-center gap-2">
+          {variant.discountPct > 0 && variant.compareAt !== null ? (
+            <>
+              <span className="text-xs tabular-nums text-tinta-suave line-through">{formatMoney(variant.compareAt)}</span>
+              <Badge tone="positive">-{variant.discountPct} %</Badge>
+            </>
+          ) : null}
           <span className="text-sm font-bold tabular-nums text-tinta">{formatMoney(variant.price)}</span>
           {!locked ? (
             <>
+              {variant.discountPct > 0 ? (
+                <Button variant="ghost" onClick={dropDiscount} disabled={pending} className="min-h-10 px-3">
+                  Quitar descuento
+                </Button>
+              ) : null}
               <Button variant="ghost" onClick={() => setEditing(true)} aria-label={`Editar ${variant.name}`} className="min-h-10 px-3">
                 <Pencil className="size-4" aria-hidden="true" />
               </Button>

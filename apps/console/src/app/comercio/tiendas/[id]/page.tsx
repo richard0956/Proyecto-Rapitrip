@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shell";
 import { requireConsoleAccess } from "@/lib/guard";
 import { groupHours, todayInStoreZone } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
-import { closeStoreTemporarily, deleteStoreException, reopenStore, saveStoreException, saveStoreHours, setStoreStatus, updateStore } from "../actions";
+import { closeStoreTemporarily, deleteStoreException, reopenStore, saveStoreException, saveStoreHours, setStoreDepartment, setStoreLocation, setStoreStatus, updateStore } from "../actions";
 import { StoreEditor } from "./store-editor";
 
 export default async function TiendaPage({ params }: { params: Promise<{ id: string }> }) {
@@ -47,11 +47,14 @@ export default async function TiendaPage({ params }: { params: Promise<{ id: str
           closed_until: store.data.closed_until,
           closed_reason: store.data.closed_reason,
           open_now: store.data.open_now,
+          latitude: store.data.latitude,
+          longitude: store.data.longitude,
+          department: store.data.department,
         }}
         hours={groupHours(hours.data ?? [])}
         exceptions={(exceptions.data ?? []).flatMap((row) => (row.on_date ? [{ on_date: row.on_date, closed: Boolean(row.closed), opens: row.opens, closes: row.closes, note: row.note }] : []))}
         disabled={Boolean(failed)}
-        actions={{ updateStore, setStoreStatus, saveStoreHours, closeStoreTemporarily, reopenStore, saveStoreException, deleteStoreException }}
+        actions={{ updateStore, setStoreLocation, setStoreDepartment, setStoreStatus, saveStoreHours, closeStoreTemporarily, reopenStore, saveStoreException, deleteStoreException }}
       />
     </>
   );

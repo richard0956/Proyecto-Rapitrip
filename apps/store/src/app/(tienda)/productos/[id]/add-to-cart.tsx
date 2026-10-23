@@ -1,24 +1,24 @@
 "use client";
 
-import { Alert, Button, Dialog } from "@rapitrip/ui";
+import { Alert, Button } from "@rapitrip/ui";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
-import { addToCart } from "@/lib/cart";
+import { addToCart, MAX_STORES } from "@/lib/cart";
 import { updateCart } from "@/lib/cart-store";
 import type { ProductVariant } from "@/lib/catalog";
+import { DiscountBadge, PriceWas } from "@/components/discount";
 import { formatMoney } from "@/lib/money";
 import { useCart } from "@/lib/use-cart";
 
 type Props = { storeId: string; storeName: string; storeOpen: boolean; variants: ProductVariant[] };
 
-/** Variante, cantidad y «Agregar al carrito». El carrito es de una sola tienda: si ya hay otra, el cliente decide si lo vacía. */
+/** Variante, cantidad y «Agregar al carrito». El carrito admite varias tiendas (hasta MAX_STORES) y la compra se divide en un pedido por tienda. */
 export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
   const firstAvailable = variants.find((v) => v.available) ?? variants[0];
   const [variantId, setVariantId] = useState(firstAvailable?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const [notice, setNotice] = useState<{ tone: "info" | "warning"; text: string } | null>(null);
-  const [conflict, setConflict] = useState(false);
   const cart = useCart();
   const groupId = useId();
 
@@ -26,21 +26,16 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
   const limit = variant?.max_per_order == null ? 99 : Math.min(99, variant.max_per_order);
   const canBuy = storeOpen && !!variant?.available;
 
-  function add(replaceOtherStore = false) {
+  function add() {
     if (!variant) return;
     let status: string = "";
     updateCart((current) => {
-      const result = addToCart(
-        current,
-        { storeId, storeName, variantId: variant.id, quantity, seenPrice: variant.price, maxPerOrder: variant.max_per_order },
-        { replaceOtherStore },
-      );
+      const result = addToCart(current, { storeId, storeName, variantId: variant.id, quantity, seenPrice: variant.price, maxPerOrder: variant.max_per_order });
       status = result.status;
       return result.cart;
     });
-    if (status === "store_conflict") return setConflict(true);
-    setConflict(false);
-    if (status === "capped") setNotice({ tone: "warning", text: `Solo puedes pedir hasta ${limit} de este producto. Ajustamos la cantidad.` });
+    if (status === "too_many_stores") setNotice({ tone: "warning", text: `Una compra admite hasta ${MAX_STORES} tiendas. Quita una de tu carrito para agregar productos de ${storeName}.` });
+    else if (status === "capped") setNotice({ tone: "warning", text: `Solo puedes pedir hasta ${limit} de este producto. Ajustamos la cantidad.` });
     else if (status === "full") setNotice({ tone: "warning", text: "Tu carrito ya tiene el máximo de productos distintos (30)." });
     else if (status === "invalid") setNotice({ tone: "warning", text: "No se pudo agregar este producto." });
     else setNotice({ tone: "info", text: "Agregado al carrito." });
@@ -63,6 +58,7 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
                 >
                   <input type="radio" name={`variante-${groupId}`} value={v.id} checked={selected} onChange={() => { setVariantId(v.id); setQuantity(1); setNotice(null); }} className="sr-only" />
                   {v.name} · {formatMoney(v.price)}
+                  {v.discount_pct ? <DiscountBadge pct={v.discount_pct} className={selected ? "bg-white !text-hoja" : ""} /> : null}
                   {v.available ? "" : " · Agotado"}
                 </label>
               );
@@ -71,8 +67,10 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
         </fieldset>
       ) : null}
 
-      <p className="text-[26px] font-extrabold tracking-tight text-hoja" aria-live="polite">
-        {variant ? formatMoney(variant.price) : "—"}
+      <p className="flex flex-wrap items-baseline gap-3" aria-live="polite">
+        <span className="text-[26px] font-extrabold tracking-tight text-hoja">{variant ? formatMoney(variant.price) : "—"}</span>
+        <PriceWas value={variant?.compare_at_price} className="text-[15px] font-bold" />
+        {variant?.discount_pct ? <DiscountBadge pct={variant.discount_pct} /> : null}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -87,7 +85,7 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
             <Plus aria-hidden="true" className="size-4" />
           </button>
         </div>
-        <Button variant="primary" disabled={!canBuy} onClick={() => add()} className="min-h-11">
+        <Button variant="primary" disabled={!canBuy} onClick={add} className="min-h-11">
           <ShoppingCart aria-hidden="true" className="size-4" />
           Agregar al carrito
         </Button>
@@ -107,19 +105,6 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
         </Alert>
       ) : null}
 
-      <Dialog open={conflict} onClose={() => setConflict(false)} title="Tu carrito es de otra tienda">
-        <p className="text-sm text-tinta-suave">
-          Cada pedido es de una sola tienda. Tu carrito tiene productos de {cart.storeName ?? "otra tienda"}. ¿Quieres vaciarlo y empezar uno nuevo con productos de {storeName}?
-        </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Button variant="primary" onClick={() => add(true)}>
-            Vaciar y agregar
-          </Button>
-          <Button variant="secondary" onClick={() => setConflict(false)}>
-            Mantener mi carrito
-          </Button>
-        </div>
-      </Dialog>
     </div>
   );
 }
