@@ -1,26 +1,31 @@
 import { Alert } from "@rapitrip/ui";
+import { CouriersBoard } from "@/components/couriers-board";
+import { FilterChips } from "@/components/filter-chips";
 import { PageHeader } from "@/components/shell";
-import { formatDate } from "@/lib/format";
+import { loadCourierStats } from "@/lib/courier-data";
+import { parsePeriod, periodOptions } from "@/lib/dashboard";
+import { first, type SearchParams } from "@/lib/filters";
 import { requireConsoleAccess } from "@/lib/guard";
-import { serverSupabase } from "@/lib/supabase";
-import { courierDocumentUrl, createCourier, setCourierStatus, updateCourierById } from "./actions";
-import { CouriersWorkspace, type CourierRow } from "./couriers-workspace";
+import { createCourier } from "./actions";
 
-export default async function RepartidoresPage() {
+export const metadata = { title: "Repartidores" };
+
+const periodWord = { hoy: "hoy", "7d": "7 días", quincena: "esta quincena", mes: "este mes" } as const;
+
+export default async function RepartidoresPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
   await requireConsoleAccess("admin");
-  const supabase = await serverSupabase();
-  const { data, error } = await supabase.from("couriers_list").select("*").order("full_name");
-  if (error) console.error("[repartidores]", error.message);
-
-  const rows: CourierRow[] = (data ?? []).flatMap((row) =>
-    row.id ? [{ id: row.id, name: row.full_name ?? "Sin nombre", phone: row.phone ?? "—", vehicle: row.vehicle_type ?? "—", status: row.status === "activo" ? ("activo" as const) : ("inactivo" as const), since: formatDate(row.created_at) }] : [],
-  );
+  const period = parsePeriod(first(params.periodo));
+  const { rows, failed } = await loadCourierStats(period);
 
   return (
     <>
-      <PageHeader title="Repartidores" description="Prestadores de servicio: alta, datos y activación." />
-      {error ? <Alert tone="error" className="mb-5">No pudimos cargar los repartidores. Recarga la página.</Alert> : null}
-      <CouriersWorkspace rows={rows} create={createCourier} update={updateCourierById} setStatus={setCourierStatus} documentUrl={courierDocumentUrl} />
+      <PageHeader title="Repartidores" description="Quiénes entregan, cuánto han hecho y quiénes son los mejores. Entra a cada uno para ver su ficha y gestionarlo." />
+      {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todos los repartidores. Recarga la página.</Alert> : null}
+      <div className="mb-5">
+        <FilterChips basePath="/admin/repartidores" param="periodo" current={period.key} options={periodOptions} />
+      </div>
+      <CouriersBoard rows={rows} basePath="/admin/repartidores" periodLabel={periodWord[period.key]} create={createCourier} />
     </>
   );
 }

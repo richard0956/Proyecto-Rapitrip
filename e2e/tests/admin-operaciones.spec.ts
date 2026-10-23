@@ -235,3 +235,47 @@ test.describe("@backend administración · catálogo maestro", () => {
     await expectNoViolations(page);
   });
 });
+
+test.describe("@backend administración · repartidores", () => {
+  test.skip(!hasBackend, backendHint);
+
+  test("el director ve la flota con su ranking, entra a la ficha de un repartidor y la gestiona", async ({ page }) => {
+    test.setTimeout(240_000);
+    const unique = Date.now();
+    const shop = await openShop("Comercio de repartos", { store: `Tienda ${unique}`, product: `Café reparto ${unique}` });
+    const client = await signedInClient();
+    const order = await placeOrder(client, shop.storeId, shop.variantId, 1, "efectivo");
+    for (const to of ["confirmado", "preparando", "listo"]) expect((await shop.owner.rpc("set_order_status", { p_order: order, p_to: to })).error).toBeNull();
+
+    const director = await createSuperadmin();
+    const api = await consoleClient(director.email, director.password);
+    const courierName = `Repartidor ${unique}`;
+    const courierId = (await api.rpc("create_courier", { p_full_name: courierName, p_phone: "88880000", p_vehicle_type: "moto" })).data as string;
+    expect((await api.rpc("assign_order_courier", { p_order: order, p_courier: courierId })).error).toBeNull();
+    for (const to of ["en_camino", "entregado"]) expect((await api.rpc("set_order_status", { p_order: order, p_to: to })).error).toBeNull();
+
+    const uiDirector = await createSuperadmin();
+    await signInAndEnroll(page, uiDirector.email, uiDirector.password);
+    await expect(page).toHaveURL(/\/admin$/, { timeout: 30_000 });
+    await page.goto(`${CONSOLE_URL}/admin/repartidores`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Repartidores", { timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Más entregas" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Más kilómetros" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Más rápidos" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Nuevo repartidor" })).toBeVisible();
+    await page.getByRole("searchbox", { name: "Buscar repartidor" }).fill(`repartidor ${unique}`);
+    await expectNoViolations(page);
+
+    // La ficha: cifras, gráficos y gestión
+    await page.getByRole("link", { name: courierName }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(courierName, { timeout: 30_000 });
+    await expect(page.getByText(/Entregas \(este mes\)/)).toBeVisible();
+    await expect(page.getByText("Tiempo promedio")).toBeVisible();
+    await expect(page.getByRole("img", { name: /Entregas por día/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Gestionar repartidor" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Entregado" })).toBeVisible();
+    await expectNoViolations(page);
+    await page.getByRole("link", { name: "Repartidores", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/admin\/repartidores$/);
+  });
+});

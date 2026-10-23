@@ -26,7 +26,7 @@ export function LineChart({ series, labels, formatValue = defaultFormat, ariaLab
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" tabIndex={0} role="group" aria-label={`${ariaLabel} (se desplaza con las flechas)`}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={ariaLabel} className="block h-auto w-full min-w-[560px]">
         {tickValues.map((value) => (
           <g key={value}>

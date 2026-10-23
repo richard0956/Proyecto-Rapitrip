@@ -35,6 +35,12 @@ describe("LineChart", () => {
     expect(zeros.getByText("Sin datos en este periodo")).toBeInTheDocument();
   });
 
+  it("el gráfico que se desplaza en pantallas angostas se puede recorrer con el teclado", () => {
+    const { container } = render(<LineChart ariaLabel="Ventas" labels={labels} series={[{ name: "A", tone: "hoja", values: [1, 2, 3, 4, 5] }]} />);
+    const scroller = container.querySelector(".overflow-x-auto");
+    expect(scroller).toHaveAttribute("tabindex", "0");
+  });
+
   it("con valores pequeños el eje no repite etiquetas", () => {
     const { container } = render(<LineChart ariaLabel="Pocas unidades" labels={["a", "b"]} series={[{ name: "A", tone: "hoja", values: [0, 3] }]} />);
     const axis = Array.from(container.querySelectorAll("svg text")).map((node) => node.textContent).filter((text) => ["0", "1", "2", "3"].includes(text ?? ""));

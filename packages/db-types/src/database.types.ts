@@ -490,6 +490,16 @@ export type Database = {
               "price": number,"product_name": string,"quantity": number,"sku": string,"store_id": string,"store_name": string,"variant_id": string,"variant_name": string
             }[]
                            },
+"courier_daily":
+{ Args: { "p_courier": string,"p_from": string,"p_to": string }; Returns: {
+              "day": string,"deliveries": number,"km": number
+            }[]
+                           },
+"courier_stats":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "active_orders": number,"avg_minutes": number,"cash_pending": number,"cash_pending_orders": number,"courier_id": string,"deliveries": number,"km": number
+            }[]
+                           },
 "create_checkout":
 { Args: { "p_address": string,"p_client_ref"?: string,"p_department"?: string,"p_groups": Json,"p_latitude"?: number,"p_longitude"?: number,"p_notes"?: string,"p_payment_method": string,"p_phone": string }; Returns: Json
                            },
