@@ -10,7 +10,7 @@ export type Database = {
           Views: {
             "accounts_staff": {
                   Row: {
-                    "account_status": "activa"|"anonimizada" | null,"commerce_id": string | null,"email": string | null,"full_name": string | null,"granted_at": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"role_status": "activo"|"suspendido"|"revocado" | null,"user_id": string | null
+                    "account_status": "activa"|"anonimizada" | null,"commerce_id": string | null,"email": string | null,"full_name": string | null,"granted_at": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"role_status": "activo"|"suspendido"|"revocado" | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -66,16 +66,44 @@ export type Database = {
                         Relationships: [
                     
                   ]
-                },"couriers_list": {
+                },"courier_me": {
                   Row: {
-                    "created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
+                    "available": boolean | null,"available_since": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"vehicle_class": string | null,"vehicle_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Update: {
-                           "created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
+                },"courier_invitations": {
+                  Row: {
+                    "accepted_at": string | null,"courier_id": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "accepted_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                         }
+                        Update: {
+                           "accepted_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                         }
+                        Relationships: [
+                          
+                        ]
+                },"couriers_list": {
+                  Row: {
+                    "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                         }
+                        Update: {
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Relationships: [
                     
@@ -118,14 +146,14 @@ export type Database = {
                   ]
                 },"invitations_list": {
                   Row: {
-                    "accepted_at": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"invited_by": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                    "accepted_at": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"invited_by": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                          }
                         Update: {
-                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                          }
                         Relationships: [
                     
@@ -212,14 +240,14 @@ export type Database = {
                   ]
                 },"my_roles": {
                   Row: {
-                    "commerce_id": string | null,"granted_at": string | null,"id": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status": "activo"|"suspendido"|"revocado" | null
+                    "commerce_id": string | null,"granted_at": string | null,"id": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "activo"|"suspendido"|"revocado" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "commerce_id"?: string | null,"granted_at"?: string | null,"id"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status"?: "activo"|"suspendido"|"revocado" | null
+                           "commerce_id"?: string | null,"granted_at"?: string | null,"id"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "activo"|"suspendido"|"revocado" | null
                          }
                         Update: {
-                           "commerce_id"?: string | null,"granted_at"?: string | null,"id"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente" | null,"status"?: "activo"|"suspendido"|"revocado" | null
+                           "commerce_id"?: string | null,"granted_at"?: string | null,"id"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "activo"|"suspendido"|"revocado" | null
                          }
                         Relationships: [
                     
@@ -495,6 +523,9 @@ export type Database = {
               "day": string,"deliveries": number,"km": number
             }[]
                            },
+"courier_set_available":
+{ Args: { "p_available": boolean }; Returns: undefined
+                           },
 "courier_stats":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "active_orders": number,"avg_minutes": number,"cash_pending": number,"cash_pending_orders": number,"courier_id": string,"deliveries": number,"km": number
@@ -509,8 +540,11 @@ export type Database = {
 "create_courier":
 { Args: { "p_document_path"?: string,"p_full_name": string,"p_phone": string,"p_vehicle_type": string }; Returns: string
                            },
+"create_courier_invitation":
+{ Args: { "p_courier": string,"p_email": string,"p_token_hash": string }; Returns: Json
+                           },
 "create_invitation":
-{ Args: { "p_email": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_token_hash": string }; Returns: Json
+{ Args: { "p_email": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_token_hash": string }; Returns: Json
                            },
 "create_master_item":
 { Args: { "p_kind": string,"p_name": string,"p_parent"?: string }; Returns: string
@@ -640,7 +674,7 @@ export type Database = {
 { Args: { "p_department"?: string,"p_items": Json,"p_latitude": number,"p_longitude": number,"p_quote_id"?: string,"p_store": string }; Returns: Json
                            },
 "reactivate_role":
-{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
+{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_user": string }; Returns: undefined
                            },
 "read_courier_document":
 { Args: { "p_id": string }; Returns: string
@@ -703,8 +737,11 @@ export type Database = {
               "decided_at": string,"decision_note": string,"order_number": number,"payment_method": string,"photos": (string)[],"reason": string,"request_id": string,"requested_at": string,"status": string,"store_name": string,"total": number
             }[]
                            },
+"revoke_courier_account":
+{ Args: { "p_courier": string,"p_reason": string }; Returns: undefined
+                           },
 "revoke_role":
-{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
+{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_user": string }; Returns: undefined
                            },
 "sales_by_day":
 { Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
@@ -791,7 +828,7 @@ export type Database = {
 { Args: { "p_business_name": string,"p_details"?: Json }; Returns: string
                            },
 "suspend_role":
-{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente","p_user": string }; Returns: undefined
+{ Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_user": string }; Returns: undefined
                            },
 "top_products":
 { Args: { "p_from": string,"p_limit"?: number,"p_store"?: string,"p_to": string }; Returns: {

@@ -13,6 +13,7 @@ export const roleLabel: Record<string, string> = {
   coordinador: "Encargado de ventas (coordinación)",
   comercio: "Comercio",
   cliente: "Cliente",
+  repartidor: "Repartidor",
 };
 
 const relative = new Intl.RelativeTimeFormat("es", { numeric: "auto" });

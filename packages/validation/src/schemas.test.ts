@@ -54,7 +54,7 @@ describe("phoneSchema", () => {
 
 describe("roles", () => {
   it("son exactamente los seis del spec", () => {
-    expect(appRoleSchema.options).toEqual(["superadmin", "admin", "cajero", "coordinador", "comercio", "cliente"]);
+    expect(appRoleSchema.options).toEqual(["superadmin", "admin", "cajero", "coordinador", "comercio", "cliente", "repartidor"]);
   });
   it("los roles de consola no incluyen al cliente", () => {
     expect(consoleRoles).toEqual(["superadmin", "admin", "cajero", "coordinador", "comercio"]);

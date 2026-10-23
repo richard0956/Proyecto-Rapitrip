@@ -221,7 +221,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -235,3 +235,20 @@ Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pn
 **Libreta de direcciones** (`sales.customer_addresses`, vista `my_addresses`): `save_address`, `set_default_address`, `delete_address`. Hasta 10 por cliente, una predeterminada, nombre único por cliente. Se borra al anonimizar la cuenta. `latitude` y `longitude` están reservadas para el mapa y ninguna pantalla las llena todavía.
 
 **Correos del pedido**: el trigger `enqueue_order_email_after_event` encola `order_received` (el pedido queda «por confirmar») y `order_cancelled` (cancelado o rechazado, con motivo) en la bandeja existente. `send-outbox` agrega `store_url` (variable `STORE_URL`) para el enlace al pedido.
+
+
+## 12. Repartidor, etapa 1: rol, cuenta y disponibilidad (migraciones 71 y 72)
+
+Diseño y plan completo en `docs/informe/2026-10-23-repartidor-revision-evidencias-y-consolas.md`.
+
+- **Rol `repartidor`** (migración 71, sola en su archivo). Lo gestionan `admin` y `superadmin` (`private.role_management`). No es un rol de consola: no entra por `/login` de la consola ni exige segundo factor.
+- **Invitación desde la ficha:** `create_courier_invitation(p_courier, p_email, p_token_hash)`. La invitación genérica (`create_invitation`) sigue sin aceptar `repartidor`, así cuenta y ficha nacen siempre unidas. La Edge Function `invite-courier` genera el token, llama a la RPC y envía el correo con el enlace a `COURIER_APP_URL/aceptar-invitacion`. `identity.invitations.courier_id` liga la invitación con la ficha.
+- **Aceptar:** `finish_accept_invitation` (misma función de siempre, ampliada) otorga el rol **y** llena `identity.couriers.user_id`. Rechaza (devuelve `false`) si la ficha ya no está activa o libre, o si la cuenta ya está vinculada a otra ficha. `accept-invitation` no cambió.
+- **Un usuario, una ficha:** índice único parcial sobre `couriers.user_id`.
+- **`private.is_courier_session()`:** rol activo + ficha activa + sesión de hasta **12 horas** (sin segundo factor, decisión D4). `private.current_courier_id()` devuelve la ficha de la sesión. Son la base de las vistas y funciones de las etapas siguientes.
+- **Disponibilidad:** `courier_set_available(p_available)`. Solo la ficha propia, idempotente (repetir el valor no audita). `identity.couriers.available` y `available_since`; un repartidor no puede estar disponible sin cuenta.
+- **Cortar el acceso:** `set_courier_status(..., 'inactivo')` deja la ficha no disponible y **borra sus sesiones**; `revoke_courier_account(p_courier, p_reason)` revoca el rol, suelta `user_id` (la ficha se puede invitar de nuevo) y borra sus sesiones.
+- **Vistas:** `courier_me` (su propia ficha), `courier_invitations` (solo administración) y `couriers_list` con `available` y `available_since`. Un repartidor ve en `couriers_list` solo su propia fila (política `couriers_select_own`).
+- **Auditoría:** `courier.account_linked`, `courier.account_revoked`, `courier.availability_changed`, `invitation.created` / `invitation.accepted` con `role = repartidor`.
+- **Pruebas:** `520_courier_account.test.sql` (36 aserciones).
+- **Consola:** tarjeta «Acceso a la aplicación» en `/admin/repartidores/[id]` (invitar por correo, quitar acceso).

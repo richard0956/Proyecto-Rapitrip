@@ -78,7 +78,7 @@ Detalle menor: `courier_daily` agrupa por hora de `America/Costa_Rica` y el rest
 
 ### 2.5 Privacidad
 
-Las fotos pueden mostrar casas, vehículos o personas. Por eso: la guía pide fotografiar **el paquete y el número**, no a personas; la ubicación es puntual; las fotos se conservan un plazo definido (propuesta: 6 meses, o más si hay devolución o disputa abierta); y se incluyen en la exportación de datos y en la anonimización. Pendiente revisar con quien asesore en lo legal (Ley 787) el consentimiento del repartidor y el aviso al cliente.
+Las fotos pueden mostrar casas, vehículos o personas. Por eso: la guía pide fotografiar **el paquete y el número**, no a personas; la ubicación es puntual; las fotos se conservan un plazo definido (decidido: 3 meses, o más si hay devolución o disputa abierta); y se incluyen en la exportación de datos y en la anonimización. Pendiente revisar con quien asesore en lo legal (Ley 787) el consentimiento del repartidor y el aviso al cliente.
 
 ### 2.6 Señal inestable
 
@@ -148,7 +148,7 @@ Las migraciones empiezan en la 71. Cada una con su pgTAP.
 
 | Etapa | Migraciones | Qué incluye | Terminada cuando |
 |---|---|---|---|
-| **1. Rol, cuenta y disponibilidad** | 71 (valor del rol), 72 (invitación, vínculo, `is_courier_session`, disponibilidad) | Invitar desde la ficha, `accept-invitation`, revocación | Un repartidor invitado entra; sin ficha activa pierde acceso; nadie fuera de administración otorga el rol |
+| **1. Rol, cuenta y disponibilidad** ✅ *hecha el 23-oct-2026* | 71 (valor del rol), 72 (invitación, vínculo, `is_courier_session`, disponibilidad) | Invitar desde la ficha, `accept-invitation`, revocación | Un repartidor invitado entra; sin ficha activa pierde acceso; nadie fuera de administración otorga el rol |
 | **2. Lectura de sus pedidos** | 73 | Núcleo de transiciones extraído de la última `set_order_status`, vistas del repartidor, ruta limitada a sus pedidos | Ve solo lo asignado y compatible; datos del cliente solo mientras el pedido está abierto |
 | **3. Ofertas** | 74 | Tabla, funciones, cron de vencimiento, compatibilidad por vehículo | Una oferta se acepta, rechaza, vence y cancela sin doble asignación |
 | **4. Evidencias** | 75 | Bucket `entregas`, `delivery_evidence`, `order_codes`, `evidence_settings`, vistas por rol | Evidencia de solo adición; cada rol ve solo lo suyo |
@@ -173,7 +173,7 @@ Con mi recomendación para que no frenen el trabajo.
 | E3 | ¿Ubicación puntual al tomar la evidencia? | **Sí**, solo como alerta, nunca bloquea |
 | E4 | ¿Qué ve el cliente de la evidencia? | Foto y hora de **su** entrega |
 | E5 | ¿Qué ve el comercio? | Solo la recogida de sus pedidos |
-| E6 | Conservación de las fotos | **6 meses**, más si hay devolución o disputa |
+| E6 | Conservación de las fotos | **3 meses** (decidido por almacenamiento), más si hay devolución o disputa |
 | E7 | Con mala señal: ¿bloquear hasta subir la foto o permitir «subir luego»? | **Bloquear**, con foto comprimida y cola local; permitir «subir luego» solo 30 min si lo ves necesario |
 | E8 | ¿Se puede entregar a un tercero (vecino, portero)? | Sí, con el código y nota de quién recibió |
 | E9 | Distancia de alerta de ubicación | 150 m |

@@ -12,6 +12,7 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
   cajero: "Cajero",
   coordinador: "Coordinador de pedidos",
+  repartidor: "Repartidor",
 };
 
 function layout(title: string, body: string): string {
@@ -35,7 +36,7 @@ export function renderEmail(template: TemplateName, data: Record<string, unknown
     case "invitation": {
       const role = ROLE_LABELS[String(data.role)] ?? String(data.role);
       const link = String(data.link);
-      const subject = "Te invitaron a la consola de Rapitrip";
+      const subject = String(data.role) === "repartidor" ? "Te invitaron a Rapitrip como repartidor" : "Te invitaron a la consola de Rapitrip";
       const text = `Te invitaron como ${role}. Crea tu acceso aquí: ${link}\nEl enlace vence el ${data.expiresAt} y sirve una sola vez.`;
       const html = layout(subject,
         `<p>Te invitaron como <strong>${escapeHtml(role)}</strong>.</p>`
