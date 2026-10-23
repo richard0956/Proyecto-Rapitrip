@@ -175,6 +175,8 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `export-data`: exportación cifrada de datos, con motivo.
 - `purge-exports`: elimina exportaciones vencidas.
 - `purge-evidence`: elimina las fotos de entrega vencidas (ver sección 15).
+- `send-push`: envía los avisos push a los repartidores (ver sección 17).
+- `invite-courier`: invita a un repartidor desde su ficha (ver sección 12).
 - `send-outbox`: envía los correos encolados (con `MAIL_MODE=log` solo los imprime).
 - `stripe-checkout`: crea la sesión de pago de Stripe de un pedido propio (el navegador solo envía el id; el monto sale de la base de datos).
 - `stripe-webhook`: recibe los eventos de Stripe (`checkout.session.completed` y `checkout.session.expired`), verifica la firma y aplica el resultado; reembolsa pagos tardíos, dobles o de otro monto. Sin verificación JWT.
@@ -223,7 +225,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` `550_delivery_evidence.test.sql` y `560_courier_actions.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` `550_delivery_evidence.test.sql` `560_courier_actions.test.sql` y `570_push_notifications.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -310,3 +312,18 @@ Dónde la evidencia de la etapa 4 se vuelve obligatoria. Las acciones **devuelve
 - **Auditoría:** `order.issue_reported`, `order.issue_resolved`, `order.courier_released`, `order.evidence_skipped`; el cobro en efectivo, `order.courier_cash_registered` con monto y diferencia.
 - **Pendiente:** pantallas de coordinación para los avisos, la reasignación tras una devolución y el seguimiento del efectivo (etapa 8); la app (etapa 7).
 - **Pruebas:** `560_courier_actions.test.sql` (65 aserciones). `530` y `550` ahora dan un motivo al despachar por un repartidor con cuenta.
+
+
+## 17. Repartidor, etapa 6: avisos push (migración 77)
+
+Cuando la coordinación propone un pedido, el teléfono del repartidor recibe un aviso aunque la aplicación esté cerrada. Es **Web Push** (estándar de los navegadores): no hay aplicación nativa ni servicios de terceros propios. El aviso es **genérico** («Nueva propuesta de pedido»): nunca lleva datos del cliente ni del pedido.
+
+- **Dispositivos (`identity.push_subscriptions`):** `register_push_subscription(endpoint, p256dh, auth, user_agent)` (solo con sesión de repartidor; hasta **5 por repartidor**; si la dirección ya existía, pasa al repartidor que la registra) y `unregister_push_subscription(endpoint)`. Las claves no se leen desde las pantallas; el repartidor ve sus dispositivos en `my_push_subscriptions` y coordinación ve quién tiene avisos en `couriers_list.push_enabled`. Se borran al desactivar la ficha o quitar la cuenta.
+- **Cola (`private.push_outbox`):** un trigger encola `oferta_nueva` al crear una propuesta y `oferta_cancelada` cuando se cancela o vence (para cerrar la notificación). Un aviso vencido no se envía; sin dispositivos queda `sin_destino`; se reintenta hasta 3 veces y uno «enviando» abandonado hace más de 2 minutos se retoma.
+- **Envío:** la función de borde `send-push` toma la cola (`claim_push`, solo `service_role`), cifra y envía a cada dispositivo (RFC 8291 con autenticación VAPID, RFC 8292, sin dependencias externas: `_shared/webpush.ts`), borra los dispositivos que el servicio push da por inexistentes (404 o 410) y registra el resultado (`finish_push`). Se dispara de dos maneras: **el programador cada minuto** con el secreto `x-outbox-secret` (igual que `send-outbox`), o la **consola de coordinación** al proponer un pedido, con la sesión de quien propone (`push_kick()` confirma que es coordinación), para que el aviso salga al instante.
+- **Claves VAPID:** `node scripts/generate-vapid-keys.mjs`. Pública: `VAPID_PUBLIC_KEY` (funciones) y `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (aplicación del repartidor). **Privada: solo `VAPID_PRIVATE_KEY` en las funciones de borde.** `VAPID_SUBJECT` es un contacto `mailto:`. Ver `.env.example`.
+- **El push solo avisa:** la aplicación sigue consultando sus propuestas (`courier_offers`) por su cuenta; no depende de que el aviso llegue.
+- **iPhone:** Apple solo permite push si la aplicación está instalada en la pantalla de inicio, y el permiso se pide tras un toque.
+- **Auditoría:** `courier.push_registered` y `courier.push_unregistered`, sin direcciones de dispositivos.
+- **Pruebas:** `570_push_notifications.test.sql` (43 aserciones) y `supabase/functions/_shared/webpush_test.ts` (Deno: descifrado de ida y vuelta con un receptor independiente, firma VAPID y respuestas del servicio push).
+- **Pendiente:** el service worker y la pantalla «Activar avisos» (etapa 7); disparar `send-push` desde la acción «Proponer a repartidor» de la consola (etapa 8); programar `send-push` cada minuto en el programador.

@@ -96,14 +96,14 @@ export type Database = {
                         ]
                 },"couriers_list": {
                   Row: {
-                    "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
+                    "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"push_enabled": boolean | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: boolean | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Update: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: boolean | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Relationships: [
                     
@@ -252,6 +252,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"my_push_subscriptions": {
+                  Row: {
+                    "created_at": string | null,"endpoint": string | null,"id": string | null,"last_seen_at": string | null,"user_agent": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"endpoint"?: string | null,"id"?: string | null,"last_seen_at"?: string | null,"user_agent"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"endpoint"?: string | null,"id"?: string | null,"last_seen_at"?: string | null,"user_agent"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
                 },"my_roles": {
                   Row: {
                     "commerce_id": string | null,"granted_at": string | null,"id": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "activo"|"suspendido"|"revocado" | null
@@ -819,6 +833,23 @@ export type Database = {
                            },
 "set_evidence_settings":
 { Args: { "p_alert_distance_m": number,"p_delivery_code": boolean,"p_delivery_photo": boolean,"p_pickup_code": boolean,"p_pickup_photo": boolean,"p_retention_days": number }; Returns: undefined
+                           },
+"claim_push":
+{ Args: { "p_limit"?: number }; Returns: {
+              "auth": string,"endpoint": string,"expires_at": string,"kind": string,"offer_id": string,"outbox_id": string,"p256dh": string,"subscription_id": string
+            }[]
+                           },
+"finish_push":
+{ Args: { "p_error"?: string,"p_gone"?: string[],"p_outbox": string,"p_sent": boolean }; Returns: undefined
+                           },
+"push_kick":
+{ Args: { [_ in never]: never }; Returns: boolean
+                           },
+"register_push_subscription":
+{ Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string,"p_user_agent"?: string }; Returns: string
+                           },
+"unregister_push_subscription":
+{ Args: { "p_endpoint": string }; Returns: undefined
                            },
 "read_courier_document":
 { Args: { "p_id": string }; Returns: string

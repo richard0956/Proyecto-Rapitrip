@@ -51,6 +51,8 @@ export const auditLabels: Record<string, string> = {
   "order.issue_reported": "El repartidor avisó un problema",
   "order.issue_resolved": "Atendió un aviso del repartidor",
   "order.courier_released": "El repartidor devolvió un pedido",
+  "courier.push_registered": "El repartidor activó los avisos en un dispositivo",
+  "courier.push_unregistered": "El repartidor quitó los avisos de un dispositivo",
   "courier.coverage_changed": "Cambió el vehículo o el departamento de un repartidor",
   "checkout.created": "Creó una compra con varios pedidos",
   "product.created": "Creó un producto",
