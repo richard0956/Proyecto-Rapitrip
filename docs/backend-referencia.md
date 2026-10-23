@@ -221,7 +221,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` y `530_courier_orders.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -252,3 +252,14 @@ Diseño y plan completo en `docs/informe/2026-10-23-repartidor-revision-evidenci
 - **Auditoría:** `courier.account_linked`, `courier.account_revoked`, `courier.availability_changed`, `invitation.created` / `invitation.accepted` con `role = repartidor`.
 - **Pruebas:** `520_courier_account.test.sql` (36 aserciones).
 - **Consola:** tarjeta «Acceso a la aplicación» en `/admin/repartidores/[id]` (invitar por correo, quitar acceso).
+
+
+## 13. Repartidor, etapa 2: lectura de sus pedidos (migración 73)
+
+- **Núcleo de transiciones:** `private.apply_order_transition(pedido, estado, motivo)` contiene el tramo de `set_order_status` que cambia el pedido (estado, plazos, stock, línea de tiempo, auditoría). La autorización sigue en cada llamador; `set_order_status` quedó con el mismo comportamiento (pruebas 250, 260, 270, 300, 430 y 460 sin cambios). Las funciones del repartidor de la etapa 5 lo reutilizarán. No es ejecutable desde la API.
+- **El repartidor no lee `sales.orders`** (los permisos de esa tabla son por tabla entera e incluirían el margen y el pago de envío). Lee solo lo que devuelven tres funciones, con columnas fijas y filtradas por su ficha (`private.current_courier_id()`); a cualquier otro rol le responden `42501`:
+  - `courier_orders()`: sus pedidos abiertos (`confirmado`, `preparando`, `listo`, `en_camino`) y los entregados hoy (hora de Managua). Primero lo más urgente.
+  - `courier_order(p_order)`: detalle de un pedido propio (tienda y dirección de recogida, productos sin SKU ni precios, monto a cobrar si es efectivo). Un pedido ajeno o inexistente responde igual (`P0002`).
+  - `courier_history(p_days)`: entregas de los últimos 1 a 31 días y su estado de efectivo (registrado y recibido en caja). Sin datos del cliente.
+- **Datos del cliente:** dirección, teléfono, nota, punto del mapa y nombre de pila salen en `courier_order` **solo con el pedido `listo` o `en_camino`**; en cualquier otro estado (incluido `entregado`) vienen nulos.
+- **Pruebas:** `530_courier_orders.test.sql` (33 aserciones).

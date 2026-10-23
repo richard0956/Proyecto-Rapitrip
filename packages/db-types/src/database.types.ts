@@ -523,6 +523,21 @@ export type Database = {
               "day": string,"deliveries": number,"km": number
             }[]
                            },
+"courier_history":
+{ Args: { "p_days"?: number }; Returns: {
+              "cash_received": boolean,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"distance_km": number,"number": number,"order_id": string,"payment_method": string,"store_name": string
+            }[]
+                           },
+"courier_order":
+{ Args: { "p_order": string }; Returns: {
+              "cash_registered": boolean,"cash_total": number,"client_first_name": string,"delivered_at": string,"delivery_address": string,"delivery_class": string,"delivery_notes": string,"delivery_phone": string,"dest_latitude": number,"dest_longitude": number,"destination_department": string,"eta_max_days": number,"items": Json,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_latitude": number,"store_longitude": number,"store_name": string,"store_phone": string,"updated_at": string
+            }[]
+                           },
+"courier_orders":
+{ Args: { [_ in never]: never }; Returns: {
+              "assigned_updated_at": string,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"destination_department": string,"eta_max_days": number,"item_count": number,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_name": string,"store_phone": string
+            }[]
+                           },
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined
                            },

@@ -149,7 +149,7 @@ Las migraciones empiezan en la 71. Cada una con su pgTAP.
 | Etapa | Migraciones | Qué incluye | Terminada cuando |
 |---|---|---|---|
 | **1. Rol, cuenta y disponibilidad** ✅ *hecha el 23-oct-2026* | 71 (valor del rol), 72 (invitación, vínculo, `is_courier_session`, disponibilidad) | Invitar desde la ficha, `accept-invitation`, revocación | Un repartidor invitado entra; sin ficha activa pierde acceso; nadie fuera de administración otorga el rol |
-| **2. Lectura de sus pedidos** | 73 | Núcleo de transiciones extraído de la última `set_order_status`, vistas del repartidor, ruta limitada a sus pedidos | Ve solo lo asignado y compatible; datos del cliente solo mientras el pedido está abierto |
+| **2. Lectura de sus pedidos** ✅ *hecha el 23-oct-2026* | 73 | Núcleo de transiciones extraído de la última `set_order_status`; funciones de lectura del repartidor (no vistas: ver `backend-referencia.md`, sección 13) con las coordenadas de ruta limitadas a sus pedidos abiertos | Ve solo lo asignado y compatible; datos del cliente solo mientras el pedido está abierto |
 | **3. Ofertas** | 74 | Tabla, funciones, cron de vencimiento, compatibilidad por vehículo | Una oferta se acepta, rechaza, vence y cancela sin doble asignación |
 | **4. Evidencias** | 75 | Bucket `entregas`, `delivery_evidence`, `order_codes`, `evidence_settings`, vistas por rol | Evidencia de solo adición; cada rol ve solo lo suyo |
 | **5. Acciones del repartidor** | 76 | `courier_pick_up`, `courier_deliver`, problema, devolver, «no cabe», uso de `register_courier_cash` | No se avanza sin código y foto; la coordinación puede saltar con motivo y queda marcado |
