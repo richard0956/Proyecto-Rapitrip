@@ -136,6 +136,20 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"delivery_issues_list": {
+                  Row: {
+                    "attended_at": string | null,"attended_by": string | null,"attended_note": string | null,"courier_id": string | null,"created_at": string | null,"id": string | null,"kind": string | null,"order_id": string | null,"reason": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
                 },"inventory_list": {
                   Row: {
                     "available": boolean | null,"commerce_id": string | null,"low_stock_threshold": number | null,"product_id": string | null,"product_name": string | null,"product_status": string | null,"quantity": number | null,"sku": string | null,"stock_state": string | null,"store_id": string | null,"store_name": string | null,"track_stock": boolean | null,"updated_at": string | null,"variant_id": string | null,"variant_name": string | null,"variant_status": string | null
@@ -338,14 +352,14 @@ export type Database = {
                         ]
                 },"orders_list": {
                   Row: {
-                    "cash_received_at": string | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
+                    "cash_received_at": string | null,"cash_collected": number | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_received_at"?: string | null,"cash_collected"?: number | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Update: {
-                           "cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_received_at"?: string | null,"cash_collected"?: number | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Relationships: [
                     
@@ -590,6 +604,29 @@ export type Database = {
 { Args: { [_ in never]: never }; Returns: {
               "assigned_updated_at": string,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"destination_department": string,"eta_max_days": number,"item_count": number,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_name": string,"store_phone": string
             }[]
+                           },
+"courier_cash_code":
+{ Args: { "p_order": string }; Returns: string
+                           },
+"courier_deliver":
+{ Args: { "p_cash"?: number,"p_code"?: string,"p_note"?: string,"p_order": string,"p_received_by"?: string }; Returns: string
+                           },
+"courier_order_issues":
+{ Args: { "p_order": string }; Returns: {
+              "attended_note": string,"created_at": string,"issue_id": string,"kind": string,"reason": string,"status": string
+            }[]
+                           },
+"courier_pick_up":
+{ Args: { "p_code"?: string,"p_order": string }; Returns: string
+                           },
+"courier_release_order":
+{ Args: { "p_order": string,"p_reason": string }; Returns: undefined
+                           },
+"courier_report_problem":
+{ Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: string
+                           },
+"resolve_delivery_issue":
+{ Args: { "p_issue": string,"p_note": string }; Returns: undefined
                            },
 "courier_reject_offer":
 { Args: { "p_offer": string,"p_reason"?: string }; Returns: undefined

@@ -152,7 +152,7 @@ Las migraciones empiezan en la 71. Cada una con su pgTAP.
 | **2. Lectura de sus pedidos** ✅ *hecha el 23-oct-2026* | 73 | Núcleo de transiciones extraído de la última `set_order_status`; funciones de lectura del repartidor (no vistas: ver `backend-referencia.md`, sección 13) con las coordenadas de ruta limitadas a sus pedidos abiertos | Ve solo lo asignado y compatible; datos del cliente solo mientras el pedido está abierto |
 | **3. Ofertas** ✅ *hecha el 23-oct-2026* | 74 | Tabla, funciones, cron de vencimiento, compatibilidad por vehículo | Una oferta se acepta, rechaza, vence y cancela sin doble asignación |
 | **4. Evidencias** ✅ *hecha el 23-oct-2026* | 75 | Bucket `entregas`, `delivery_evidence`, `order_codes`, `evidence_settings`, vistas por rol | Evidencia de solo adición; cada rol ve solo lo suyo |
-| **5. Acciones del repartidor** | 76 | `courier_pick_up`, `courier_deliver`, problema, devolver, «no cabe», uso de `register_courier_cash` | No se avanza sin código y foto; la coordinación puede saltar con motivo y queda marcado |
+| **5. Acciones del repartidor** ✅ *hecha el 23-oct-2026* | 76 | `courier_pick_up`, `courier_deliver`, problema, devolver, «no cabe», uso de `register_courier_cash` | No se avanza sin código y foto; la coordinación puede saltar con motivo y queda marcado |
 | **6. Push** | 77 | Suscripciones, cola, `send-push`, claves VAPID | Una oferta nueva suena en el teléfono (Android y iPhone instalado) |
 | **7. App `apps/courier`** | — | Todas las pantallas móviles, cámara, ubicación puntual, cola local de subida | Recorrido completo desde un teléfono real |
 | **8. Consolas** | 78 (lecturas y excepciones) | Todo lo de la sección 4 | Coordinación y administración operan y auditan el ciclo completo |

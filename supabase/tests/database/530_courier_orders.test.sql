@@ -98,8 +98,8 @@ reset role;
 
 -- ===== Entregado: los datos del cliente desaparecen =====
 select tests.authenticate_as((select id from tu where k = 'coo'));
-select public.set_order_status(current_setting('t.o1')::uuid, 'en_camino');
-select public.set_order_status(current_setting('t.o1')::uuid, 'entregado');
+select public.set_order_status(current_setting('t.o1')::uuid, 'en_camino', 'despacho de prueba sin evidencia');
+select public.set_order_status(current_setting('t.o1')::uuid, 'entregado', 'entrega de prueba sin evidencia');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'ra'), 'aal1');
 select ok((select delivery_address is null and delivery_phone is null and client_first_name is null and dest_latitude is null

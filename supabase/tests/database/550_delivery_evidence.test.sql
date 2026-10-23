@@ -141,8 +141,8 @@ select is(private.verify_order_code(current_setting('t.o4')::uuid, 'entrega', '1
 
 -- ===== Entrega =====
 select tests.authenticate_as((select id from tu where k = 'coo'));
-select public.set_order_status(current_setting('t.o1')::uuid, 'en_camino');
-select public.set_order_status(current_setting('t.o3')::uuid, 'en_camino');
+select public.set_order_status(current_setting('t.o1')::uuid, 'en_camino', 'despacho de prueba');
+select public.set_order_status(current_setting('t.o3')::uuid, 'en_camino', 'despacho de prueba');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'c1'));
 select is(public.my_delivery_code(current_setting('t.o1')::uuid), current_setting('t.del1'), 'en camino, el cliente ve su código de entrega');
