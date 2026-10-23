@@ -294,6 +294,20 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"order_offers_list": {
+                  Row: {
+                    "courier_id": string | null,"expires_at": string | null,"id": string | null,"offered_at": string | null,"offered_by": string | null,"order_id": string | null,"reject_reason": string | null,"responded_at": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                          
+                        ]
                 },"orders_list": {
                   Row: {
                     "cash_received_at": string | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
@@ -452,6 +466,9 @@ export type Database = {
 "bootstrap_superadmin":
 { Args: { "p_user": string }; Returns: undefined
                            },
+"cancel_order_offer":
+{ Args: { "p_offer": string }; Returns: undefined
+                           },
 "cancel_invitation":
 { Args: { "p_id": string }; Returns: undefined
                            },
@@ -523,9 +540,17 @@ export type Database = {
               "day": string,"deliveries": number,"km": number
             }[]
                            },
+"courier_accept_offer":
+{ Args: { "p_offer": string }; Returns: string
+                           },
 "courier_history":
 { Args: { "p_days"?: number }; Returns: {
               "cash_received": boolean,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"distance_km": number,"number": number,"order_id": string,"payment_method": string,"store_name": string
+            }[]
+                           },
+"courier_offers":
+{ Args: { [_ in never]: never }; Returns: {
+              "cash_total": number,"courier_pay": number,"delivery_class": string,"destination_department": string,"distance_km": number,"expires_at": string,"item_count": number,"number": number,"offer_id": string,"offered_at": string,"order_id": string,"payment_method": string,"store_address": string,"store_name": string
             }[]
                            },
 "courier_order":
@@ -537,6 +562,9 @@ export type Database = {
 { Args: { [_ in never]: never }; Returns: {
               "assigned_updated_at": string,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"destination_department": string,"eta_max_days": number,"item_count": number,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_name": string,"store_phone": string
             }[]
+                           },
+"courier_reject_offer":
+{ Args: { "p_offer": string,"p_reason"?: string }; Returns: undefined
                            },
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined
@@ -690,6 +718,14 @@ export type Database = {
                            },
 "reactivate_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_user": string }; Returns: undefined
+                           },
+"offer_order_to_courier":
+{ Args: { "p_courier": string,"p_order": string }; Returns: string
+                           },
+"offerable_couriers":
+{ Args: { "p_order": string }; Returns: {
+              "active_orders": number,"courier_id": string,"department": string,"full_name": string,"vehicle_class": string
+            }[]
                            },
 "read_courier_document":
 { Args: { "p_id": string }; Returns: string
