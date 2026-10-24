@@ -92,6 +92,9 @@ jobs:
       - name: Compilar la tienda
         run: pnpm --filter @rapitrip/store build
 
+      - name: Compilar la app del repartidor
+        run: pnpm --filter @rapitrip/courier build
+
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium
 
@@ -147,7 +150,7 @@ jobs:
 
       - name: Servir las Edge Functions
         run: |
-          printf 'OUTBOX_SECRET=ci-%s%s\nMAIL_MODE=log\nSTORE_URL=http://127.0.0.1:3000\nCONSOLE_URL=http://127.0.0.1:3001\n' "$RANDOM" "$RANDOM" > supabase/functions/.env
+          printf 'OUTBOX_SECRET=ci-%s%s\nMAIL_MODE=log\nSTORE_URL=http://127.0.0.1:3000\nCONSOLE_URL=http://127.0.0.1:3001\nCOURIER_APP_URL=http://127.0.0.1:3002\n' "$RANDOM" "$RANDOM" > supabase/functions/.env
           nohup supabase functions serve > functions.log 2>&1 &
           # La primera llamada tarda por la compilación en frío (puede agotar el CPU y fallar): se reintenta hasta que responda 400
           # (token ausente), que es la respuesta normal de `accept-invitation` a una petición vacía.
@@ -163,6 +166,9 @@ jobs:
 
       - name: Compilar la tienda
         run: pnpm --filter @rapitrip/store build
+
+      - name: Compilar la app del repartidor
+        run: pnpm --filter @rapitrip/courier build
 
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium

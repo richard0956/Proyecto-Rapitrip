@@ -35,8 +35,8 @@ select is(private.has_role('comercio'), false, 'comercio suspendido: la cuenta p
 select results_eq(
   $$ select manager::text, target::text from private.role_management order by 1, 2 $$,
   $$ values ('admin','cajero'), ('admin','cliente'), ('admin','comercio'), ('admin','coordinador'),
-            ('superadmin','admin'), ('superadmin','cajero'), ('superadmin','cliente'),
-            ('superadmin','comercio'), ('superadmin','coordinador') $$,
+            ('admin','repartidor'), ('superadmin','admin'), ('superadmin','cajero'), ('superadmin','cliente'),
+            ('superadmin','comercio'), ('superadmin','coordinador'), ('superadmin','repartidor') $$,
   'la matriz de gestión coincide con la acordada');
 select is(private.role_can_manage('admin', 'admin'), false, 'admin no gestiona admin');
 select is(private.role_can_manage('superadmin', 'admin'), true, 'superadmin gestiona admin');

@@ -37,3 +37,27 @@ export async function orderDistance(id: string): Promise<DistanceResult> {
   if (error) return { ok: false, error: "No pudimos calcular la distancia." };
   return { ok: true, km: data === null ? null : Number(data) };
 }
+
+/** Código de 4 dígitos que el comercio le muestra al repartidor para entregarle el pedido. Solo existe con el pedido listo. */
+export async function pickupCode(id: string): Promise<{ ok: true; code: string | null } | { ok: false; error: string }> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("order_pickup_code", { p_order: parsed.data });
+  if (error) return { ok: false, error: "No pudimos cargar el código de recogida." };
+  return { ok: true, code: data ?? null };
+}
+
+/** Foto que tomó el repartidor al recoger el pedido (enlace firmado por 5 minutos). El comercio no ve la de entrega: muestra el domicilio del cliente. */
+export async function pickupPhoto(id: string): Promise<{ ok: true; photo: { url: string | null; takenAt: string; purged: boolean } | null } | { ok: false; error: string }> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.from("order_evidence_list").select("file_path, taken_at, purged_at").eq("order_id", parsed.data).eq("kind", "recogida").maybeSingle();
+  if (error) return { ok: false, error: "No pudimos cargar la foto de recogida." };
+  if (!data?.taken_at) return { ok: true, photo: null };
+  const signed = !data.purged_at && data.file_path ? await supabase.storage.from("entregas").createSignedUrl(data.file_path, 300) : null;
+  return { ok: true, photo: { url: signed?.data?.signedUrl ?? null, takenAt: data.taken_at, purged: Boolean(data.purged_at) } };
+}

@@ -29,7 +29,7 @@ export const adminNav: NavSection[] = [
       { href: "/admin/vendedores", label: "Vendedores", icon: "user" },
       { href: "/admin/catalogo", label: "Catálogo maestro", icon: "layers" },
       { href: "/admin/repartidores", label: "Repartidores", icon: "truck" },
-      { href: "/admin/configuracion", label: "Configuración", icon: "settings", soon: true },
+      { href: "/admin/configuracion", label: "Configuración", icon: "settings" },
     ],
   },
   {
@@ -59,7 +59,7 @@ export const adminNav: NavSection[] = [
 ];
 
 export const cajaNav: NavSection[] = [{ items: [{ href: "/caja/resumen", label: "Resumen", icon: "home" }, { href: "/caja", label: "Caja y venta", icon: "cash", exact: true }] }];
-export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion/resumen", label: "Resumen", icon: "home" }, { href: "/coordinacion", label: "Pedidos", icon: "orders", exact: true }, { href: "/coordinacion/repartidores", label: "Repartidores", icon: "truck" }, { href: "/repartidor", label: "Efectivo de repartidores", icon: "cash" }] }];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion/resumen", label: "Resumen", icon: "home" }, { href: "/coordinacion", label: "Pedidos", icon: "orders", exact: true }, { href: "/coordinacion/repartidores", label: "Repartidores", icon: "truck" }, { href: "/coordinacion/efectivo", label: "Efectivo de repartidores", icon: "cash" }] }];
 export const comercioNav: NavSection[] = [
   {
     items: [

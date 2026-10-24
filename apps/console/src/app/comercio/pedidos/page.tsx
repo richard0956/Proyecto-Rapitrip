@@ -5,7 +5,7 @@ import { toDeliveryClass } from "@/lib/delivery-class";
 import { orderStatuses, type OrderStatus } from "@/lib/orders";
 import { formatStoreDateTime } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
-import { orderDistance, setOrderStatus } from "./actions";
+import { orderDistance, setOrderStatus, pickupCode, pickupPhoto } from "./actions";
 import { OrdersWorkspace, type OrderItem, type OrderRow } from "./orders-workspace";
 
 export const metadata = { title: "Pedidos" };
@@ -61,7 +61,7 @@ export default async function PedidosPage() {
     <>
       <PageHeader title="Pedidos" description="Confirma los pedidos nuevos y llévalos hasta que estén listos. La lista se actualiza sola." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar los pedidos. Recarga la página.</Alert> : null}
-      <OrdersWorkspace rows={rows} setStatus={setOrderStatus} loadDistance={orderDistance} />
+      <OrdersWorkspace rows={rows} setStatus={setOrderStatus} loadDistance={orderDistance} handoff={{ loadCode: pickupCode, loadPhoto: pickupPhoto }} />
     </>
   );
 }

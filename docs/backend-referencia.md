@@ -174,6 +174,9 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 - `courier-document-url`: enlace firmado de 60 segundos al documento de un repartidor (lectura auditada).
 - `export-data`: exportación cifrada de datos, con motivo.
 - `purge-exports`: elimina exportaciones vencidas.
+- `purge-evidence`: elimina las fotos de entrega vencidas (ver sección 15).
+- `send-push`: envía los avisos push a los repartidores (ver sección 17).
+- `invite-courier`: invita a un repartidor desde su ficha (ver sección 12).
 - `send-outbox`: envía los correos encolados (con `MAIL_MODE=log` solo los imprime).
 - `stripe-checkout`: crea la sesión de pago de Stripe de un pedido propio (el navegador solo envía el id; el monto sale de la base de datos).
 - `stripe-webhook`: recibe los eventos de Stripe (`checkout.session.completed` y `checkout.session.expired`), verifica la firma y aplica el resultado; reembolsa pagos tardíos, dobles o de otro monto. Sin verificación JWT.
@@ -182,6 +185,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 ## 8. Almacenamiento
 
 - `courier-documents` (privado): documentos de identidad de repartidores; sube la administración.
+- `entregas` (privado): fotos de recogida y entrega; las sube el repartidor a su carpeta y se conservan 90 días (sección 15).
 - `product-images` (público, 2 MB, JPEG/PNG/WebP): imágenes de productos bajo la ruta `<tienda>/<producto>/<archivo>`; escribe el comercio dueño de la tienda o la administración, con sesión de consola.
 
 ## 9. Migraciones
@@ -221,7 +225,7 @@ Todas son `security_invoker`: respetan las políticas RLS de quien consulta. `st
 
 ## 10. Pruebas
 
-Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql`.
+Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pnpm db:reset` antes si la base local tiene datos propios) y pruebas de Edge Functions con `pnpm fn:test`. Archivos: `000_smoke.test.sql`, `010_baseline_guards.test.sql`, `020_identity.test.sql`, `030_audit.test.sql`, `040_security_functions.test.sql`, `050_permissions_matrix.test.sql`, `060_role_management.test.sql`, `070_profile.test.sql`, `080_outbox.test.sql`, `090_invitations.test.sql`, `100_commerce_requests.test.sql`, `110_couriers_and_sensitive_reads.test.sql`, `120_access_token_hook.test.sql`, `130_incidents_and_login_events.test.sql`, `140_anonymization.test.sql`, `150_mfa_reset_and_export.test.sql`, `160_client_session.test.sql`, `170_admin_reads.test.sql`, `180_commerce_request_views.test.sql`, `190_stores.test.sql`, `200_master_catalog.test.sql`, `210_products.test.sql`, `220_inventory.test.sql`, `230_commerce_status.test.sql`, `250_orders.test.sql`, `260_stripe_payments.test.sql`, `270_counter_sales.test.sql`, `280_payment_events_admin.test.sql`, `290_public_catalog.test.sql`, `300_order_idempotency.test.sql`, `310_customer_addresses.test.sql`, `320_order_emails.test.sql` y, más adelante, `520_courier_account.test.sql` `530_courier_orders.test.sql` `540_order_offers.test.sql` `550_delivery_evidence.test.sql` `560_courier_actions.test.sql` `570_push_notifications.test.sql` y `580_evidence_settings_view.test.sql`.
 
 
 ## 11. Fase 4: tienda pública
@@ -235,3 +239,135 @@ Suite pgTAP en `supabase/tests/database` (se corre con `pnpm db:test`; hacer `pn
 **Libreta de direcciones** (`sales.customer_addresses`, vista `my_addresses`): `save_address`, `set_default_address`, `delete_address`. Hasta 10 por cliente, una predeterminada, nombre único por cliente. Se borra al anonimizar la cuenta. `latitude` y `longitude` están reservadas para el mapa y ninguna pantalla las llena todavía.
 
 **Correos del pedido**: el trigger `enqueue_order_email_after_event` encola `order_received` (el pedido queda «por confirmar») y `order_cancelled` (cancelado o rechazado, con motivo) en la bandeja existente. `send-outbox` agrega `store_url` (variable `STORE_URL`) para el enlace al pedido.
+
+
+## 12. Repartidor, etapa 1: rol, cuenta y disponibilidad (migraciones 71 y 72)
+
+Diseño y plan completo en `docs/informe/2026-10-23-repartidor-revision-evidencias-y-consolas.md`.
+
+- **Rol `repartidor`** (migración 71, sola en su archivo). Lo gestionan `admin` y `superadmin` (`private.role_management`). No es un rol de consola: no entra por `/login` de la consola ni exige segundo factor.
+- **Invitación desde la ficha:** `create_courier_invitation(p_courier, p_email, p_token_hash)`. La invitación genérica (`create_invitation`) sigue sin aceptar `repartidor`, así cuenta y ficha nacen siempre unidas. La Edge Function `invite-courier` genera el token, llama a la RPC y envía el correo con el enlace a `COURIER_APP_URL/aceptar-invitacion`. `identity.invitations.courier_id` liga la invitación con la ficha.
+- **Aceptar:** `finish_accept_invitation` (misma función de siempre, ampliada) otorga el rol **y** llena `identity.couriers.user_id`. Rechaza (devuelve `false`) si la ficha ya no está activa o libre, o si la cuenta ya está vinculada a otra ficha. `accept-invitation` no cambió.
+- **Un usuario, una ficha:** índice único parcial sobre `couriers.user_id`.
+- **`private.is_courier_session()`:** rol activo + ficha activa + sesión de hasta **12 horas** (sin segundo factor, decisión D4). `private.current_courier_id()` devuelve la ficha de la sesión. Son la base de las vistas y funciones de las etapas siguientes.
+- **Disponibilidad:** `courier_set_available(p_available)`. Solo la ficha propia, idempotente (repetir el valor no audita). `identity.couriers.available` y `available_since`; un repartidor no puede estar disponible sin cuenta.
+- **Cortar el acceso:** `set_courier_status(..., 'inactivo')` deja la ficha no disponible y **borra sus sesiones**; `revoke_courier_account(p_courier, p_reason)` revoca el rol, suelta `user_id` (la ficha se puede invitar de nuevo) y borra sus sesiones.
+- **Vistas:** `courier_me` (su propia ficha), `courier_invitations` (solo administración) y `couriers_list` con `available` y `available_since`. Un repartidor ve en `couriers_list` solo su propia fila (política `couriers_select_own`).
+- **Auditoría:** `courier.account_linked`, `courier.account_revoked`, `courier.availability_changed`, `invitation.created` / `invitation.accepted` con `role = repartidor`.
+- **Pruebas:** `520_courier_account.test.sql` (36 aserciones).
+- **Consola:** tarjeta «Acceso a la aplicación» en `/admin/repartidores/[id]` (invitar por correo, quitar acceso).
+
+
+## 13. Repartidor, etapa 2: lectura de sus pedidos (migración 73)
+
+- **Núcleo de transiciones:** `private.apply_order_transition(pedido, estado, motivo)` contiene el tramo de `set_order_status` que cambia el pedido (estado, plazos, stock, línea de tiempo, auditoría). La autorización sigue en cada llamador; `set_order_status` quedó con el mismo comportamiento (pruebas 250, 260, 270, 300, 430 y 460 sin cambios). Las funciones del repartidor de la etapa 5 lo reutilizarán. No es ejecutable desde la API.
+- **El repartidor no lee `sales.orders`** (los permisos de esa tabla son por tabla entera e incluirían el margen y el pago de envío). Lee solo lo que devuelven tres funciones, con columnas fijas y filtradas por su ficha (`private.current_courier_id()`); a cualquier otro rol le responden `42501`:
+  - `courier_orders()`: sus pedidos abiertos (`confirmado`, `preparando`, `listo`, `en_camino`) y los entregados hoy (hora de Managua). Primero lo más urgente.
+  - `courier_order(p_order)`: detalle de un pedido propio (tienda y dirección de recogida, productos sin SKU ni precios, monto a cobrar si es efectivo). Un pedido ajeno o inexistente responde igual (`P0002`).
+  - `courier_history(p_days)`: entregas de los últimos 1 a 31 días y su estado de efectivo (registrado y recibido en caja). Sin datos del cliente.
+- **Datos del cliente:** dirección, teléfono, nota, punto del mapa y nombre de pila salen en `courier_order` **solo con el pedido `listo` o `en_camino`**; en cualquier otro estado (incluido `entregado`) vienen nulos.
+- **Pruebas:** `530_courier_orders.test.sql` (33 aserciones).
+
+
+## 14. Repartidor, etapa 3: ofertas de pedido (migración 74)
+
+La coordinación **propone** un pedido a **un** repartidor a la vez; él acepta, rechaza o la deja vencer. Solo al aceptar se le asigna el pedido (`orders.courier_id`). «Asignar directamente» (`assign_order_courier`) sigue como excepción.
+
+- **Tabla `sales.order_offers`** (pedido, repartidor, estado `pendiente`/`aceptada`/`rechazada`/`vencida`/`cancelada`, quién propuso, plazo, motivo del rechazo). Sin acceso directo para repartidores. Índices únicos parciales: una propuesta pendiente por pedido y una por repartidor. Vigencia: 3 minutos (`private.offer_ttl()`).
+- **Coordinación:** `offer_order_to_courier(p_order, p_courier)` (solo pedidos `confirmado`/`preparando`/`listo` sin repartidor; repartidor activo, con cuenta, **disponible** y compatible por vehículo y departamento; máximo 20 propuestas por minuto y persona), `cancel_order_offer(p_offer)`, `offerable_couriers(p_order)` (a quién se puede proponer) y la vista `order_offers_list` (una propuesta pendiente con el plazo vencido se muestra como `vencida`).
+- **Repartidor:** `courier_offers()` (su propuesta abierta con lo mínimo para decidir: tienda, departamento de destino, distancia, cuánto se le paga y si cobra en efectivo; **nunca** la dirección ni el teléfono del cliente), `courier_accept_offer(p_offer)` y `courier_reject_offer(p_offer, p_reason)` (motivo opcional de 5 a 200 caracteres). Ambas son idempotentes.
+- **`courier_accept_offer` devuelve un texto** en lugar de lanzar error para lo que debe quedar guardado: `aceptada`, `vencida` o `no_disponible` (el pedido ya tiene otro repartidor, se cayó o dejó de ser compatible; la propuesta queda `cancelada`). Un error deshace lo guardado en la misma llamada. Solo se lanza `42501` (no es repartidor) o `P0002` (propuesta ajena o inexistente).
+- **Aceptar es atómico:** bloquea la propuesta y el pedido, y vuelve a validar estado, disponibilidad del pedido y compatibilidad (`private.assert_courier_fits`).
+- **Vencimiento y cancelaciones automáticas:** `private.expire_stale_offers()` cada minuto (`pg_cron`); triggers que cancelan las propuestas abiertas si el pedido recibe repartidor por otra vía o termina, o si el repartidor pierde la ficha o la cuenta.
+- **Auditoría:** `order.offer_created`, `order.offer_accepted`, `order.offer_rejected`, `order.offer_expired`, `order.offer_cancelled`, además de `order.courier_assigned` con `via = oferta`.
+- **Pendiente:** el aviso push al repartidor (etapa 6) y la pantalla de coordinación (etapa 8).
+- **Pruebas:** `540_order_offers.test.sql` (47 aserciones).
+
+
+## 15. Repartidor, etapa 4: evidencias de la entrega (migración 75)
+
+Cada pedido deja una cadena de evidencias desde que el comercio se lo entrega al repartidor hasta que éste lo entrega. Esta etapa crea los datos y las reglas de lectura; `courier_pick_up` y `courier_deliver` (etapa 5) las exigirán para avanzar el pedido.
+
+- **Reglas (`sales.evidence_settings`, una fila):** foto y código obligatorios en recogida y entrega, distancia de alerta (150 m) y conservación (**90 días**, decisión E6). Las cambia la administración con `set_evidence_settings(...)`; las lee coordinación y administración.
+- **Códigos (`sales.order_codes`, sin acceso directo):** al quedar un pedido `listo` se generan un código de **recogida** (lo ve el comercio con `order_pickup_code`, solo con el pedido `listo`) y uno de **entrega** (lo ve el cliente con `my_delivery_code`, solo `en_camino`). La coordinación no ve ninguno. `private.verify_order_code(pedido, tipo, código)` devuelve `ok`, `incorrecto`, `bloqueado` (5 intentos fallidos) o `sin_codigo`; devuelve en vez de lanzar para que el intento quede contado. `reset_order_code_attempts` lo libera con motivo. Los códigos nunca se escriben en la auditoría.
+- **Evidencias (`sales.delivery_evidence`):** tipos `recogida`, `entrega`, `fallida`, `devolucion_tienda`; hora del servidor; huella SHA-256 de la foto; ubicación puntual opcional que solo sirve de alerta (`sin_ubicacion`, `lejos_del_punto`) y no sale hacia las pantallas (los permisos de columna excluyen latitud y longitud). **De solo adición:** un trigger impide editar o borrar, salvo el mantenimiento de retención y anonimización. Una sola recogida y una sola entrega por pedido.
+- **Registrar:** `courier_add_evidence(...)` (repartidor): valida pedido propio, estado (`recogida` con el pedido `listo`; `entrega` y `fallida` `en_camino`; `devolucion_tienda` tras una fallida), ruta `<ficha>/<pedido>/<archivo>`, foto ya subida y huella. Idempotente por (pedido, tipo, huella). `courier_order_evidence(pedido)` le devuelve lo ya subido para retomar si se cae la señal.
+- **Quién ve qué:** vista `order_evidence_list` (coordinación y administración: todo; cliente: `entrega` y `fallida` de sus pedidos; comercio: `recogida` y `devolucion_tienda` de los suyos) y `order_evidence_status` (solo coordinación: qué falta y cuántas marcas tiene cada pedido, según las reglas vigentes).
+- **Fotos:** bucket privado `entregas` (JPEG, PNG o WebP, hasta 1 MB). El repartidor sube solo a `<su ficha>/…`; cada quien abre con enlaces firmados lo que puede ver según la regla anterior.
+- **Retención:** `evidence_pending_purge()` y `mark_evidence_purged(ids)` (solo `service_role`) y la función de borde `purge-evidence` (secreto `OUTBOX_SECRET`, programarla como `purge-exports`) eliminan las fotos vencidas y dejan la huella, la hora y las marcas. No se borra mientras haya una devolución abierta sobre el pedido. Al anonimizar a un cliente, sus fotos pasan a eliminarse en la siguiente pasada.
+- **Auditoría:** `order.evidence_added`, `order.evidence_purged`, `order.code_reset`, `evidence.settings_changed`, sin rutas, coordenadas ni códigos.
+- **Pendiente:** exportación de datos personales con las evidencias del cliente; pantalla de evidencias en las consolas (etapa 8).
+- **Pruebas:** `550_delivery_evidence.test.sql` (76 aserciones).
+
+
+## 16. Repartidor, etapa 5: acciones del repartidor (migración 76)
+
+Dónde la evidencia de la etapa 4 se vuelve obligatoria. Las acciones **devuelven un texto** en vez de lanzar error para lo que debe quedar guardado (un intento de código fallido, por ejemplo); solo lanzan `42501` (no es repartidor), `P0002` (pedido ajeno o inexistente) y `22023` (uso indebido o dato inválido).
+
+- **`courier_pick_up(p_order, p_code)`:** `listo → en_camino`. Resultados: `ok`, `falta_foto` (sin la foto de recogida), `incorrecto`, `bloqueado` o `sin_codigo`. Valida primero la foto para no gastar intentos del código. Idempotente. Verifica otra vez que el repartidor sea compatible (`assert_courier_fits`).
+- **`courier_deliver(p_order, p_code, p_cash, p_received_by, p_note)`:** `en_camino → entregado`. Exige la foto de entrega y el código del cliente. **En efectivo** exige `p_cash` (el monto cobrado) y, si no coincide con el total, `p_note` explicando la diferencia; guarda `orders.cash_collected` y genera el código `CE-XXXXXX` (el mismo formato de `register_courier_cash`, que por eso deja de aplicar a ese pedido). Un pedido pagado con tarjeta rechaza `p_cash`. `p_received_by` queda en la línea de tiempo («Recibió: …»). Idempotente. `courier_cash_code(p_order)` le devuelve el código CE para llevarlo al cajero.
+- **Avisos a coordinación (`sales.delivery_issues`, vista `delivery_issues_list`):** `courier_report_problem(p_order, p_kind, p_reason)` con `no_entregado` (en camino; exige la foto `fallida` del intento), `no_cabe` (antes de recoger, solo pedidos `express`) o `problema`. No cambian el estado del pedido. Un aviso abierto del mismo tipo se reutiliza. `courier_release_order(p_order, p_reason)` devuelve el pedido **antes de recogerlo**: queda sin repartidor y se crea un aviso `devuelto`. `courier_order_issues(p_order)` le muestra sus avisos. Coordinación los cierra con `resolve_delivery_issue(p_issue, p_note)`.
+- **Coordinación y la evidencia:** `set_order_status` pide ahora un **motivo** (5 a 200 caracteres) al despachar o entregar un pedido cuyo repartidor **tiene cuenta** y no tiene la evidencia exigida por las reglas; el salto queda en la auditoría como `order.evidence_skipped` y el pedido figura con la cadena incompleta. Para un repartidor **sin cuenta** no cambia nada.
+- **`orders_list`** agrega `cash_collected` (al final).
+- **Auditoría:** `order.issue_reported`, `order.issue_resolved`, `order.courier_released`, `order.evidence_skipped`; el cobro en efectivo, `order.courier_cash_registered` con monto y diferencia.
+- **Pendiente:** pantallas de coordinación para los avisos, la reasignación tras una devolución y el seguimiento del efectivo (etapa 8); la app (etapa 7).
+- **Pruebas:** `560_courier_actions.test.sql` (65 aserciones). `530` y `550` ahora dan un motivo al despachar por un repartidor con cuenta.
+
+
+## 17. Repartidor, etapa 6: avisos push (migración 77)
+
+Cuando la coordinación propone un pedido, el teléfono del repartidor recibe un aviso aunque la aplicación esté cerrada. Es **Web Push** (estándar de los navegadores): no hay aplicación nativa ni servicios de terceros propios. El aviso es **genérico** («Nueva propuesta de pedido»): nunca lleva datos del cliente ni del pedido.
+
+- **Dispositivos (`identity.push_subscriptions`):** `register_push_subscription(endpoint, p256dh, auth, user_agent)` (solo con sesión de repartidor; hasta **5 por repartidor**; si la dirección ya existía, pasa al repartidor que la registra) y `unregister_push_subscription(endpoint)`. Las claves no se leen desde las pantallas; el repartidor ve sus dispositivos en `my_push_subscriptions` y coordinación ve quién tiene avisos en `couriers_list.push_enabled`. Se borran al desactivar la ficha o quitar la cuenta.
+- **Cola (`private.push_outbox`):** un trigger encola `oferta_nueva` al crear una propuesta y `oferta_cancelada` cuando se cancela o vence (para cerrar la notificación). Un aviso vencido no se envía; sin dispositivos queda `sin_destino`; se reintenta hasta 3 veces y uno «enviando» abandonado hace más de 2 minutos se retoma.
+- **Envío:** la función de borde `send-push` toma la cola (`claim_push`, solo `service_role`), cifra y envía a cada dispositivo (RFC 8291 con autenticación VAPID, RFC 8292, sin dependencias externas: `_shared/webpush.ts`), borra los dispositivos que el servicio push da por inexistentes (404 o 410) y registra el resultado (`finish_push`). Se dispara de dos maneras: **el programador cada minuto** con el secreto `x-outbox-secret` (igual que `send-outbox`), o la **consola de coordinación** al proponer un pedido, con la sesión de quien propone (`push_kick()` confirma que es coordinación), para que el aviso salga al instante.
+- **Claves VAPID:** `node scripts/generate-vapid-keys.mjs`. Pública: `VAPID_PUBLIC_KEY` (funciones) y `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (aplicación del repartidor). **Privada: solo `VAPID_PRIVATE_KEY` en las funciones de borde.** `VAPID_SUBJECT` es un contacto `mailto:`. Ver `.env.example`.
+- **El push solo avisa:** la aplicación sigue consultando sus propuestas (`courier_offers`) por su cuenta; no depende de que el aviso llegue.
+- **iPhone:** Apple solo permite push si la aplicación está instalada en la pantalla de inicio, y el permiso se pide tras un toque.
+- **Auditoría:** `courier.push_registered` y `courier.push_unregistered`, sin direcciones de dispositivos.
+- **Pruebas:** `570_push_notifications.test.sql` (43 aserciones) y `supabase/functions/_shared/webpush_test.ts` (Deno: descifrado de ida y vuelta con un receptor independiente, firma VAPID y respuestas del servicio push).
+- **Pendiente:** el service worker y la pantalla «Activar avisos» (etapa 7); disparar `send-push` desde la acción «Proponer a repartidor» de la consola (etapa 8); programar `send-push` cada minuto en el programador.
+
+
+## 18. Repartidor, etapa 7: aplicación `apps/courier`
+
+Aplicación web móvil (PWA) del repartidor, en el puerto 3002, con su propia cookie de sesión (`rapitrip-courier-auth`) y su propio proyecto de Vercel. No tiene backend propio: llama directamente a las funciones de las etapas 1 a 6 con la sesión del repartidor (sin segundo factor, sesión de hasta 12 horas).
+
+- **Variables:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` y `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (ver `.env.example`). El enlace de la invitación apunta a `COURIER_APP_URL` (funciones de borde).
+- **Pantallas:** `/ingresar` y `/aceptar-invitacion` (acceso); `/` (disponibilidad, propuesta con cuenta regresiva y pedidos abiertos, se actualiza cada 15 s); `/pedidos/[id]` (tienda, entrega, productos, recoger, entregar, «no pude entregar», avisos, devolver); `/historial` (entregas, km y efectivo por rendir); `/perfil` (datos, avisos push, cerrar sesión). Una cuenta sin rol `repartidor` no entra (se cierra su sesión recién abierta).
+- **Evidencias desde el teléfono:** la foto se toma con la cámara trasera (campo de archivo con `capture`, sin permisos extra), se reduce a 1600 px y menos de 450 KB, se calcula su SHA-256, se toma la **ubicación solo en ese instante** (si el teléfono la da; si no, la foto sale igual y queda marcada) y se guarda en una **cola local (IndexedDB)** que la sube sola al volver la señal, aunque se cierre la aplicación. «Confirmar recogida» y «Confirmar entrega» quedan bloqueados hasta que la foto esté en el servidor.
+- **Service worker (`public/sw.js`):** muestra los avisos push (y cierra la notificación de una propuesta cancelada), lleva a la aplicación al tocarlos y muestra `offline.html` si se abre sin conexión. No guarda datos de pedidos en caché.
+- **Avisos push:** pantalla «Perfil → Activar avisos». En iPhone exige instalar la aplicación («Añadir a pantalla de inicio»); la pantalla lo explica.
+- **Mapas:** botones «Cómo llegar» que abren la aplicación de mapas del teléfono con el punto exacto (o la dirección); no hay mapa embebido (la aplicación se mantiene liviana).
+- **Seguridad:** CSP propia, cámara y ubicación permitidas solo a esta aplicación, `Cache-Control: no-store` en `sw.js`.
+- **Accesibilidad:** axe (WCAG 2.2 AA) sin violaciones en las 12 pantallas y estados revisados (ingreso, invitación, inicio con y sin propuesta, diálogo de rechazo, recoger, entregar, «no pude entregar», historial, perfil y no encontrada) con ancho de teléfono.
+- **Pruebas:** 88 de Vitest (lógica, cola de fotos, subida de evidencia, formularios de recoger, entregar, propuesta e ingreso). Verificado además en un navegador con tamaño de teléfono contra un servidor simulado de Supabase: ingreso, disponibilidad, aceptar, recoger con código incorrecto y luego correcto, entregar en efectivo, historial, perfil, aviso sin conexión y pantalla sin conexión.
+- **Pendiente:** recuperar contraseña (hoy se pide a coordinación una invitación nueva); pruebas de punta a punta con el backend real y en iPhone/Android físicos (etapa 9).
+
+
+## 19. Repartidor, etapa 8: conexión con las consolas y la tienda (migración 78)
+
+Todo lo que hace el repartidor desde su teléfono se ve y se gestiona desde las consolas que ya existían; no hay un sistema paralelo.
+
+**Base de datos (migración 78):** vista `evidence_settings_list` (las reglas de evidencia, para coordinación y administración). Prueba `580_evidence_settings_view.test.sql` (7 aserciones).
+
+**Tienda (cliente):** en `/pedidos/[id]`, con el pedido **en camino** el cliente ve su **código de entrega** (`my_delivery_code`) con la advertencia de no compartirlo antes de recibir; con el pedido **entregado** ve la **foto de su entrega** (enlace firmado por 5 minutos) o, pasados 3 meses, la constancia de que se eliminó.
+
+**Coordinación (`/coordinacion`):**
+- **Proponer a repartidor** (`OfferPanel`): lista de quienes pueden recibirla (`offerable_couriers`), envío (`offer_order_to_courier`) y retiro. Tras proponer o retirar, la consola pide a `send-push` que vacíe la cola; si ese disparo falla, el programador la recoge cada minuto. «Asignar directamente» queda como excepción (se indica quién no tiene cuenta).
+- **Estado en la lista:** «Propuesta a X», «Rechazada por X», «Sin respuesta de X» y «Aviso del repartidor».
+- **Avisos del repartidor** (`IssuesPanel`): los abiertos del pedido, con una pista de qué hacer; «no cabe» ofrece reclasificar desde el mismo aviso; «Marcar como atendido» pide qué se hizo (`resolve_delivery_issue`).
+- **Evidencia saltada:** despachar o entregar por un repartidor con cuenta sin su evidencia abre un diálogo que pide el motivo y reintenta (la base de datos lo audita como `order.evidence_skipped`).
+- **Liberar códigos bloqueados** (`reset_order_code_attempts`) para la recogida o la entrega.
+- **Historial y evidencias** (`OrderTrace`): línea de tiempo con estados, propuestas, evidencias y avisos (lo rechazado, vencido o marcado salta a la vista), fotos con enlace firmado de 5 minutos y, en efectivo, lo cobrado y la diferencia.
+- **Efectivo de repartidores** pasa a `/coordinacion/efectivo` (la ruta `/repartidor` redirige): totales por rendir, recibido y diferencias; el botón de registrar efectivo queda solo para repartidores sin cuenta.
+- **Repartidores:** cada fila muestra si tiene cuenta, si está disponible y si tiene los avisos activados.
+
+**Administración:**
+- **Pedidos:** el mismo historial y evidencias. **Devoluciones:** enlace a las evidencias de la entrega del pedido.
+- **Excepciones:** avisos de repartidores abiertos, pedidos sin la evidencia completa, fotos marcadas (últimos 7 días), entregas más rápidas de 3 minutos desde la recogida y repartidores con 3 o más propuestas vencidas en 24 horas.
+- **Configuración** (`/admin/configuracion`): reglas de evidencia (qué foto y qué código se exigen, distancia de alerta, días de conservación) con `set_evidence_settings`.
+
+**Comercio:** con el pedido **listo**, el **código de recogida** (`order_pickup_code`) para mostrárselo al repartidor; ya recogido, la **foto de recogida**. El comercio no ve la de entrega (muestra el domicilio del cliente).
+
+**Pruebas:** 222 en la consola y 169 en la tienda (Vitest). La compilación de la consola atrapó un error que los tipos no ven (un archivo de acciones del servidor solo puede exportar funciones): el esquema de las reglas vive en `lib/evidence-settings.ts`.

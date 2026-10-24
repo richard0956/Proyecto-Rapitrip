@@ -9,6 +9,8 @@ import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
 import { orderStatusLabel, orderStatusTone, orderStatuses, paymentLabel, type OrderStatus } from "@/lib/orders";
 import { OrderRoute } from "@/components/order-route";
+import { OrderTrace } from "@/components/order-trace";
+import type { TraceResult } from "@/lib/order-trace-server";
 import type { RouteResult } from "@/lib/order-route";
 
 export type AdminOrder = {
@@ -34,7 +36,7 @@ export type AdminOrder = {
 
 const closed: OrderStatus[] = ["entregado", "cancelado", "rechazado"];
 
-export function OrdersBoard({ rows, initialNumber, cancel, loadRoute }: { rows: AdminOrder[]; initialNumber: number | null; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult> }) {
+export function OrdersBoard({ rows, initialNumber, cancel, loadRoute, loadTrace }: { rows: AdminOrder[]; initialNumber: number | null; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult>; loadTrace?: (id: string) => Promise<TraceResult> }) {
   const [status, setStatus] = useState("");
   const [channel, setChannel] = useState("");
   const [query, setQuery] = useState("");
@@ -93,7 +95,7 @@ export function OrdersBoard({ rows, initialNumber, cancel, loadRoute }: { rows: 
       </Card>
 
       {selected ? (
-        <AdminDetail key={selected.id} row={selected} cancel={cancel} loadRoute={loadRoute} />
+        <AdminDetail key={selected.id} row={selected} cancel={cancel} loadRoute={loadRoute} loadTrace={loadTrace} />
       ) : (
         <Card>
           <CardHeader title="Detalle" />
@@ -104,7 +106,7 @@ export function OrdersBoard({ rows, initialNumber, cancel, loadRoute }: { rows: 
   );
 }
 
-function AdminDetail({ row, cancel, loadRoute }: { row: AdminOrder; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult> }) {
+function AdminDetail({ row, cancel, loadRoute, loadTrace }: { row: AdminOrder; cancel: (id: string, reason: string) => Promise<ActionResult>; loadRoute: (id: string) => Promise<RouteResult>; loadTrace?: (id: string) => Promise<TraceResult> }) {
   const router = useRouter();
   const [asking, setAsking] = useState(false);
   const canCancel = row.channel === "web" && !closed.includes(row.status);
@@ -157,6 +159,11 @@ function AdminDetail({ row, cancel, loadRoute }: { row: AdminOrder; cancel: (id:
         <dd className="font-bold tabular-nums text-tinta">{formatMoney(row.total)}</dd>
       </dl>
       {row.reason ? <Alert tone="warning" className="mb-3.5">Motivo: {row.reason}</Alert> : null}
+      {row.channel === "web" && loadTrace ? (
+        <div className="mb-3.5 flex flex-col">
+          <OrderTrace orderId={row.id} load={loadTrace} />
+        </div>
+      ) : null}
       {canCancel ? (
         <Button variant="danger" onClick={() => setAsking(true)}>
           Cancelar pedido

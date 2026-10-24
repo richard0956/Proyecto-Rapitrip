@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, replace: vi.fn(
 // El mapa de la ruta no se prueba aquí.
 vi.mock("@/components/order-route", () => ({ OrderRoute: () => null }));
 
-import { DispatchWorkspace, type Courier, type DispatchOrder } from "./dispatch-workspace";
+import { DispatchWorkspace, type CourierAppActions, type Courier, type DispatchOrder } from "./dispatch-workspace";
 
 const couriers: Courier[] = [
   { id: "c-moto", name: "Moto Managua", vehicle: "moto", phone: "1", vehicleClass: "moto", department: "managua" },
@@ -102,5 +102,101 @@ describe("DispatchWorkspace", () => {
   it("muestra el motivo de una reclasificación anterior", async () => {
     await open(order({ deliveryClass: "programado", reclassifiedReason: "era un saco de 20 kg" }));
     expect(screen.getByText(/Reclasificado a programado: era un saco de 20 kg/)).toBeInTheDocument();
+  });
+});
+
+
+describe("DispatchWorkspace con la aplicación del repartidor", () => {
+  const future = new Date(Date.now() + 120_000).toISOString();
+  const app = (): CourierAppActions => ({
+    loadOfferable: vi.fn().mockResolvedValue({ ok: true, couriers: [{ id: "c-moto", name: "Moto Managua", vehicleClass: "moto", department: "managua", activeOrders: 1 }] }),
+    offer: vi.fn().mockResolvedValue({ ok: true }),
+    cancelOffer: vi.fn().mockResolvedValue({ ok: true }),
+    resolveIssue: vi.fn().mockResolvedValue({ ok: true }),
+    resetCode: vi.fn().mockResolvedValue({ ok: true }),
+    loadTrace: vi.fn().mockResolvedValue({ ok: true, entries: [], photos: [], cash: null }),
+  });
+
+  async function openWithApp(row: DispatchOrder, tabName: RegExp, actions: CourierAppActions) {
+    render(<DispatchWorkspace rows={[row]} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} courierApp={actions} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("tab", { name: tabName }));
+    await user.click(screen.getByRole("button", { name: /Pedido 7/ }));
+    return user;
+  }
+
+  it("propone el pedido a un repartidor disponible", async () => {
+    const actions = app();
+    const user = await openWithApp(order({}), /En preparación/, actions);
+    await user.selectOptions(await screen.findByLabelText("Repartidor disponible"), "c-moto");
+    await user.click(screen.getByRole("button", { name: "Enviar propuesta" }));
+    await waitFor(() => expect(actions.offer).toHaveBeenCalledWith("o1", "c-moto"));
+  });
+
+  it("deja «asignar directamente» como excepción, con aviso de quién no tiene cuenta", async () => {
+    await openWithApp(order({}), /En preparación/, app());
+    expect(screen.getByLabelText("Asignar directamente (excepción)")).toBeInTheDocument();
+  });
+
+  it("una propuesta abierta se ve en la lista y se puede retirar", async () => {
+    const actions = app();
+    const offers = [{ id: "f1", courierName: "Ana", status: "pendiente" as const, expiresAt: future, respondedAt: null, rejectReason: null }];
+    const user = await openWithApp(order({ offers }), /En preparación/, actions);
+    expect(screen.getAllByText(/Propuesta a Ana/).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole("button", { name: "Retirar propuesta" }));
+    await waitFor(() => expect(actions.cancelOffer).toHaveBeenCalledWith("f1"));
+  });
+
+  it("una propuesta rechazada se marca en la lista y dice qué hacer", async () => {
+    const offers = [{ id: "f1", courierName: "Ana", status: "rechazada" as const, expiresAt: future, respondedAt: future, rejectReason: "Estoy muy lejos" }];
+    await openWithApp(order({ offers }), /En preparación/, app());
+    expect(screen.getAllByText(/Rechazada por Ana/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Ana la rechazó: «Estoy muy lejos». Propónsela a otro./)).toBeInTheDocument();
+  });
+
+  it("muestra los avisos del repartidor y permite atenderlos", async () => {
+    const actions = app();
+    const issues = [{ id: "i1", kind: "no_entregado", reason: "Nadie abrió la puerta", createdAt: "hoy 3:00 p. m." }];
+    const user = await openWithApp(order({ issues, status: "preparando" }), /En preparación/, actions);
+    expect(screen.getAllByText("Aviso del repartidor").length).toBeGreaterThan(0);
+    expect(screen.getByText(/Nadie abrió la puerta/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Marcar como atendido" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByLabelText("Motivo"), "Se reprograma para mañana");
+    await user.click(within(dialog).getByRole("button", { name: "Marcar como atendido" }));
+    await waitFor(() => expect(actions.resolveIssue).toHaveBeenCalledWith("i1", "Se reprograma para mañana"));
+  });
+
+  it("un aviso «no cabe» ofrece reclasificar desde el mismo aviso", async () => {
+    const issues = [{ id: "i2", kind: "no_cabe", reason: "Es un saco grande", createdAt: "hoy" }];
+    await openWithApp(order({ issues }), /En preparación/, app());
+    expect(screen.getAllByRole("button", { name: "Reclasificar a programado" }).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("despachar por un repartidor con cuenta sin su evidencia pide el motivo y lo reintenta", async () => {
+    setStatus.mockResolvedValueOnce({ ok: false, error: "falta la evidencia de recogida: indica el motivo (entre 5 y 200 caracteres)" });
+    const user = await openWithApp(order({ status: "listo", courierId: "c-moto", courierHasAccount: true }), /Para despachar/, app());
+    await user.click(screen.getByRole("button", { name: /Despachar/ }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/aún no registró la foto o el código/)).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText("Motivo"), "El repartidor no tiene señal");
+    await user.click(within(dialog).getByRole("button", { name: /Despachar/ }));
+    await waitFor(() => expect(setStatus).toHaveBeenLastCalledWith("o1", { to: "en_camino", reason: "El repartidor no tiene señal" }));
+  });
+
+  it("un repartidor con cuenta puede tener su código liberado", async () => {
+    const actions = app();
+    const user = await openWithApp(order({ status: "listo", courierId: "c-moto", courierHasAccount: true }), /Para despachar/, actions);
+    await user.click(screen.getByRole("button", { name: "Liberar código de entrega" }));
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByLabelText("Motivo"), "El cliente lo confirmó por teléfono");
+    await user.click(within(dialog).getByRole("button", { name: "Liberar" }));
+    await waitFor(() => expect(actions.resetCode).toHaveBeenCalledWith("o1", "entrega", "El cliente lo confirmó por teléfono"));
+  });
+
+  it("sin la aplicación conectada, la pantalla se comporta como antes", async () => {
+    await open(order({}));
+    expect(screen.queryByText("Proponer a un repartidor")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Repartidor")).toBeInTheDocument();
   });
 });

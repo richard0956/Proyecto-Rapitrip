@@ -9,10 +9,11 @@ const areaByRole: Record<AppRole, ConsoleArea | null> = {
   coordinador: "coordinacion",
   comercio: "comercio",
   cliente: null,
+  repartidor: null,
 };
 
 /** Prioridad cuando una cuenta tiene varios roles activos. */
-const rolePriority: AppRole[] = ["superadmin", "admin", "coordinador", "cajero", "comercio", "cliente"];
+const rolePriority: AppRole[] = ["superadmin", "admin", "coordinador", "cajero", "comercio", "repartidor", "cliente"];
 
 /** Lee los roles del claim `app_roles` que añade el hook `custom_access_token` y devuelve el de mayor prioridad. */
 export function roleFromClaims(claims: Record<string, unknown> | null | undefined): AppRole | null {
@@ -69,8 +70,8 @@ export function decideConsoleAccess(input: {
 }
 
 const managedBy: Partial<Record<AppRole, readonly AppRole[]>> = {
-  superadmin: ["admin", "cajero", "coordinador", "comercio", "cliente"],
-  admin: ["cajero", "coordinador", "comercio", "cliente"],
+  superadmin: ["admin", "cajero", "coordinador", "comercio", "cliente", "repartidor"],
+  admin: ["cajero", "coordinador", "comercio", "cliente", "repartidor"],
 };
 
 /** Espejo de `private.role_management`. Solo decide qué botones mostrar: la base de datos vuelve a comprobarlo. */
@@ -78,7 +79,7 @@ export function canManageRole(manager: AppRole | null, target: AppRole | null): 
   return Boolean(manager && target && managedBy[manager]?.includes(target));
 }
 
-/** Roles que `manager` puede asignar por invitación (el backend solo invita admin, cajero y coordinador). */
+/** Roles que `manager` puede asignar por invitación (el backend solo invita admin, cajero y coordinador; el repartidor se invita desde su ficha). */
 export function invitableRoles(manager: AppRole | null): AppRole[] {
   return (["admin", "cajero", "coordinador"] as const).filter((role) => canManageRole(manager, role));
 }

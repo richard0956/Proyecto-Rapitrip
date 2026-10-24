@@ -31,5 +31,6 @@ export default defineConfig({
     ...(useMock ? [{ command: "node support/catalog-mock.mjs", url: "http://127.0.0.1:54321/health", reuseExistingServer: !ci, timeout: 30_000 }] : []),
     { command: serve("console"), url: "http://localhost:3001/login", env, reuseExistingServer: !ci, timeout: 180_000 },
     { command: serve("store"), url: "http://localhost:3000/ingresar", env, reuseExistingServer: !ci, timeout: 180_000 },
+    { command: serve("courier"), url: "http://localhost:3002/ingresar", env, reuseExistingServer: !ci, timeout: 180_000 },
   ],
 });

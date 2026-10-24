@@ -14,6 +14,8 @@ import { serverSupabase } from "@/lib/supabase";
 import { startCardPayment } from "../../checkout/actions";
 import { cancelOrder, requestReturn } from "../actions";
 import { AutoRefresh } from "./auto-refresh";
+import { DeliveryCodeCard } from "./delivery-code-card";
+import { DeliveryProof, type DeliveryProofData } from "./delivery-proof";
 import { OrderActions } from "./order-actions";
 import { ReturnForm } from "./return-form";
 import { ReturnStatusCard } from "./return-status";
@@ -49,6 +51,17 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
 
   const { data: returnRows } = await supabase.rpc("my_return_request", { p_order: id });
   const returnRequest = returnRows?.[0] ?? null;
+
+  // En camino, el cliente ve el código que le dirá al repartidor; ya entregado, ve la foto de su entrega (se conserva 3 meses).
+  const { data: deliveryCode } = status === "en_camino" ? await supabase.rpc("my_delivery_code", { p_order: id }) : { data: null };
+  let proof: DeliveryProofData | null = null;
+  if (status === "entregado") {
+    const { data: evidence } = await supabase.from("order_evidence_list").select("file_path, taken_at, purged_at").eq("order_id", id).eq("kind", "entrega").maybeSingle();
+    if (evidence) {
+      const signed = !evidence.purged_at && evidence.file_path ? await supabase.storage.from("entregas").createSignedUrl(evidence.file_path, 300) : null;
+      proof = { url: signed?.data?.signedUrl ?? null, takenAt: evidence.taken_at ? fecha.format(new Date(evidence.taken_at)) : null, purged: Boolean(evidence.purged_at) };
+    }
+  }
 
   const waitingPayment = status === "pendiente_pago";
   const left = waitingPayment || status === "por_confirmar" || status === "en_validacion" ? remainingText(order.expires_at) : null;
@@ -115,6 +128,8 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
 
       <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-5">
+          {deliveryCode ? <DeliveryCodeCard code={deliveryCode} /> : null}
+          {proof ? <DeliveryProof proof={proof} /> : null}
           <Card className="p-6">
             <h2 className="text-base font-bold text-tinta">Productos</h2>
             <ul className="mt-3 flex flex-col gap-2 text-[14px]">

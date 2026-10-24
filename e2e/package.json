@@ -8,8 +8,9 @@
     "e2e:a11y": "playwright test --grep @a11y",
     "e2e:backend": "playwright test --grep @backend",
     "e2e:comercio": "playwright test tests/comercio.spec.ts",
+    "e2e:repartidor": "playwright test tests/repartidor.spec.ts",
     "e2e:stripe": "playwright test tests/pagos.spec.ts",
-    "e2e:operaciones": "playwright test tests/comercio.spec.ts tests/caja.spec.ts tests/coordinacion.spec.ts tests/admin-operaciones.spec.ts tests/pedido-completo.spec.ts tests/tienda-pedido.spec.ts tests/mapas.spec.ts",
+    "e2e:operaciones": "playwright test tests/comercio.spec.ts tests/caja.spec.ts tests/coordinacion.spec.ts tests/admin-operaciones.spec.ts tests/pedido-completo.spec.ts tests/tienda-pedido.spec.ts tests/mapas.spec.ts tests/repartidor.spec.ts",
     "typecheck": "tsc -p tsconfig.json",
     "e2e:front": "playwright test --grep-invert @backend"
   },

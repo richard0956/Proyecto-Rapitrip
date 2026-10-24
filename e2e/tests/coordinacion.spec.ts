@@ -58,7 +58,7 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await expect(page.getByText(/El repartidor cobra.*en efectivo/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Despachar", exact: true })).toBeDisabled();
     await expect(page.getByText("Asigna un repartidor para poder despachar.")).toBeVisible();
-    await page.getByLabel("Repartidor").selectOption({ label: `${courierName} · moto` });
+    await page.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto` });
     await page.getByRole("button", { name: "Asignar repartidor" }).click();
     await expect(page.getByText("Repartidor asignado.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Despachar", exact: true })).toBeEnabled();
@@ -120,7 +120,7 @@ test.describe("@backend coordinación · resumen del día", () => {
 
     // Coordinación no lee las tiendas: el selector sale de los pedidos del día
     await expect(page.getByLabel("Tienda")).toContainText(`Tienda ${unique}`);
-    await expect(page.getByLabel("Repartidor")).toBeVisible();
+    await expect(page.getByLabel("Repartidor", { exact: true })).toBeVisible();
 
     // El pedido listo sin repartidor es una excepción: aparece al filtrar y lleva su alerta
     await page.getByRole("link", { name: /Con excepción/ }).click();

@@ -33,6 +33,15 @@ Deno.test("invitation incluye el enlace y el rol legible", () => {
   assertStringIncludes(m.text, "Coordinador de pedidos");
 });
 
+Deno.test("invitation de repartidor usa su propio asunto y rol", () => {
+  const m = renderEmail("invitation", {
+    link: "https://repartidor.test/aceptar-invitacion?token=abc", role: "repartidor", expiresAt: "2026-11-05T12:00:00Z",
+  });
+  assertStringIncludes(m.subject, "repartidor");
+  assertStringIncludes(m.text, "Repartidor");
+  assertStringIncludes(m.html, "https://repartidor.test/aceptar-invitacion?token=abc");
+});
+
 Deno.test("una plantilla desconocida lanza error", () => {
   let failed = false;
   try { renderEmail("no_existe" as never, {}); } catch { failed = true; }

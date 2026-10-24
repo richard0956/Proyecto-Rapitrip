@@ -4,16 +4,22 @@ import { Alert, Badge, Button, Card, CardHeader, EmptyState, SelectField, pillSt
 import { MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { CodeResetPanel, IssuesPanel, type IssueInfo } from "@/components/delivery-issues";
+import { OfferPanel, type OfferableCourier } from "@/components/offer-panel";
 import { OrderRoute } from "@/components/order-route";
+import { OrderTrace } from "@/components/order-trace";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { courierFits, type VehicleClass } from "@/lib/courier-fit";
 import { classLabel, etaText, type DeliveryClass } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
+import { openOffer, type OfferInfo } from "@/lib/offers";
+import type { TraceResult } from "@/lib/order-trace-server";
 import type { RouteResult } from "@/lib/order-route";
+import { useNow } from "@/lib/use-now";
 import { coordActions, coordTab, orderStatusLabel, orderStatusTone, paymentLabel, type CoordAction, type CoordTab, type OrderStatus } from "@/lib/orders";
 
-export type Courier = { id: string; name: string; vehicle: string; phone: string; vehicleClass: VehicleClass | null; department: string | null };
+export type Courier = { id: string; name: string; vehicle: string; phone: string; vehicleClass: VehicleClass | null; department: string | null; available?: boolean; hasAccount?: boolean; push?: boolean };
 export type DispatchOrder = {
   id: string;
   number: number;
@@ -37,7 +43,35 @@ export type DispatchOrder = {
   etaMinDays: number | null;
   etaMaxDays: number | null;
   reclassifiedReason: string | null;
+  /** Propuestas a repartidores, la más reciente primero. */
+  offers?: OfferInfo[];
+  /** Avisos abiertos del repartidor. */
+  issues?: IssueInfo[];
+  /** El repartidor asignado tiene cuenta en la app: su evidencia se completa desde su teléfono. */
+  courierHasAccount?: boolean;
 };
+
+/** Lo que conecta esta pantalla con la aplicación del repartidor: propuestas, avisos, códigos e historial. */
+export type CourierAppActions = {
+  loadOfferable: (orderId: string) => Promise<{ ok: true; couriers: OfferableCourier[] } | { ok: false; error: string }>;
+  offer: (orderId: string, courierId: string) => Promise<ActionResult>;
+  cancelOffer: (offerId: string) => Promise<ActionResult>;
+  resolveIssue: (issueId: string, note: string) => Promise<ActionResult>;
+  resetCode: (orderId: string, kind: "recogida" | "entrega", reason: string) => Promise<ActionResult>;
+  loadTrace: (orderId: string) => Promise<TraceResult>;
+};
+
+/** Estado de la propuesta en la fila: esperando respuesta, rechazada o vencida (lo que pide una acción de coordinación). */
+function OfferBadge({ row, now }: { row: DispatchOrder; now: number }) {
+  const offers = row.offers ?? [];
+  if (row.courierId !== null || offers.length === 0) return null;
+  const open = openOffer(offers, now);
+  if (open) return <Badge tone="warning">Propuesta a {open.courierName}</Badge>;
+  const last = offers[0];
+  if (last?.status === "rechazada") return <Badge tone="danger">Rechazada por {last.courierName}</Badge>;
+  if (last?.status === "vencida" || (last?.status === "pendiente" && new Date(last.expiresAt).getTime() <= now)) return <Badge tone="danger">Sin respuesta de {last.courierName}</Badge>;
+  return null;
+}
 
 const tabs: { key: CoordTab; label: string; empty: string }[] = [
   { key: "listos", label: "Para despachar", empty: "No hay pedidos listos esperando repartidor." },
@@ -54,12 +88,14 @@ type Props = {
   assign: (id: string, courierId: string) => Promise<ActionResult>;
   reclassify: (id: string, reason: string) => Promise<ActionResult>;
   loadRoute: (id: string) => Promise<RouteResult>;
+  courierApp?: CourierAppActions;
 };
 
-export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassify, loadRoute }: Props) {
+export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassify, loadRoute, courierApp }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<CoordTab>("listos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const now = useNow();
 
   // Los pedidos van cambiando de manos: se refresca cada 30 segundos mientras la pestaña está visible.
   useEffect(() => {
@@ -101,7 +137,9 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassif
                       </span>
                       <span className="block text-xs text-tinta-suave">{courierName(row.courierId) ? `Repartidor: ${courierName(row.courierId)}` : "Sin repartidor"}</span>
                     </span>
-                    <span className="flex items-center gap-3">
+                    <span className="flex flex-wrap items-center gap-3">
+                      <OfferBadge row={row} now={now} />
+                      {(row.issues ?? []).length > 0 ? <Badge tone="warning">Aviso del repartidor</Badge> : null}
                       <span className="text-sm font-bold tabular-nums text-tinta">{formatMoney(row.total)}</span>
                       <Badge tone={row.deliveryClass === "express" ? "positive" : "neutral"}>{classLabel(row.deliveryClass)}</Badge>
                       <Badge tone={orderStatusTone[row.status]}>{orderStatusLabel[row.status]}</Badge>
@@ -115,7 +153,7 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassif
       </Card>
 
       {selected ? (
-        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} onMoved={(to) => setTab(coordTab(to))} />
+        <DispatchDetail key={selected.id} row={selected} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} courierApp={courierApp} onMoved={(to) => setTab(coordTab(to))} />
       ) : (
         <Card>
           <CardHeader title="Detalle del pedido" />
@@ -126,11 +164,13 @@ export function DispatchWorkspace({ rows, couriers, setStatus, assign, reclassif
   );
 }
 
-function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRoute, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
+function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRoute, courierApp, onMoved }: Omit<Props, "rows"> & { row: DispatchOrder; onMoved: (to: OrderStatus) => void }) {
   const router = useRouter();
   const [courier, setCourier] = useState(row.courierId ?? "");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [asking, setAsking] = useState<CoordAction | null>(null);
+  // Despachar o entregar por un repartidor con cuenta sin su evidencia exige un motivo: la base de datos lo avisa y aquí se pide.
+  const [skipping, setSkipping] = useState<CoordAction | null>(null);
   const [reclassifying, setReclassifying] = useState(false);
   const [pending, start] = useTransition();
   const actions = coordActions(row.status);
@@ -153,6 +193,7 @@ function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRout
     setMessage(null);
     start(async () => {
       const result = await setStatus(row.id, { to: action.to });
+      if (!result.ok && /falta la evidencia/i.test(result.error)) return setSkipping(action);
       setMessage(result.ok ? { ok: true, text: `Pedido ${row.number}: ${orderStatusLabel[action.to].toLowerCase()}.` } : { ok: false, text: result.error });
       if (result.ok) {
         onMoved(action.to);
@@ -214,14 +255,27 @@ function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRout
       {row.paymentMethod === "efectivo" ? <Alert tone="warning" className="mb-3.5">El repartidor cobra {formatMoney(row.total)} en efectivo al entregar.</Alert> : null}
       {row.reason ? <Alert tone="warning" className="mb-3.5">Motivo: {row.reason}</Alert> : null}
 
+      {courierApp ? (
+        <>
+          <IssuesPanel issues={row.issues ?? []} resolve={courierApp.resolveIssue} onReclassify={canReclassify ? () => setReclassifying(true) : undefined} />
+          <OfferPanel orderId={row.id} canOffer={!assigned && ["confirmado", "preparando", "listo"].includes(row.status)} offers={row.offers ?? []} loadOfferable={courierApp.loadOfferable} offer={courierApp.offer} cancel={courierApp.cancelOffer} />
+          {row.courierHasAccount && (row.status === "listo" || row.status === "en_camino") ? (
+            <Alert className="mb-3.5">
+              {couriers.find((item) => item.id === row.courierId)?.name ?? "El repartidor"} usa la aplicación: él registra la {row.status === "listo" ? "recogida" : "entrega"} con foto y código. Solo despacha o entrega por él si no puede hacerlo, y deja el motivo.
+            </Alert>
+          ) : null}
+        </>
+      ) : null}
+
       {canAssign ? (
         <div className="mb-3.5 flex flex-col gap-2.5">
-          <SelectField label="Repartidor" value={courier} onChange={(e) => setCourier(e.target.value)}>
+          <SelectField label={courierApp ? "Asignar directamente (excepción)" : "Repartidor"} value={courier} onChange={(e) => setCourier(e.target.value)}>
             <option value="">{eligible.length === 0 ? "No hay repartidores compatibles" : "Elige un repartidor"}</option>
             {eligible.map((item) => (
               <option key={item.id} value={item.id}>
                 {item.name}
                 {item.vehicle ? ` · ${item.vehicle}` : ""}
+                {courierApp && item.hasAccount === false ? " · sin cuenta" : ""}
               </option>
             ))}
           </SelectField>
@@ -261,6 +315,23 @@ function DispatchDetail({ row, couriers, setStatus, assign, reclassify, loadRout
         <p className="text-[12.5px] text-tinta-suave">Este pedido ya terminó.</p>
       )}
 
+      {courierApp && row.courierId && row.courierHasAccount && (row.status === "listo" || row.status === "en_camino") ? <CodeResetPanel orderId={row.id} reset={courierApp.resetCode} /> : null}
+      {courierApp ? <OrderTrace orderId={row.id} load={courierApp.loadTrace} /> : null}
+
+      {skipping ? (
+        <ReasonDialog
+          open
+          onClose={() => setSkipping(null)}
+          title={`${skipping.label} sin la evidencia completa`}
+          description="El repartidor aún no registró la foto o el código de este paso. Si continúas, queda anotado en el pedido y en la auditoría."
+          confirmLabel={skipping.label}
+          onConfirm={async (reason) => {
+            const result = await setStatus(row.id, { to: skipping.to, reason });
+            if (result.ok) onMoved(skipping.to);
+            return result;
+          }}
+        />
+      ) : null}
       {reclassifying ? (
         <ReasonDialog
           open

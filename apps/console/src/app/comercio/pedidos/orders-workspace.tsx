@@ -11,6 +11,7 @@ import { classLabel, etaText, type DeliveryClass } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
 import { orderGroup, orderStatusLabel, orderStatusTone, paymentLabel, shopActions, type OrderGroup, type OrderStatus, type ShopAction } from "@/lib/orders";
 import { OrderDistance } from "@/components/order-route";
+import { PickupHandoff } from "@/components/pickup-handoff";
 import type { DistanceResult } from "@/lib/order-route";
 
 export type OrderItem = { name: string; quantity: number; unitPrice: number; total: number };
@@ -41,7 +42,9 @@ const tabs: { key: OrderGroup; label: string; empty: string }[] = [
   { key: "terminados", label: "Terminados", empty: "Todavía no hay pedidos terminados." },
 ];
 
-export function OrdersWorkspace({ rows, setStatus, loadDistance }: { rows: OrderRow[]; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult> }) {
+export type Handoff = { loadCode: Parameters<typeof PickupHandoff>[0]["loadCode"]; loadPhoto: Parameters<typeof PickupHandoff>[0]["loadPhoto"] };
+
+export function OrdersWorkspace({ rows, setStatus, loadDistance, handoff }: { rows: OrderRow[]; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult>; handoff?: Handoff }) {
   const router = useRouter();
   const [tab, setTab] = useState<OrderGroup>("confirmar");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -133,14 +136,14 @@ export function OrdersWorkspace({ rows, setStatus, loadDistance }: { rows: Order
         <DataTable caption="Pedidos" columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" />
       )}
       <Dialog open={selected !== null} onClose={() => setSelectedId(null)} title={selected ? `Pedido ${selected.number}` : "Pedido"} wide>
-        {selected ? <OrderDetail key={selected.id} row={selected} setStatus={setStatus} loadDistance={loadDistance} onMoved={(to) => { setTab(orderGroup(to)); setQuery(""); }} /> : null}
+        {selected ? <OrderDetail key={selected.id} row={selected} setStatus={setStatus} loadDistance={loadDistance} handoff={handoff} onMoved={(to) => { setTab(orderGroup(to)); setQuery(""); }} /> : null}
       </Dialog>
     </Card>
   );
 }
 
 /** `onMoved` lleva la lista a la pestaña del nuevo estado: así el pedido sigue a la vista y seleccionado tras responderlo. */
-function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult>; onMoved: (to: OrderStatus) => void }) {
+function OrderDetail({ row, setStatus, loadDistance, handoff, onMoved }: { row: OrderRow; setStatus: (id: string, input: { to: string; reason?: string }) => Promise<ActionResult>; loadDistance: (id: string) => Promise<DistanceResult>; handoff?: Handoff; onMoved: (to: OrderStatus) => void }) {
   const router = useRouter();
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [asking, setAsking] = useState<ShopAction | null>(null);
@@ -211,6 +214,7 @@ function OrderDetail({ row, setStatus, loadDistance, onMoved }: { row: OrderRow;
         <dd>{paymentLabel(row.paymentMethod, row.paymentStatus)}</dd>
       </dl>
       {row.reason ? <Alert tone="warning" className="mb-3.5">Motivo: {row.reason}</Alert> : null}
+      {handoff ? <PickupHandoff orderId={row.id} status={row.status} loadCode={handoff.loadCode} loadPhoto={handoff.loadPhoto} /> : null}
       {message ? <Alert tone={message.ok ? "info" : "error"} className="mb-3.5">{message.text}</Alert> : null}
       {actions.length > 0 ? (
         <div className="flex flex-wrap gap-2.5">

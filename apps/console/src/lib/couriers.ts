@@ -15,6 +15,10 @@ export type CourierStat = {
   activeOrders: number;
   cashPending: number;
   cashPendingOrders: number;
+  /** Uso de la aplicación del repartidor: tiene cuenta, está disponible ahora y tiene los avisos activados en algún teléfono. */
+  hasAccount?: boolean;
+  available?: boolean;
+  push?: boolean;
 };
 
 export type CourierFilters = { query: string; status: "todos" | "activo" | "inactivo" };

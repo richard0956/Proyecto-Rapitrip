@@ -14,6 +14,13 @@ describe("roles", () => {
     expect(roleFromClaims({ app_roles: [{ role: "cliente" }, { role: "admin" }, { role: "cajero" }] })).toBe("admin");
   });
 
+  it("el repartidor no es un rol de consola", () => {
+    expect(roleFromClaims({ app_roles: [{ role: "repartidor" }] })).toBe("repartidor");
+    expect(roleFromClaims({ app_roles: [{ role: "repartidor" }, { role: "cliente" }] })).toBe("repartidor");
+    expect(homePathForRole("repartidor")).toBe("/sin-acceso");
+    expect(decideConsoleAccess({ signedIn: true, role: "repartidor", aal: "aal2", area: "coordinacion" })).toEqual({ kind: "redirect", to: "/sin-acceso" });
+  });
+
   it("mapea rol a ruta de inicio", () => {
     expect(homePathForRole("superadmin")).toBe("/admin");
     expect(homePathForRole("cajero")).toBe("/caja/resumen");
@@ -49,11 +56,16 @@ describe("gestión de roles", () => {
     expect(canManageRole("cajero", "cliente")).toBe(false);
     expect(canManageRole("admin", "superadmin")).toBe(false);
     expect(canManageRole(null, "cajero")).toBe(false);
+    expect(canManageRole("admin", "repartidor")).toBe(true);
+    expect(canManageRole("superadmin", "repartidor")).toBe(true);
+    expect(canManageRole("coordinador", "repartidor")).toBe(false);
   });
 
   it("lista los roles invitables según quien invita", () => {
     expect(invitableRoles("superadmin")).toEqual(["admin", "cajero", "coordinador"]);
     expect(invitableRoles("admin")).toEqual(["cajero", "coordinador"]);
     expect(invitableRoles("comercio")).toEqual([]);
+    // El repartidor no se invita desde «Usuarios»: se invita desde su ficha.
+    expect(invitableRoles("admin")).not.toContain("repartidor");
   });
 });

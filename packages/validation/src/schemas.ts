@@ -10,7 +10,7 @@ export const fullNameSchema = z.string().trim().min(2, "mínimo 2 caracteres").m
 export const reasonSchema = z.string().trim().min(5, "el motivo exige al menos 5 caracteres").max(500);
 export const strongReasonSchema = z.string().trim().min(10, "el motivo exige al menos 10 caracteres").max(500);
 
-export const appRoleSchema = z.enum(["superadmin", "admin", "cajero", "coordinador", "comercio", "cliente"]);
+export const appRoleSchema = z.enum(["superadmin", "admin", "cajero", "coordinador", "comercio", "cliente", "repartidor"]);
 export type AppRole = z.infer<typeof appRoleSchema>;
 
 /** Roles que exigen contraseña, segundo factor y sesión de consola. */

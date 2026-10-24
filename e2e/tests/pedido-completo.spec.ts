@@ -61,7 +61,7 @@ test.describe("@backend pedido de punta a punta", () => {
     await coordination.goto(`${CONSOLE_URL}/coordinacion`);
     await coordination.getByRole("button", { name: order }).click();
     await expect(coordination.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
-    await coordination.getByLabel("Repartidor").selectOption({ label: `${courierName} · moto` });
+    await coordination.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto` });
     await coordination.getByRole("button", { name: "Asignar repartidor" }).click();
     await expect(coordination.getByText("Repartidor asignado.")).toBeVisible();
     await coordination.getByRole("button", { name: "Despachar", exact: true }).click();
