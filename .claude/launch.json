@@ -1,6 +1,0 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    { "name": "courier", "runtimeExecutable": "pnpm", "runtimeArgs": ["--filter", "@rapitrip/courier", "dev"], "port": 3002 }
-  ]
-}
