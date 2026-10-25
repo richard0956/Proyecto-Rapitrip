@@ -21,6 +21,8 @@ import { EvidenceList } from "./evidence-list";
 import { PhotoCapture } from "./photo-capture";
 import { PickupPanel } from "./pickup-panel";
 import { ReasonDialog } from "./reason-dialog";
+import { RouteSteps } from "./route-steps";
+import { LoadingList } from "./skeleton";
 import { ClassBadge, StatusBadge } from "./status-badge";
 
 const POLL_MS = 15_000;
@@ -30,7 +32,7 @@ const issueLabels: Record<string, string> = { no_entregado: "No se pudo entregar
 function ActionLink({ href, icon, children }: { href: string | null; icon: React.ReactNode; children: React.ReactNode }) {
   if (!href) return null;
   return (
-    <a href={href} target={href.startsWith("tel:") ? undefined : "_blank"} rel="noopener noreferrer" className={cn(buttonStyles({ variant: "secondary" }), "min-h-12 flex-1")}>
+    <a href={href} target={href.startsWith("tel:") ? undefined : "_blank"} rel="noopener noreferrer" className={cn(buttonStyles({ variant: "secondary" }), "min-h-12 flex-1 whitespace-nowrap px-4")}>
       {icon}
       {children}
     </a>
@@ -135,9 +137,9 @@ export function OrderView({ id }: { id: string }) {
 
   if (state === "cargando") {
     return (
-      <p role="status" className="px-4 py-16 text-center text-sm text-tinta-suave">
-        Cargando el pedido…
-      </p>
+      <div className="px-4 py-6">
+        <LoadingList label="Cargando el pedido…" rows={3} height="h-36" />
+      </div>
     );
   }
   if (state === "ausente" || !order) {
@@ -162,11 +164,11 @@ export function OrderView({ id }: { id: string }) {
     <div className="flex flex-col">
       <ConnectionBanner pending={mine.length} />
       <header className="flex items-center gap-3 px-4 pb-2 pt-4">
-        <Link href="/" aria-label="Volver al inicio" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-papel shadow-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+        <Link href="/" aria-label="Volver al inicio" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-papel shadow-suave transition-transform duration-500 ease-fluido active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
           <ArrowLeft className="size-5" aria-hidden="true" />
         </Link>
         <div className="min-w-0">
-          <h1 className="truncate text-[22px] font-extrabold leading-tight text-tinta">Pedido {order.number}</h1>
+          <h1 className="truncate text-[24px] font-extrabold leading-tight tracking-tight text-tinta">Pedido {order.number}</h1>
           <div className="mt-1 flex flex-wrap gap-1.5">
             <StatusBadge status={order.status} />
             <ClassBadge value={order.delivery_class} />
@@ -176,6 +178,9 @@ export function OrderView({ id }: { id: string }) {
 
       <div className="flex flex-col gap-4 px-4 pb-6">
         {notice ? <Alert tone="info">{notice}</Alert> : null}
+        <Card className="p-4">
+          <RouteSteps step={step.key} />
+        </Card>
         <Alert tone={step.key === "entregado" ? "info" : "warning"}>
           <span className="font-bold">{step.title}.</span> {step.hint}
         </Alert>

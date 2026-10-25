@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Card, EmptyState } from "@rapitrip/ui";
+import { Alert, Card, EmptyState, Reveal } from "@rapitrip/ui";
 import { BellRing } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -15,6 +15,8 @@ import { AvailabilityCard } from "./availability-card";
 import { ConnectionBanner } from "./connection-banner";
 import { OfferCard } from "./offer-card";
 import { OrderCard } from "./order-card";
+import { PageHeader } from "./page-header";
+import { LoadingList } from "./skeleton";
 
 const POLL_MS = 15_000;
 
@@ -102,17 +104,14 @@ export function HomeView() {
   return (
     <div className="flex flex-col">
       <ConnectionBanner pending={queue.pending.length} />
-      <header className="px-4 pb-2 pt-5">
-        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-tinta">Hola{me?.full_name ? `, ${me.full_name.split(" ")[0]}` : ""}</h1>
-        <p className="text-[13.5px] text-tinta-suave">Tus propuestas y pedidos de hoy.</p>
-      </header>
+      <div className="px-4 pb-4 pt-5">
+        <PageHeader eyebrow="Tu jornada" title={`Hola${me?.full_name ? `, ${me.full_name.split(" ")[0]}` : ""}`} description="Tus propuestas y pedidos de hoy." />
+      </div>
 
       <div className="flex flex-col gap-4 px-4 pb-6">
         {notice ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
         {!loaded ? (
-          <p role="status" className="py-10 text-center text-sm text-tinta-suave">
-            Cargando…
-          </p>
+          <LoadingList label="Cargando tus pedidos…" rows={3} height="h-32" />
         ) : (
           <>
             <AvailabilityCard available={me?.available === true} busy={busy === "disponible"} onToggle={toggleAvailable} />
@@ -128,19 +127,23 @@ export function HomeView() {
             {offer ? <OfferCard key={offer.offer_id} offer={offer} busy={busy === "oferta"} onAccept={() => answer(offer, true)} onReject={(reason) => answer(offer, false, reason)} /> : null}
 
             <section aria-labelledby="abiertos" className="flex flex-col gap-3">
-              <h2 id="abiertos" className="text-base font-extrabold text-tinta">
+              <h2 id="abiertos" className="text-lg font-extrabold text-tinta">
                 Mis pedidos
               </h2>
               {open.length === 0 ? (
                 <EmptyState title="No tienes pedidos abiertos">{me?.available ? "Cuando coordinación te proponga uno, aparecerá aquí." : "Marca que estás disponible para recibir propuestas."}</EmptyState>
               ) : (
-                open.map((order) => <OrderCard key={order.order_id} order={order} />)
+                open.map((order, index) => (
+                  <Reveal key={order.order_id} index={index}>
+                    <OrderCard order={order} />
+                  </Reveal>
+                ))
               )}
             </section>
 
             {delivered.length > 0 ? (
               <section aria-labelledby="hoy" className="flex flex-col gap-3">
-                <h2 id="hoy" className="text-base font-extrabold text-tinta">
+                <h2 id="hoy" className="text-lg font-extrabold text-tinta">
                   Entregados hoy
                 </h2>
                 {delivered.map((order) => (

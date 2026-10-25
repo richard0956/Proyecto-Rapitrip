@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Card, CardHeader } from "@rapitrip/ui";
+import { Alert, Avatar, Button, Card } from "@rapitrip/ui";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -11,6 +11,7 @@ import { disablePush } from "@/lib/push-client";
 import type { CourierMe } from "@/lib/types";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { usePolling } from "@/lib/use-polling";
+import { PageHeader } from "./page-header";
 import { PushCard } from "./push-card";
 
 const vehicle: Record<string, string> = { moto: "Moto", vehiculo: "Vehículo" };
@@ -54,14 +55,17 @@ export function ProfileView() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-6 pt-5">
-      <header>
-        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-tinta">Perfil</h1>
-        <p className="text-[13.5px] text-tinta-suave">Tus datos y los avisos de este teléfono.</p>
-      </header>
+      <PageHeader eyebrow="Tu cuenta" title="Perfil" description="Tus datos y los avisos de este teléfono." />
       {error ? <Alert tone="warning">{error}</Alert> : null}
 
       <Card className="p-4">
-        <CardHeader title={me?.full_name ?? "Repartidor"} subtitle="Datos de tu ficha. Si algo está mal, pide a coordinación que lo corrija." />
+        <div className="mb-3.5 flex items-center gap-3">
+          <Avatar name={me?.full_name} />
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-bold tracking-tight text-tinta">{me?.full_name ?? "Repartidor"}</h2>
+            <p className="text-xs text-tinta-suave">Datos de tu ficha. Si algo está mal, pide a coordinación que lo corrija.</p>
+          </div>
+        </div>
         <dl>
           <Row label="Teléfono" value={me?.phone} />
           <Row label="Vehículo" value={me?.vehicle_class ? vehicle[me.vehicle_class] : me?.vehicle_type} />

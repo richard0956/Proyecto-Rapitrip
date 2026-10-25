@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRelease, canReportNoFit, isOpen, stepFor } from "./order-steps";
+import { canRelease, canReportNoFit, isOpen, stageIndex, stepFor, type StepKey } from "./order-steps";
 
 describe("stepFor", () => {
   it("dice qué toca en cada estado", () => {
@@ -31,5 +31,11 @@ describe("reglas de las acciones", () => {
     expect(canRelease("listo")).toBe(true);
     expect(canRelease("en_camino")).toBe(false);
     expect(canRelease("entregado")).toBe(false);
+  });
+});
+
+describe("stageIndex", () => {
+  it("ubica cada paso en la línea de ruta y deja fuera al pedido cerrado", () => {
+    expect(["esperar", "recoger", "entregar", "entregado", "cerrado"].map((key) => stageIndex(key as StepKey))).toEqual([0, 1, 2, 3, -1]);
   });
 });

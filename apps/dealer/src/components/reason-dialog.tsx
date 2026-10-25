@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Dialog } from "@rapitrip/ui";
+import { Alert, Button, Dialog, TextareaField } from "@rapitrip/ui";
 import { useState, type ReactNode } from "react";
 
 type Props = {
@@ -41,11 +41,8 @@ export function ReasonDialog({ open, onClose, title, description, confirmLabel, 
       <div className="flex flex-col gap-3">
         <p className="text-sm text-tinta-suave">{description}</p>
         {children}
-        <label className="flex flex-col gap-1.5 text-xs font-bold text-tinta-suave">
-          Cuéntanos qué pasó
-          <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} maxLength={200} className="rounded-campo border border-borde-campo bg-white p-3 text-sm font-normal text-tinta" />
-          <span className="font-normal">{trimmed.length}/200 · mínimo 5 caracteres</span>
-        </label>
+        <TextareaField label="Cuéntanos qué pasó" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={200} />
+        <p className="-mt-2 text-xs text-tinta-suave">{trimmed.length}/200 · mínimo 5 caracteres</p>
         {blocked ? <Alert tone="warning">{blocked}</Alert> : null}
         {error ? <Alert tone="error">{error}</Alert> : null}
         <div className="grid grid-cols-2 gap-3">

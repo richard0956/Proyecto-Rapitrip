@@ -15,7 +15,7 @@ export function Logo({ tone = "light", subtitle, className, priority }: { tone?:
   const loading = priority ? "eager" : "lazy";
   if (tone === "light") {
     return (
-      <div className={cn("flex flex-col gap-0.5", className)}>
+      <div className={cn("flex flex-col items-start gap-0.5", className)}>
         <img src={files.lockup.src} width={files.lockup.width} height={files.lockup.height} alt="Rapitrip" loading={loading} decoding="async" className="h-8 w-auto" />
         {subtitle ? <p className="text-[10.5px] text-tinta-suave">{subtitle}</p> : null}
       </div>

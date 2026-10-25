@@ -37,3 +37,8 @@ export function canReportNoFit(status: string | null | undefined, deliveryClass:
 export function canRelease(status: string | null | undefined): boolean {
   return status === "confirmado" || status === "preparando" || status === "listo";
 }
+
+/** Posición del pedido en la línea de ruta (preparación, recogida, entrega, hecho). `-1` si el pedido ya no está activo. */
+export function stageIndex(key: StepKey): number {
+  return { esperar: 0, recoger: 1, entregar: 2, entregado: 3, cerrado: -1 }[key];
+}

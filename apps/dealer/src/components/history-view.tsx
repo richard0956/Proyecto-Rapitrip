@@ -1,7 +1,7 @@
 "use client";
 
-import { Alert, Card, cn, EmptyState } from "@rapitrip/ui";
-import { Banknote } from "lucide-react";
+import { Alert, Card, cn, EmptyState, KpiCard, pillStyles, Reveal } from "@rapitrip/ui";
+import { Banknote, PackageCheck, Route } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { friendlyError } from "@/lib/api-error";
@@ -11,6 +11,8 @@ import { formatMoney } from "@/lib/money";
 import type { CourierHistoryRow } from "@/lib/types";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { usePolling } from "@/lib/use-polling";
+import { PageHeader } from "./page-header";
+import { LoadingList } from "./skeleton";
 import { ClassBadge } from "./status-badge";
 
 const ranges = [
@@ -45,10 +47,7 @@ export function HistoryView() {
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-6 pt-5">
-      <header>
-        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-tinta">Historial</h1>
-        <p className="text-[13.5px] text-tinta-suave">Tus entregas y el efectivo por rendir.</p>
-      </header>
+      <PageHeader eyebrow="Tu actividad" title="Historial" description="Tus entregas y el efectivo por rendir." />
 
       <div role="group" aria-label="Periodo" className="flex gap-2">
         {ranges.map((range) => (
@@ -60,7 +59,7 @@ export function HistoryView() {
               setLoaded(false);
               setDays(range.days);
             }}
-            className={cn("min-h-11 flex-1 rounded-full text-sm font-bold", days === range.days ? "bg-hoja text-white" : "bg-papel text-tinta shadow-suave")}
+            className={cn(pillStyles(days === range.days), "min-h-11 flex-1 justify-center text-sm")}
           >
             {range.label}
           </button>
@@ -69,20 +68,12 @@ export function HistoryView() {
 
       {error ? <Alert tone="warning">{error}</Alert> : null}
       {!loaded && !error ? (
-        <p role="status" className="py-10 text-center text-sm text-tinta-suave">
-          Cargando…
-        </p>
+        <LoadingList label="Cargando tu historial…" rows={3} height="h-24" />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            <Card className="p-4">
-              <p className="text-xs font-bold text-tinta-suave">Entregas</p>
-              <p className="text-3xl font-extrabold tabular-nums text-tinta">{summary.deliveries}</p>
-            </Card>
-            <Card className="p-4">
-              <p className="text-xs font-bold text-tinta-suave">Kilómetros</p>
-              <p className="text-3xl font-extrabold tabular-nums text-tinta">{summary.km}</p>
-            </Card>
+            <KpiCard icon={<PackageCheck className="size-5" />} label="Entregas" value={summary.deliveries} />
+            <KpiCard icon={<Route className="size-5" />} tone="lavanda" label="Kilómetros" value={summary.km} />
           </div>
 
           {summary.cashPending > 0 ? (
@@ -95,9 +86,10 @@ export function HistoryView() {
             <EmptyState title="Sin entregas en este periodo">Cuando entregues pedidos aparecerán aquí.</EmptyState>
           ) : (
             <ul className="flex flex-col gap-3">
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <li key={row.order_id}>
-                  <Link href={`/pedidos/${row.order_id}`} className="block rounded-concha focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+                  <Reveal index={Math.min(index, 4)}>
+                  <Link href={`/pedidos/${row.order_id}`} className="block rounded-concha transition-transform duration-500 ease-fluido active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
                     <Card className="flex flex-col gap-1.5 p-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-base font-extrabold text-tinta">Pedido {row.number}</p>
@@ -112,6 +104,7 @@ export function HistoryView() {
                       ) : null}
                     </Card>
                   </Link>
+                  </Reveal>
                 </li>
               ))}
             </ul>
