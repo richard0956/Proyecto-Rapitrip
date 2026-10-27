@@ -562,7 +562,7 @@ export type Database = {
                            },
 "catalog_search_products":
 { Args: { "p_category"?: string,"p_discount_only"?: boolean,"p_kind"?: string,"p_limit"?: number,"p_max_price"?: number,"p_min_price"?: number,"p_offset"?: number,"p_open_only"?: boolean,"p_query"?: string,"p_sort"?: string,"p_store"?: string }; Returns: {
-              "brand_name": string,"category_id": string,"category_name": string,"commerce_kind": string,"compare_price": number,"cover_path": string,"created_at": string,"discount_pct": number,"id": string,"min_price": number,"name": string,"quick_max": number,"quick_variant_id": string,"quick_variant_name": string,"store_id": string,"store_name": string,"store_open": boolean,"total_count": number,"variant_count": number
+              "brand_name": string,"category_id": string,"category_name": string,"commerce_kind": string,"compare_price": number,"cover_path": string,"created_at": string,"discount_pct": number,"id": string,"min_price": number,"name": string,"quick_max": number,"quick_variant_id": string,"quick_variant_name": string,"sold_units": number,"store_id": string,"store_name": string,"store_open": boolean,"total_count": number,"variant_count": number
             }[]
                            },
 "catalog_search_stores":

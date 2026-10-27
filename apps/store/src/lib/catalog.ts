@@ -65,6 +65,8 @@ export type CatalogProduct = ProductSummary & {
   compare_price: number | null;
   /** El mayor descuento entre las presentaciones disponibles (0 si no hay). */
   discount_pct: number;
+  /** Unidades vendidas en los últimos 30 días; solo se calcula con el orden «vendidos» (con otro orden vale 0). */
+  sold_units: number;
 };
 
 export type ProductVariant = { id: string; name: string; price: number; available: boolean; max_per_order: number | null; compare_at_price?: number | null; discount_pct?: number };

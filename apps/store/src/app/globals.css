@@ -26,3 +26,30 @@ h3 {
 p {
   text-wrap: pretty;
 }
+
+/*
+ * Escalonado de tarjetas dentro de un bloque que aparece (Reveal). Se usa `animation` con relleno `backwards`, no `transition`:
+ * al terminar no deja ningún `transform` fijo, así el efecto de las tarjetas al pasar el cursor sigue intacto.
+ */
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal[data-visible="true"] .stagger > * {
+    animation: stagger-in 0.75s var(--ease-fluido) backwards;
+    animation-delay: calc(180ms + var(--n, 0) * 70ms);
+  }
+  .stagger > :nth-child(2) { --n: 1; }
+  .stagger > :nth-child(3) { --n: 2; }
+  .stagger > :nth-child(4) { --n: 3; }
+  .stagger > :nth-child(5) { --n: 4; }
+  .stagger > :nth-child(6) { --n: 5; }
+  .stagger > :nth-child(7) { --n: 6; }
+  .stagger > :nth-child(8) { --n: 7; }
+  .stagger > :nth-child(9) { --n: 8; }
+  .stagger > :nth-child(n + 10) { --n: 9; }
+}

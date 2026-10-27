@@ -2,9 +2,10 @@ import { productImageUrl } from "@/lib/money";
 
 /**
  * Imagen de producto del bucket público, con carga diferida. Sin foto muestra un marcador con la inicial del producto
- * sobre un degradado suave, para que las tarjetas sin imagen no se vean vacías.
+ * sobre un degradado suave, para que las tarjetas sin imagen no se vean vacías. `fit="contain"` muestra la foto entera
+ * sobre blanco (vitrina); por omisión la recorta para llenar el marco.
  */
-export function ProductImage({ path, alt, priority = false, className = "" }: { path: string | null | undefined; alt: string; priority?: boolean; className?: string }) {
+export function ProductImage({ path, alt, priority = false, fit = "cover", className = "" }: { path: string | null | undefined; alt: string; priority?: boolean; fit?: "cover" | "contain"; className?: string }) {
   const src = productImageUrl(path);
   if (!src) {
     return (
@@ -20,5 +21,5 @@ export function ProductImage({ path, alt, priority = false, className = "" }: { 
     );
   }
   // El bucket es del propio Supabase y la CSP ya lo permite; el optimizador de Next no puede leer orígenes locales.
-  return <img src={src} alt={alt} loading={priority ? "eager" : "lazy"} decoding="async" className={`object-cover ${className}`} />;
+  return <img src={src} alt={alt} loading={priority ? "eager" : "lazy"} decoding="async" className={`${fit === "contain" ? "bg-white object-contain p-2" : "object-cover"} ${className}`} />;
 }

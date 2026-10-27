@@ -1,157 +1,250 @@
-import { buttonStyles, ButtonIsland, Card, Eyebrow, Reveal } from "@rapitrip/ui";
-import { Check, ShieldCheck } from "lucide-react";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { getSessionInfo } from "@rapitrip/supabase";
+import { Reveal } from "@rapitrip/ui";
+import { BadgePercent, ChevronRight, MapPin, Plus, Store } from "lucide-react";
 import Link from "next/link";
-import { HeroVisual } from "@/components/hero-visual";
+import type { ReactNode } from "react";
+import { CartBanner } from "@/components/cart-banner";
+import { CategoryTile } from "@/components/category-tile";
+import { HomeHero } from "@/components/home-hero";
 import { ProductCard } from "@/components/product-card";
+import { ProductRail } from "@/components/product-rail";
+import { SectionHeader } from "@/components/section-header";
 import { StoreCard } from "@/components/store-card";
-import { Steps } from "@/components/steps";
-import { getStores, searchProducts } from "@/lib/catalog";
+import { getCategories, searchProducts, searchStores } from "@/lib/catalog";
 import { parseFilters } from "@/lib/catalog-filters";
+import { serverSupabase } from "@/lib/supabase";
 
-const guarantees = ["Confirmamos tu correo antes de activar la cuenta", "Ingresas con tu correo o con tu cuenta de Google", "Cada persona ve solo lo que su rol permite"];
+/** Foto opcional para el centro del héroe (PNG o WebP con fondo transparente, por ejemplo un repartidor). */
+const heroPhoto = ["webp", "png"].map((ext) => `/hero/repartidor.${ext}`).find((file) => existsSync(join(process.cwd(), "public", file))) ?? null;
+
+const productGrid = "stagger mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5";
+
+/**
+ * Bandeja blanca de esquinas amplias donde vive cada bloque de la portada. Aparece con un fundido suave al entrar en pantalla
+ * y sus tarjetas (las listas con `stagger`) entran escalonadas detrás.
+ */
+function Tray({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <Reveal className={`rounded-[2rem] bg-white p-5 shadow-[0_30px_60px_-44px_rgb(6_54_42/0.4)] ring-1 ring-selva/[0.04] sm:p-10 ${className}`}>{children}</Reveal>;
+}
+
+/** Estado de «Ofertas y promociones» cuando ningún comercio tiene rebajas activas. */
+function DealsEmpty() {
+  return (
+    <div className="mt-6 flex flex-col items-center gap-4 rounded-tarjeta bg-gradient-to-br from-calido via-white to-menta/60 px-6 py-10 text-center ring-1 ring-selva/[0.05] sm:flex-row sm:text-left">
+      <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white text-naranja shadow-[0_12px_24px_-14px_rgb(6_54_42/0.45)]">
+        <BadgePercent className="size-7" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[16px] font-bold text-tinta">Pronto verás aquí las ofertas</p>
+        <p className="mt-1 text-[13.5px] text-tinta-suave">Cuando un comercio rebaje un producto, aparece primero en esta sección.</p>
+      </div>
+      <Link href="/catalogo" className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-white hover:bg-tinta">
+        Ver el catálogo <ChevronRight aria-hidden="true" className="size-4" />
+      </Link>
+    </div>
+  );
+}
+
+/** ¿El cliente con sesión todavía no guarda ninguna dirección? Sin sesión (o si la lectura falla) no se le pide nada aquí. */
+async function needsAddress() {
+  try {
+    const supabase = await serverSupabase();
+    const session = await getSessionInfo(supabase);
+    if (!session.signedIn) return false;
+    const { count, error } = await supabase.from("my_addresses").select("id", { count: "exact", head: true });
+    return !error && count === 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Invitación a guardar la primera dirección de entrega, arriba de la portada. */
+function AddressNudge() {
+  return (
+    <section aria-labelledby="sin-direccion" className="flex flex-col gap-4 rounded-[1.75rem] bg-white p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06] sm:flex-row sm:items-center sm:p-5">
+      <span aria-hidden="true" className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-menta to-bruma text-hoja">
+        <MapPin className="size-6" />
+        <span className="absolute -right-0.5 -top-0.5 size-3 animate-pulse rounded-full bg-naranja ring-2 ring-white" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 id="sin-direccion" className="text-[16px] font-bold text-tinta">
+          ¿A dónde llevamos tus pedidos?
+        </h2>
+        <p className="mt-0.5 text-[13px] text-tinta-suave">Guarda tu casa o tu trabajo: la elegimos por ti al pagar y calculamos el envío desde ahí.</p>
+      </div>
+      <Link href="/perfil/direcciones" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-white transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+        <Plus aria-hidden="true" className="size-4" />
+        Agregar dirección
+      </Link>
+    </section>
+  );
+}
 
 export default async function Home() {
-  // Si la lectura falla, la portada sigue mostrándose sin la lista de tiendas.
-  const [stores, products, deals] = await Promise.all([
-    getStores(true, 1).catch(() => []),
-    searchProducts(parseFilters({ abiertas: "1", orden: "recientes" }), null, 1).catch(() => []),
+  // Si una lectura falla, la portada sigue mostrándose sin ese bloque.
+  const [askAddress, stores, categories, bestSellers, deals, recent, promos, picksForYou] = await Promise.all([
+    needsAddress(),
+    searchStores({ q: null, tipo: null, categoria: null, abiertas: true }, 1, 6).catch(() => []),
+    getCategories(null).catch(() => []),
+    searchProducts(parseFilters({ orden: "vendidos" }), null, 1).catch(() => []),
     searchProducts(parseFilters({ abiertas: "1", descuento: "1", orden: "descuento" }), null, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", orden: "recientes" }), null, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", descuento: "1", orden: "recientes" }), null, 1).catch(() => []),
+    searchProducts(parseFilters({ abiertas: "1", orden: "precio_asc" }), null, 1).catch(() => []),
   ]);
+  // Solo cuenta como «más vendido» lo que de verdad se vendió en los últimos 30 días.
+  const topSold = bestSellers.filter((product) => product.sold_units > 0).slice(0, 10);
+  const popular = [...categories].filter((category) => category.product_count > 0).sort((a, b) => b.product_count - a.product_count).slice(0, 8);
+  const featured = deals[0] ?? null;
+  // Productos con foto para la composición central del héroe (sin repetir la oferta destacada).
+  const picks = [...deals.slice(1), ...topSold, ...recent].filter((product, index, all) => product.cover_path && all.findIndex((p) => p.id === product.id) === index);
+
   return (
-    <main className="mx-auto max-w-[1040px] px-4 sm:px-8">
-      <section aria-labelledby="titulo" className="grid grid-cols-1 items-center gap-10 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-12 lg:py-6">
-        <div>
-          <Reveal>
-            <Eyebrow>Tu tienda cerca de ti</Eyebrow>
-          </Reveal>
-          <Reveal index={1}>
-            <h1 id="titulo" className="mt-5 text-[36px] font-bold leading-[1.06] tracking-tight text-selva sm:text-[44px] lg:text-[48px]">
-              Compra en comercios afiliados y <span className="text-hoja">recibe en tu puerta</span>
-            </h1>
-          </Reveal>
-          <Reveal index={2}>
-            <p className="mt-4 max-w-[46ch] text-[15.5px] leading-relaxed text-tinta-suave">Explora las tiendas abiertas, arma tu carrito y paga en efectivo o con tarjeta. Solo necesitas una cuenta para confirmar tu pedido.</p>
-          </Reveal>
-          <Reveal index={3} className="mt-7 flex flex-wrap items-center gap-3">
-            <Link href="/catalogo" className={buttonStyles({ variant: "primary", className: "min-h-11 pr-5" })}>
-              Ver catálogo
-              <ButtonIsland />
-            </Link>
-            <Link href="/tiendas" className={buttonStyles({ variant: "secondary", className: "min-h-11" })}>
-              Ver tiendas
-            </Link>
-          </Reveal>
-        </div>
-        <Reveal index={2}>
-          <HeroVisual />
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 px-3 sm:gap-8 sm:px-6">
+      {askAddress ? (
+        <Reveal>
+          <AddressNudge />
         </Reveal>
-      </section>
+      ) : null}
+      <HomeHero featured={featured} picks={picks} photo={heroPhoto} />
+
+      {popular.length > 0 ? (
+        <Tray>
+          <section aria-labelledby="categorias">
+            <SectionHeader id="categorias" title="Categorías populares" href="/catalogo" />
+            <ul className="stagger mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-8">
+              {popular.map((category, index) => (
+                <CategoryTile key={category.id} category={category} index={index} />
+              ))}
+            </ul>
+          </section>
+        </Tray>
+      ) : null}
 
       {stores.length > 0 ? (
-        <section aria-labelledby="abiertas" className="py-6 lg:py-10">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="abiertas" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
-              Abiertas ahora
-            </h2>
-            <Link href="/tiendas" className="text-[13.5px] font-bold text-hoja hover:underline">
-              Ver todas
-            </Link>
-          </div>
-          <ul className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {stores.slice(0, 3).map((store) => (
-              <StoreCard key={store.id} store={store} />
-            ))}
-          </ul>
+        <Tray>
+          <section aria-labelledby="tiendas">
+            <SectionHeader id="tiendas" title="Tiendas abiertas ahora" text="Comercios afiliados que reciben pedidos en este momento." href="/tiendas" />
+            <ul className="stagger -mx-5 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 [&>li]:w-[80%] [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {stores.map((store) => (
+                <StoreCard key={store.id} store={store} />
+              ))}
+            </ul>
+          </section>
+        </Tray>
+      ) : null}
+
+      {/* Ofertas y promociones: siempre visible; sin rebajas activas invita a volver en vez de desaparecer. */}
+      <Tray>
+        <section aria-labelledby="promociones">
+          <SectionHeader id="promociones" title="Ofertas y promociones" text="Las rebajas más nuevas de los comercios. Desliza para ver más." href="/catalogo?descuento=1&orden=recientes" />
+          {promos.length > 0 ? (
+            <ProductRail label="Ofertas y promociones">
+              {promos.slice(0, 12).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ProductRail>
+          ) : (
+            <DealsEmpty />
+          )}
         </section>
+      </Tray>
+
+      {topSold.length > 0 ? (
+        <Tray>
+          <section aria-labelledby="vendidos">
+            <SectionHeader id="vendidos" title="Los más vendidos" text="Lo que más se pidió en los últimos 30 días." href="/catalogo?orden=vendidos" />
+            <ul className={productGrid}>
+              {topSold.map((product, index) => (
+                <ProductCard key={product.id} product={product} priority={index < 5} />
+              ))}
+            </ul>
+          </section>
+        </Tray>
+      ) : null}
+
+
+      <Reveal>
+        <CartBanner products={[...topSold, ...recent, ...deals]} />
+      </Reveal>
+
+      {recent.length > 0 ? (
+        <Tray>
+          <section aria-labelledby="novedades">
+            <SectionHeader id="novedades" title="Recién agregados" text="Lo último que sumaron los comercios afiliados. Desliza para ver más." href="/catalogo?orden=recientes" />
+            <ProductRail label="Recién agregados">
+              {recent.slice(0, 12).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ProductRail>
+          </section>
+        </Tray>
       ) : null}
 
       {deals.length > 0 ? (
-        <section aria-labelledby="ofertas" className="py-6 lg:py-10">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="ofertas" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
-              Con descuento
-            </h2>
-            <Link href="/catalogo?descuento=1&orden=descuento" className="text-[13.5px] font-bold text-hoja hover:underline">
-              Ver todos los descuentos
-            </Link>
-          </div>
-          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-            {deals.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </ul>
-        </section>
+        <Tray>
+          <section aria-labelledby="ofertas">
+            <SectionHeader id="ofertas" title="Con descuento" text="Los mayores descuentos en tiendas abiertas." href="/catalogo?descuento=1&orden=descuento" />
+            <ul className={productGrid}>
+              {deals.slice(0, 5).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ul>
+          </section>
+        </Tray>
       ) : null}
 
-      {products.length > 0 ? (
-        <section aria-labelledby="novedades" className="py-6 lg:py-10">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="novedades" className="text-[24px] font-bold leading-tight tracking-tight text-selva sm:text-[28px]">
-              Novedades del catálogo
-            </h2>
-            <Link href="/catalogo" className="text-[13.5px] font-bold text-hoja hover:underline">
-              Ver el catálogo
-            </Link>
-          </div>
-          <ul className="mt-5 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-            {products.slice(0, 4).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </ul>
-        </section>
+      {picksForYou.length > 0 ? (
+        <Tray>
+          <section aria-labelledby="para-ti">
+            <SectionHeader id="para-ti" title="Para ti" text="Buenos precios en tiendas abiertas." href="/catalogo?abiertas=1&orden=precio_asc" />
+            <ul className={productGrid}>
+              {picksForYou.slice(0, 5).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </ul>
+          </section>
+        </Tray>
       ) : null}
 
-      <section aria-labelledby="vende" className="grid grid-cols-1 gap-5 py-10 lg:grid-cols-12 lg:py-16">
-        <Reveal className="lg:col-span-7">
-          <Card outerClassName="h-full" className="p-6 sm:p-8">
-            <Eyebrow>Para comercios</Eyebrow>
-            <h2 id="vende" className="mt-4 text-[26px] font-bold leading-tight tracking-tight text-selva sm:text-[32px]">
-              ¿Tienes un negocio?
+      {/* Para comercios: al final de la portada, fuera del encabezado. */}
+      <Reveal>
+      <section aria-labelledby="vende" className="relative isolate overflow-hidden rounded-[2rem] bg-selva px-6 py-10 text-white sm:px-12 sm:py-12">
+        <div aria-hidden="true" className="absolute -right-20 -top-24 -z-10 size-80 rounded-full bg-esmeralda/20 blur-2xl" />
+        <div aria-hidden="true" className="absolute -bottom-32 left-1/3 -z-10 size-80 rounded-full bg-marino/60 blur-3xl" />
+        <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-esmeralda ring-1 ring-white/15">
+              <Store aria-hidden="true" className="size-3.5" /> Para comercios
+            </p>
+            <h2 id="vende" className="mt-4 text-[28px] font-extrabold leading-tight tracking-tight sm:text-[36px]">
+              ¿Tienes un negocio? Vende en Rapitrip
             </h2>
-            <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-tinta-suave">Afilia tu comercio y vende en Rapitrip. Con la misma cuenta de cliente envías tu solicitud.</p>
-            <div className="mt-6">
-              <Steps
-                items={[
-                  { title: "Envía tu solicitud", text: "Cuéntanos quién eres y qué vendes. Necesitas una cuenta con el correo confirmado." },
-                  { title: "Revisamos tus datos", text: "El equipo de Rapitrip revisa la información antes de afiliarte." },
-                  { title: "Firmamos el convenio", text: "Con el convenio firmado activamos tu comercio y tu cuenta de comercio." },
-                ]}
-              />
-            </div>
-            <Link href="/vende" className={buttonStyles({ variant: "primary", className: "mt-7 min-h-11 pr-5" })}>
-              Vende en Rapitrip
-              <ButtonIsland />
-            </Link>
-          </Card>
-        </Reveal>
-
-        <div className="flex flex-col gap-5 lg:col-span-5">
-          <Reveal index={1} className="flex-1">
-            <div className="h-full rounded-concha bg-selva/[0.05] p-1.5 shadow-suave ring-1 ring-selva/10">
-              <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(1.75rem-0.375rem)] bg-selva p-6 text-white sm:p-7">
-                <div aria-hidden="true" className="absolute -right-16 -top-16 size-56 rounded-full bg-esmeralda/20" />
-                <span aria-hidden="true" className="relative flex size-11 items-center justify-center rounded-full bg-esmeralda text-selva">
-                  <ShieldCheck className="size-5" />
-                </span>
-                <h2 className="relative mt-4 text-[22px] font-bold leading-tight tracking-tight">Tu cuenta, protegida</h2>
-                <ul className="relative mt-5 flex flex-col gap-3.5">
-                  {guarantees.map((text) => (
-                    <li key={text} className="flex items-start gap-3 text-[14px] text-nav-texto">
-                      <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-esmeralda" strokeWidth={2.5} />
-                      {text}
-                    </li>
-                  ))}
-                </ul>
-                <div className="min-h-8 flex-1" />
-                <Link href="/registro" className={buttonStyles({ variant: "soft", className: "relative mt-auto self-start bg-papel pr-5 text-selva hover:bg-menta" })}>
-                  Crear cuenta
-                  <ButtonIsland variant="soft" />
-                </Link>
-              </div>
-            </div>
-          </Reveal>
+            <ol className="mt-5 grid max-w-[640px] grid-cols-1 gap-3 sm:grid-cols-3">
+              {["Envía tu solicitud", "Revisamos tus datos", "Firmamos y activamos"].map((step, index) => (
+                <li key={step} className="flex items-center gap-3 rounded-2xl bg-white/[0.06] p-3 text-[13px] font-semibold ring-1 ring-white/10">
+                  <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-esmeralda text-[12px] font-extrabold text-selva">
+                    {index + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <Link
+            href="/vende"
+            className="group inline-flex min-h-12 items-center gap-3 self-center justify-self-start rounded-full bg-white py-1.5 pl-5 pr-1.5 text-[14px] font-semibold text-selva transition-colors hover:bg-menta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:justify-self-end"
+          >
+            Afiliar mi comercio
+            <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-selva text-white transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
+              <ChevronRight className="size-4" />
+            </span>
+          </Link>
         </div>
       </section>
+      </Reveal>
     </main>
   );
 }

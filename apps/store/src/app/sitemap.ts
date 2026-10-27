@@ -8,7 +8,7 @@ const base = siteUrl();
 const LIMIT = 48;
 const MAX_PAGES = 20;
 
-const staticPaths = ["", "/catalogo", "/tiendas", "/ingresar", "/registro", "/vende", "/terminos", "/privacidad"];
+const staticPaths = ["", "/catalogo", "/tiendas", "/ingresar", "/registro", "/vende", "/sobre-nosotros", "/terminos", "/privacidad"];
 
 /** Tiendas y productos públicos, leídos de las mismas funciones del catálogo y guardados una hora. */
 const catalogUrls = unstable_cache(

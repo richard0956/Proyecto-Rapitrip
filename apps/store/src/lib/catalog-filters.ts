@@ -1,6 +1,6 @@
 /** Filtros del catálogo: se leen de la URL (la página es del servidor y se puede compartir) y se vuelven a escribir en ella. */
 export type CommerceKind = "informal" | "empresa";
-export type CatalogSort = "nombre" | "precio_asc" | "precio_desc" | "recientes" | "descuento";
+export type CatalogSort = "nombre" | "precio_asc" | "precio_desc" | "recientes" | "descuento" | "vendidos";
 
 export const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
   { value: "nombre", label: "Nombre (A–Z)" },
@@ -8,6 +8,7 @@ export const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
   { value: "precio_desc", label: "Precio: mayor a menor" },
   { value: "recientes", label: "Más recientes" },
   { value: "descuento", label: "Mayor descuento" },
+  { value: "vendidos", label: "Más vendidos" },
 ];
 
 export const KIND_OPTIONS: { value: CommerceKind | null; label: string }[] = [

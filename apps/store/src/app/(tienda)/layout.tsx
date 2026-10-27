@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
-/** Páginas de la tienda: navegación flotante y pie. El acceso (ingresar, registro, recuperar) usa su propia pantalla completa. */
+/** Páginas de la tienda: encabezado de dos pisos y pie. El acceso (ingresar, registro, recuperar) usa su propia pantalla completa. */
 export default function TiendaLayout({ children }: { children: ReactNode }) {
   return (
     <>
@@ -10,7 +10,7 @@ export default function TiendaLayout({ children }: { children: ReactNode }) {
         Saltar al contenido
       </a>
       <SiteHeader />
-      <div id="contenido" className="flex-1 pt-20 sm:pt-24">
+      <div id="contenido" className="flex-1 pt-4 sm:pt-6">
         {children}
       </div>
       <SiteFooter />

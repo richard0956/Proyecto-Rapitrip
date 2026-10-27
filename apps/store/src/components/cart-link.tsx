@@ -1,18 +1,28 @@
 "use client";
 
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBasket, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { itemCount } from "@/lib/cart";
 import { useCart } from "@/lib/use-cart";
 
-/** Ícono de carrito con el contador de productos. Antes de hidratar siempre vale cero, así no hay desajuste con el servidor. */
+/**
+ * Botón redondo del carrito. Vacío es solo el ícono del carrito sobre blanco; con productos se vuelve verde, cambia a la canasta
+ * llena y muestra la cantidad en un círculo. Antes de hidratar siempre vale cero, así no hay desajuste con el servidor.
+ */
 export function CartLink({ className = "" }: { className?: string }) {
   const count = itemCount(useCart());
+  const filled = count > 0;
   return (
-    <Link href="/carrito" aria-label={count > 0 ? `Carrito, ${count} ${count === 1 ? "producto" : "productos"}` : "Carrito"} className={`relative flex size-11 items-center justify-center rounded-full text-tinta transition-colors duration-500 ease-fluido hover:bg-selva/5 focus-visible:outline-2 focus-visible:outline-hoja ${className}`}>
-      <ShoppingCart aria-hidden="true" className="size-5" />
-      {count > 0 ? (
-        <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex min-w-5 items-center justify-center rounded-full bg-hoja px-1 text-[11px] font-bold leading-5 text-white">
+    <Link
+      href="/carrito"
+      aria-label={filled ? `Carrito, ${count} ${count === 1 ? "producto" : "productos"}` : "Carrito vacío"}
+      className={`relative flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-500 ease-fluido focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja ${
+        filled ? "bg-selva text-white shadow-pulsa hover:bg-tinta" : "bg-white text-tinta ring-1 ring-selva/[0.08] hover:bg-crema"
+      } ${className}`}
+    >
+      {filled ? <ShoppingBasket aria-hidden="true" className="size-5" /> : <ShoppingCart aria-hidden="true" className="size-5" />}
+      {filled ? (
+        <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-esmeralda px-1 text-[11px] font-extrabold leading-none text-selva ring-2 ring-white">
           {count > 99 ? "99+" : count}
         </span>
       ) : null}

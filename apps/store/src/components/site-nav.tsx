@@ -1,22 +1,71 @@
 "use client";
 
-import { Avatar, buttonStyles, ButtonIsland, cn, Lema, Logo } from "@rapitrip/ui";
-import { LogOut } from "lucide-react";
+import { Avatar, cn, Lema } from "@rapitrip/ui";
+import { Flame, Home, LayoutGrid, LogOut, Percent, Search, Sparkles, Store, UserRound } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { CustomerResult } from "@/lib/result";
+import { AddressPicker, type HeaderAddress } from "./address-picker";
+import { BrandMark } from "./brand-mark";
 import { CartLink } from "./cart-link";
 
-type Props = { signedIn: boolean; email: string | null; signOut: () => Promise<void> };
+type Props = {
+  signedIn: boolean;
+  email: string | null;
+  addresses: HeaderAddress[];
+  setDefault: (id: string) => Promise<CustomerResult>;
+  signOut: () => Promise<void>;
+};
 
-const linkStyle = "inline-flex min-h-11 items-center rounded-full px-4 text-[13.5px] font-bold text-tinta transition-colors duration-500 ease-fluido hover:bg-selva/5 focus-visible:outline-2 focus-visible:outline-hoja";
+/** Los apartados clave de la tienda: una sola fila de pestañas debajo de la barra principal. */
+const sections = [
+  { href: "/", label: "Inicio", icon: Home, match: (path: string, orden: string | null, descuento: boolean) => path === "/" && !orden && !descuento },
+  { href: "/catalogo", label: "Catálogo", icon: LayoutGrid, match: (path: string, orden: string | null, descuento: boolean) => path === "/catalogo" && !orden && !descuento },
+  { href: "/tiendas", label: "Tiendas", icon: Store, match: (path: string) => path.startsWith("/tiendas") },
+  { href: "/catalogo?descuento=1&orden=descuento", label: "Descuentos", icon: Percent, match: (path: string, _o: string | null, descuento: boolean) => path === "/catalogo" && descuento },
+  { href: "/catalogo?orden=vendidos", label: "Más vendidos", icon: Flame, match: (path: string, orden: string | null) => path === "/catalogo" && orden === "vendidos" },
+  { href: "/catalogo?orden=recientes", label: "Novedades", icon: Sparkles, match: (path: string, orden: string | null) => path === "/catalogo" && orden === "recientes" },
+];
 
 /**
- * Navegación «isla»: una píldora de cristal flotando sobre la página. En móvil, el botón de tres líneas se transforma en una X y abre
- * una cortina de pantalla completa con los enlaces entrando en cascada. El desenfoque solo se aplica a elementos fijos.
+ * Ubicación y buscador en una sola píldora: a la izquierda «Entregar en» (el nombre de la dirección), una línea divisoria y el
+ * buscador, que es un formulario GET al catálogo y funciona sin JavaScript.
  */
-export function SiteNav({ signedIn, email, signOut }: Props) {
+function LocationSearch({ id, signedIn, addresses, setDefault, className = "" }: { id: string; signedIn: boolean; addresses: HeaderAddress[]; setDefault: Props["setDefault"]; className?: string }) {
+  return (
+    <div className={cn("flex h-11 min-w-0 items-center rounded-full bg-crema transition-shadow focus-within:ring-2 focus-within:ring-hoja", className)}>
+      <AddressPicker compact signedIn={signedIn} addresses={addresses} setDefault={setDefault} className="h-full shrink-0" />
+      <span aria-hidden="true" className="h-5 w-px shrink-0 bg-selva/15" />
+      <form action="/catalogo" role="search" className="relative h-full min-w-0 flex-1">
+        <label htmlFor={id} className="sr-only">
+          Buscar productos
+        </label>
+        <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-suave" />
+        <input
+          id={id}
+          name="q"
+          type="search"
+          maxLength={80}
+          placeholder="Buscar productos…"
+          className="h-full w-full rounded-r-full bg-transparent pl-9 pr-4 text-[13.5px] text-tinta placeholder:text-tinta-suave/80 focus:outline-none"
+        />
+      </form>
+    </div>
+  );
+}
+
+/**
+ * Encabezado de la tienda: una barra blanca con la ubicación unida al buscador a la izquierda, la marca en el centro exacto y la
+ * cuenta con el carrito a la derecha; debajo, los apartados clave centrados en una sola píldora. «Vende en Rapitrip» vive al
+ * final de la portada y en el pie. En móvil la barra deja el menú, la marca y el carrito; la ubicación con el buscador baja a su
+ * propia fila.
+ */
+export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Props) {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const orden = params.get("orden");
+  const descuento = params.get("descuento") === "1";
   // El menú se abre para una ruta concreta: al navegar deja de coincidir y se cierra solo.
   const [openFor, setOpenFor] = useState<string | null>(null);
   const open = openFor === pathname;
@@ -32,83 +81,84 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
     };
   }, [open]);
 
-  const items = signedIn
-    ? [
-        { href: "/catalogo", label: "Catálogo" },
-        { href: "/tiendas", label: "Tiendas" },
-        { href: "/pedidos", label: "Mis pedidos" },
-        { href: "/perfil", label: "Mi perfil" },
-        { href: "/vende", label: "Vende en Rapitrip" },
-      ]
-    : [
-        { href: "/catalogo", label: "Catálogo" },
-        { href: "/tiendas", label: "Tiendas" },
-        { href: "/ingresar", label: "Ingresar" },
-        { href: "/registro", label: "Crear cuenta" },
-        { href: "/vende", label: "Vende en Rapitrip" },
-      ];
+  const menu = signedIn
+    ? [...sections.slice(1), { href: "/pedidos", label: "Mis pedidos" }, { href: "/perfil", label: "Mi perfil" }, { href: "/perfil/direcciones", label: "Mis direcciones" }]
+    : [...sections.slice(1), { href: "/ingresar", label: "Ingresar" }, { href: "/registro", label: "Crear cuenta" }];
 
   return (
-    <header className="fixed inset-x-0 top-3 z-30 px-3 sm:top-5 sm:px-6">
-      <div className={cn("mx-auto flex max-w-[1100px] items-center justify-between rounded-full py-1.5 pl-5 pr-1.5 shadow-suave ring-1 ring-selva/10 backdrop-blur-xl transition-colors duration-500 ease-fluido", open ? "bg-papel" : "bg-papel/75")}>
-        <Link href="/" className="rounded-full py-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hoja">
-          <Logo tone="light" priority className="[&_img]:h-7" />
-        </Link>
+    <header className="relative z-30 px-3 pt-3 sm:px-6 sm:pt-5">
+      <div className="mx-auto max-w-[1180px]">
+        {/* Tres columnas iguales a los lados: el logo queda en el centro exacto, sin importar lo que haya a cada lado. */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-full bg-white p-2 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06]">
+          <div className="flex min-w-0 items-center justify-self-start">
+            <button
+              type="button"
+              onClick={() => setOpenFor(open ? null : pathname)}
+              aria-expanded={open}
+              aria-controls="menu-movil"
+              aria-label={open ? "Cerrar menú" : "Abrir menú"}
+              className="relative flex size-11 items-center justify-center rounded-full bg-selva text-white transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja md:hidden"
+            >
+              <span aria-hidden="true" className="absolute h-px w-[18px] -translate-y-[5px] bg-current" />
+              <span aria-hidden="true" className="absolute h-px w-[18px] bg-current" />
+              <span aria-hidden="true" className="absolute h-px w-[18px] translate-y-[5px] bg-current" />
+            </button>
+            <LocationSearch id="buscar" signedIn={signedIn} addresses={addresses} setDefault={setDefault} className="hidden w-full max-w-[380px] md:flex" />
+          </div>
 
-        <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
-          <Link href="/catalogo" className={linkStyle}>
-            Catálogo
+          <Link href="/" aria-label="Rapitrip, inicio" className="rounded-full px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+            <BrandMark priority />
           </Link>
-          <Link href="/tiendas" className={linkStyle}>
-            Tiendas
-          </Link>
-          <Link href="/vende" className={linkStyle}>
-            Vende en Rapitrip
-          </Link>
-          <CartLink />
-          {signedIn ? (
-            <>
-              <Link href="/pedidos" className={linkStyle}>
-                Mis pedidos
-              </Link>
-              <Link href="/perfil" aria-label="Mi perfil" className="mx-1 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
-                <Avatar name={email} />
-              </Link>
-              <form action={signOut}>
-                <button type="submit" className={cn(linkStyle, "gap-2 text-hoja")}>
-                  <LogOut className="size-4" aria-hidden="true" />
-                  Salir
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <Link href="/ingresar" className={linkStyle}>
+
+          <div className="flex items-center gap-1.5 justify-self-end">
+            {signedIn ? (
+              <div className="hidden items-center gap-1 md:flex">
+                <Link href="/pedidos" className="inline-flex min-h-11 items-center rounded-full px-3 text-[13px] font-semibold text-tinta hover:bg-crema">
+                  Mis pedidos
+                </Link>
+                <Link href="/perfil" aria-label="Mi perfil" className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+                  <Avatar name={email} />
+                </Link>
+                <form action={signOut}>
+                  <button type="submit" aria-label="Salir" className="flex size-11 items-center justify-center rounded-full text-tinta-suave hover:bg-crema hover:text-hoja">
+                    <LogOut className="size-4" aria-hidden="true" />
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <Link href="/ingresar" className="hidden min-h-11 items-center gap-2 rounded-full bg-crema px-4 text-[13px] font-semibold text-tinta transition-colors hover:bg-menta md:inline-flex">
+                <UserRound aria-hidden="true" className="size-4" />
                 Ingresar
               </Link>
-              <Link href="/registro" className={buttonStyles({ variant: "primary", className: "pr-5" })}>
-                Crear cuenta
-                <ButtonIsland />
-              </Link>
-            </>
-          )}
-        </nav>
-
-        <div className="flex items-center gap-1 md:hidden">
-          <CartLink />
-        <button
-          type="button"
-          onClick={() => setOpenFor(open ? null : pathname)}
-          aria-expanded={open}
-          aria-controls="menu-movil"
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          className="relative flex size-11 items-center justify-center rounded-full bg-hoja text-white transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
-        >
-          <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-transform duration-500 ease-fluido", open ? "rotate-45" : "-translate-y-[5px]")} />
-          <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-[opacity,transform] duration-300 ease-fluido", open ? "scale-x-0 opacity-0" : "opacity-100")} />
-          <span aria-hidden="true" className={cn("absolute h-px w-[18px] bg-current transition-transform duration-500 ease-fluido", open ? "-rotate-45" : "translate-y-[5px]")} />
-        </button>
+            )}
+            <CartLink />
+          </div>
         </div>
+
+        <LocationSearch id="buscar-movil" signedIn={signedIn} addresses={addresses} setDefault={setDefault} className="mt-2.5 bg-white shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06] md:hidden" />
+
+        <nav aria-label="Apartados" className="-mx-3 mt-3 overflow-x-auto px-3 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+          <ul className="mx-auto flex w-max items-center gap-1.5 rounded-full bg-white/60 p-1 ring-1 ring-selva/[0.05]">
+            {sections.map(({ href, label, icon: Icon, match }) => {
+              const active = match(pathname, orden, descuento);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-colors duration-500 ease-fluido focus-visible:outline-2 focus-visible:outline-hoja",
+                      active ? "bg-selva text-white shadow-pulsa" : "text-tinta hover:bg-white",
+                    )}
+                  >
+                    <Icon aria-hidden="true" className={cn("size-4", active ? "text-esmeralda" : "text-hoja")} />
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
 
       <nav
@@ -116,17 +166,26 @@ export function SiteNav({ signedIn, email, signOut }: Props) {
         aria-label="Menú móvil"
         inert={!open}
         className={cn(
-          "fixed inset-0 -z-10 flex flex-col justify-center gap-2 bg-selva/[0.97] px-8 pb-10 pt-28 backdrop-blur-3xl transition-[opacity,transform] duration-700 ease-fluido md:hidden",
+          "fixed inset-0 z-40 flex flex-col justify-center gap-1 overflow-y-auto bg-selva/[0.97] px-8 pb-10 pt-24 backdrop-blur-3xl transition-[opacity,transform] duration-700 ease-fluido md:hidden",
           open ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0",
         )}
       >
-        {items.map((item, index) => (
+        <button
+          type="button"
+          onClick={() => setOpenFor(null)}
+          aria-label="Cerrar menú"
+          className="absolute right-5 top-5 flex size-11 items-center justify-center rounded-full bg-white/10 text-white focus-visible:outline-2 focus-visible:outline-esmeralda"
+        >
+          <span aria-hidden="true" className="absolute h-px w-[18px] rotate-45 bg-current" />
+          <span aria-hidden="true" className="absolute h-px w-[18px] -rotate-45 bg-current" />
+        </button>
+        {menu.map((item, index) => (
           <Link
             key={item.href}
             href={item.href}
-            style={{ transitionDelay: open ? `${120 + index * 70}ms` : "0ms" }}
+            style={{ transitionDelay: open ? `${120 + index * 50}ms` : "0ms" }}
             className={cn(
-              "block rounded-2xl py-3 text-[34px] font-extrabold leading-tight tracking-tight text-white transition-[opacity,transform] duration-700 ease-fluido focus-visible:outline-2 focus-visible:outline-esmeralda",
+              "block rounded-2xl py-2 text-[28px] font-extrabold leading-tight tracking-tight text-white transition-[opacity,transform] duration-700 ease-fluido focus-visible:outline-2 focus-visible:outline-esmeralda",
               open ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0",
             )}
           >

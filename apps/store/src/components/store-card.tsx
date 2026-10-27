@@ -1,53 +1,75 @@
-import { Badge, Card } from "@rapitrip/ui";
-import { Clock, MapPin, Truck } from "lucide-react";
+import { ArrowRight, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 import type { StoreSummary } from "@/lib/catalog";
 import { kindLabel } from "@/lib/catalog-filters";
 
+/** Portadas pastel; cada tienda toma siempre la misma según su nombre. */
+const covers = ["from-menta via-white to-bruma/60", "from-durazno via-white to-calido", "from-lavanda via-white to-menta/70", "from-calido via-white to-durazno/70", "from-bruma via-white to-lavanda/70"];
+
+function coverFor(name: string) {
+  let hash = 0;
+  for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return covers[hash % covers.length];
+}
+
+/**
+ * Tarjeta de tienda estilo vitrina: portada de color con el estado, la inicial en un círculo que monta sobre la portada, nombre y
+ * tipo centrados, dirección, categorías y al pie la cantidad de productos con la flecha para entrar.
+ */
 export function StoreCard({ store }: { store: StoreSummary }) {
   return (
-    <li className="relative">
-      <Card outerClassName="h-full" className="flex h-full flex-col gap-3 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-lg font-extrabold leading-tight tracking-tight text-tinta">
-            <Link href={`/tiendas/${store.id}`} className="rounded after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-hoja">
-              {store.name}
-            </Link>
-          </h2>
-          <Badge tone={store.open_now ? "positive" : "neutral"}>{store.open_now ? "Abierta" : "Cerrada"}</Badge>
-        </div>
-        {store.commerce_kind ? <p className="-mt-1.5 text-[12px] font-bold text-tinta-suave">{kindLabel(store.commerce_kind)}</p> : null}
-        <ul className="flex flex-col gap-1.5 text-[13px] text-tinta-suave">
-          {store.address ? (
-            <li className="flex items-start gap-2">
-              <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-              {store.address}
-            </li>
-          ) : null}
-          <li className="flex items-center gap-2">
-            <Truck aria-hidden="true" className="size-4 shrink-0" />
-            Envío según la distancia
-          </li>
-          {!store.open_now && store.closed_reason ? (
-            <li className="flex items-start gap-2">
-              <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-              {store.closed_reason}
-            </li>
-          ) : null}
-        </ul>
+    <li className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-white text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+      <div aria-hidden="true" className={`relative h-20 bg-gradient-to-br ${coverFor(store.name)}`}>
+        <span className={`absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold shadow-sm ${store.open_now ? "text-exito" : "text-tinta-suave"}`}>
+          <span className={`size-1.5 rounded-full ${store.open_now ? "bg-esmeralda" : "bg-tinta-suave/50"}`} />
+          {store.open_now ? "Abierta" : "Cerrada"}
+        </span>
+      </div>
+      <span aria-hidden="true" className="relative mx-auto -mt-8 flex size-16 items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-hoja shadow-[0_12px_24px_-12px_rgb(6_54_42/0.45)] ring-4 ring-white transition-colors duration-500 group-hover:bg-selva group-hover:text-esmeralda">
+        {store.name.trim().charAt(0).toUpperCase()}
+      </span>
+
+      <div className="flex flex-1 flex-col items-center gap-2 px-5 pb-5 pt-3">
+        <h2 className="line-clamp-1 text-[16px] font-bold leading-tight tracking-tight text-tinta">
+          <Link href={`/tiendas/${store.id}`} className="rounded after:absolute after:inset-0 after:rounded-tarjeta focus-visible:outline-2 focus-visible:outline-hoja">
+            {store.name}
+          </Link>
+        </h2>
+        <p className="-mt-1 text-[12px] text-tinta-suave">
+          {store.commerce_kind ? kindLabel(store.commerce_kind) : "Comercio afiliado"}
+          <span className="sr-only">{store.open_now ? ", abierta" : ", cerrada"}</span>
+        </p>
+
+        {store.address ? (
+          <p className="flex max-w-full items-start justify-center gap-1.5 text-[12.5px] text-tinta-suave">
+            <MapPin aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+            <span className="line-clamp-1">{store.address}</span>
+          </p>
+        ) : null}
+        {!store.open_now && store.closed_reason ? (
+          <p className="flex items-start justify-center gap-1.5 text-[12.5px] text-tinta-suave">
+            <Clock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+            {store.closed_reason}
+          </p>
+        ) : null}
+
         {store.categories && store.categories.length > 0 ? (
-          <ul aria-label="Categorías de la tienda" className="flex flex-wrap gap-1.5">
-            {store.categories.map((name) => (
-              <li key={name} className="rounded-full bg-menta px-2.5 py-1 text-[11px] font-bold text-exito">
+          <ul aria-label="Categorías de la tienda" className="flex flex-wrap justify-center gap-1.5">
+            {store.categories.slice(0, 3).map((name) => (
+              <li key={name} className="rounded-full bg-crema px-2.5 py-1 text-[11px] font-semibold text-tinta-suave">
                 {name}
               </li>
             ))}
           </ul>
         ) : null}
-        <p className="mt-auto text-xs font-bold text-hoja">
+
+        <p className="mt-auto flex w-full items-center justify-between border-t border-selva/[0.06] pt-3 text-[12.5px] font-semibold text-tinta">
           {store.product_count} {store.product_count === 1 ? "producto" : "productos"}
+          <span aria-hidden="true" className="inline-flex items-center gap-1.5 rounded-full bg-crema py-1.5 pl-3 pr-2 text-[12px] transition-colors duration-500 group-hover:bg-selva group-hover:text-white">
+            Ver tienda <ArrowRight className="size-3.5" />
+          </span>
         </p>
-      </Card>
+      </div>
     </li>
   );
 }

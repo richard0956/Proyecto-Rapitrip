@@ -24,6 +24,7 @@ const product = (over: Partial<CatalogProduct>): CatalogProduct => ({
   total_count: 1,
   compare_price: null,
   discount_pct: 0,
+  sold_units: 0,
   ...over,
 });
 
