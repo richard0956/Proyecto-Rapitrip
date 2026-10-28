@@ -21,7 +21,7 @@ export default async function TiendasPage({ searchParams }: { searchParams: Prom
   const count = activeFilterCount(filters);
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-tinta sm:text-[34px]">Tiendas</h1>
       <p className="mt-1 text-[14px] text-tinta-suave">Elige un comercio, arma tu carrito y recíbelo en tu puerta.</p>
 
@@ -32,13 +32,13 @@ export default async function TiendasPage({ searchParams }: { searchParams: Prom
               Buscar tienda
             </label>
             <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-tinta-suave" />
-            <input id="t-q" name="q" type="search" maxLength={80} defaultValue={filters.q ?? ""} placeholder="Buscar tienda…" className="min-h-11 w-full rounded-full border border-borde-campo bg-white pl-10 pr-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja" />
+            <input id="t-q" name="q" type="search" maxLength={80} defaultValue={filters.q ?? ""} placeholder="Buscar tienda…" className="min-h-11 w-full rounded-full border border-borde-campo bg-superficie pl-10 pr-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja" />
           </div>
           <div>
             <label htmlFor="t-cat" className="sr-only">
               Categoría
             </label>
-            <select id="t-cat" name="categoria" defaultValue={filters.categoria ?? ""} className="min-h-11 w-full rounded-full border border-borde-campo bg-white px-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja">
+            <select id="t-cat" name="categoria" defaultValue={filters.categoria ?? ""} className="min-h-11 w-full rounded-full border border-borde-campo bg-superficie px-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja">
               <option value="">Todas las categorías</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -51,7 +51,7 @@ export default async function TiendasPage({ searchParams }: { searchParams: Prom
             <label htmlFor="t-tipo" className="sr-only">
               Tipo de vendedor
             </label>
-            <select id="t-tipo" name="tipo" defaultValue={filters.tipo ?? ""} className="min-h-11 w-full rounded-full border border-borde-campo bg-white px-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja">
+            <select id="t-tipo" name="tipo" defaultValue={filters.tipo ?? ""} className="min-h-11 w-full rounded-full border border-borde-campo bg-superficie px-4 text-sm focus-visible:outline-2 focus-visible:outline-hoja">
               {KIND_OPTIONS.map((o) => (
                 <option key={o.label} value={o.value ?? ""}>
                   {o.value ? o.label : "Todos los vendedores"}
@@ -59,7 +59,7 @@ export default async function TiendasPage({ searchParams }: { searchParams: Prom
               ))}
             </select>
           </div>
-          <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-full bg-hoja px-6 text-sm font-bold text-white shadow-pulsa transition-colors duration-500 hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+          <button type="submit" className="inline-flex min-h-11 items-center justify-center rounded-full bg-hoja px-6 text-sm font-bold text-sobre-acento shadow-pulsa transition-colors duration-500 hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
             Buscar
           </button>
         </div>

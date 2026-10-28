@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import { siteUrl } from "@/lib/site-url";
+import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
 const texto = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-texto" });
@@ -16,12 +17,20 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Rapitrip", statusBarStyle: "default" },
 };
 
-export const viewport: Viewport = { themeColor: "#06362a", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#06362a" },
+    { media: "(prefers-color-scheme: dark)", color: "#060b14" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" className={`${texto.variable} ${titulo.variable}`} suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body className="flex min-h-dvh flex-col">

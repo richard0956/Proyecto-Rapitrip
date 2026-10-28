@@ -18,7 +18,7 @@ export function ProductCard({ product, showStore = true, priority = false }: { p
   const single = product.variant_count <= 1;
   const low = product.quick_max !== null && product.quick_max <= 5;
   return (
-    <li className="group relative flex flex-col rounded-tarjeta bg-white p-3 text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4">
+    <li className="group relative flex flex-col rounded-tarjeta bg-superficie p-3 text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-4">
       <div className="relative">
         <ProductImage
           path={product.cover_path}

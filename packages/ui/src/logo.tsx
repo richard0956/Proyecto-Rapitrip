@@ -23,12 +23,12 @@ export function Logo({ tone = "light", subtitle, className, priority }: { tone?:
   }
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-papel shadow-[inset_0_1px_1px_rgb(255_255_255/0.9),0_10px_20px_-10px_rgb(0_0_0/0.5)]">
+      <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-papel shadow-[inset_0_1px_1px_rgb(255_255_255/0.9),0_10px_20px_-10px_rgb(0_0_0/0.5)] dark:bg-[#eef3f8]">
         <img src={files.emblem.src} width={files.emblem.width} height={files.emblem.height} alt="" loading={loading} decoding="async" className="h-6 w-auto" />
       </span>
       <div className="flex flex-col gap-1">
         <p className="font-titulo text-[19px] font-bold leading-none tracking-tight text-white">Rapitrip</p>
-        {subtitle ? <p className="text-[10.5px] font-medium leading-none text-bruma">{subtitle}</p> : null}
+        {subtitle ? <p className="text-[10.5px] font-medium leading-none text-bruma dark:text-nav-texto/70">{subtitle}</p> : null}
       </div>
     </div>
   );

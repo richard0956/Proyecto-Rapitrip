@@ -20,7 +20,7 @@ export default async function VendePage() {
   const blocking = last?.status === "pendiente" || last?.status === "aprobada";
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <h1 className="text-[26px] font-extrabold leading-tight text-tinta">Vende en Rapitrip</h1>
       <p className="mt-1 max-w-[62ch] text-[13.5px] text-tinta-suave">Cuéntanos de tu negocio. El equipo revisa tu solicitud y, con el convenio firmado, activamos tu comercio.</p>
       {last ? (

@@ -90,7 +90,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
       >
         <span aria-hidden="true" className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-menta text-hoja">
           <MapPin className="size-[18px]" />
-          {!current ? <span className="absolute right-0 top-0 size-2.5 animate-pulse rounded-full bg-naranja ring-2 ring-white" /> : null}
+          {!current ? <span className="absolute right-0 top-0 size-2.5 animate-pulse rounded-full bg-naranja ring-2 ring-superficie" /> : null}
         </span>
         <span className="min-w-0 flex-1 leading-tight">
           <span className="block text-[11px] font-medium text-tinta-suave">{current ? `Entregar en · ${title}` : "Entregar en"}</span>
@@ -103,7 +103,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
       <div
         id={panelId}
         hidden={!open}
-        className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(340px,calc(100vw-24px))] rounded-3xl bg-white p-2 shadow-flota ring-1 ring-selva/10"
+        className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(340px,calc(100vw-24px))] rounded-3xl bg-superficie p-2 shadow-flota ring-1 ring-selva/10"
       >
         {addresses.length > 0 ? (
           <>
@@ -156,7 +156,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
             </p>
             <Link
               href={signedIn ? "/perfil/direcciones" : `/ingresar?next=${encodeURIComponent("/perfil/direcciones")}`}
-              className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-selva text-[13px] font-semibold text-white hover:bg-tinta"
+              className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-selva text-[13px] font-semibold text-sobre-acento hover:bg-tinta"
             >
               {signedIn ? (
                 <>

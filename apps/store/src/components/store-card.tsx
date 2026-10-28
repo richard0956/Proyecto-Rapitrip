@@ -4,7 +4,14 @@ import type { StoreSummary } from "@/lib/catalog";
 import { kindLabel } from "@/lib/catalog-filters";
 
 /** Portadas pastel; cada tienda toma siempre la misma según su nombre. */
-const covers = ["from-menta via-white to-bruma/60", "from-durazno via-white to-calido", "from-lavanda via-white to-menta/70", "from-calido via-white to-durazno/70", "from-bruma via-white to-lavanda/70"];
+// En oscuro cada portada se tiñe con un color de la paleta Medianoche (esmeralda, azul o naranja) en vez del pastel apagado.
+const covers = [
+  "from-menta via-superficie to-bruma/60 dark:from-selva/25 dark:via-superficie dark:to-marino/20",
+  "from-durazno via-superficie to-calido dark:from-naranja/20 dark:via-superficie dark:to-selva/10",
+  "from-lavanda via-superficie to-menta/70 dark:from-marino/25 dark:via-superficie dark:to-selva/15",
+  "from-calido via-superficie to-durazno/70 dark:from-naranja/15 dark:via-superficie dark:to-marino/20",
+  "from-bruma via-superficie to-lavanda/70 dark:from-marino/20 dark:via-superficie dark:to-selva/20",
+];
 
 function coverFor(name: string) {
   let hash = 0;
@@ -18,14 +25,14 @@ function coverFor(name: string) {
  */
 export function StoreCard({ store }: { store: StoreSummary }) {
   return (
-    <li className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-white text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
+    <li className="group relative flex h-full flex-col overflow-hidden rounded-tarjeta bg-superficie text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div aria-hidden="true" className={`relative h-20 bg-gradient-to-br ${coverFor(store.name)}`}>
-        <span className={`absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold shadow-sm ${store.open_now ? "text-exito" : "text-tinta-suave"}`}>
+        <span className={`absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-superficie/90 px-2.5 py-1 text-[11px] font-semibold shadow-sm ${store.open_now ? "text-exito" : "text-tinta-suave"}`}>
           <span className={`size-1.5 rounded-full ${store.open_now ? "bg-esmeralda" : "bg-tinta-suave/50"}`} />
           {store.open_now ? "Abierta" : "Cerrada"}
         </span>
       </div>
-      <span aria-hidden="true" className="relative mx-auto -mt-8 flex size-16 items-center justify-center rounded-full bg-white text-[24px] font-extrabold text-hoja shadow-[0_12px_24px_-12px_rgb(6_54_42/0.45)] ring-4 ring-white transition-colors duration-500 group-hover:bg-selva group-hover:text-esmeralda">
+      <span aria-hidden="true" className="relative mx-auto -mt-8 flex size-16 items-center justify-center rounded-full bg-superficie text-[24px] font-extrabold text-hoja dark:bg-menta shadow-[0_12px_24px_-12px_rgb(6_54_42/0.45)] ring-4 ring-superficie transition-colors duration-500 group-hover:bg-selva group-hover:text-esmeralda dark:group-hover:text-sobre-acento">
         {store.name.trim().charAt(0).toUpperCase()}
       </span>
 

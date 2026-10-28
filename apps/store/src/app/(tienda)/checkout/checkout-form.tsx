@@ -262,7 +262,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, quoteGroup,
           <fieldset className="mt-3 flex flex-col gap-2">
             <legend className="sr-only">Elige dónde recibir tu pedido</legend>
             {addresses.map((a) => (
-              <label key={a.id} className={`flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${values.addressId === a.id ? "border-hoja bg-menta/60" : "border-borde-campo bg-white"}`}>
+              <label key={a.id} className={`flex min-h-11 cursor-pointer items-start gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${values.addressId === a.id ? "border-hoja bg-menta/60" : "border-borde-campo bg-superficie"}`}>
                 <input type="radio" name="direccion" checked={values.addressId === a.id} onChange={() => pickAddress(a.id)} className="mt-1 size-4 accent-[var(--hoja)]" />
                 <span>
                   <span className="block font-bold text-tinta">{a.label}{a.is_default ? " · Predeterminada" : ""}</span>
@@ -270,7 +270,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, quoteGroup,
                 </span>
               </label>
             ))}
-            <label className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${values.addressId === NEW ? "border-hoja bg-menta/60" : "border-borde-campo bg-white"}`}>
+            <label className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${values.addressId === NEW ? "border-hoja bg-menta/60" : "border-borde-campo bg-superficie"}`}>
               <input type="radio" name="direccion" checked={values.addressId === NEW} onChange={() => pickAddress(NEW)} className="size-4 accent-[var(--hoja)]" />
               <span className="font-bold text-tinta">{addresses.length ? "Usar otra dirección" : "Escribir mi dirección"}</span>
             </label>
@@ -314,7 +314,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, quoteGroup,
               { value: "efectivo", title: "Efectivo contra entrega", text: "Pagas al recibir cada entrega.", Icon: Banknote, enabled: true },
               { value: "tarjeta", title: "Tarjeta", text: shipments > 1 ? "Pagas ahora toda la compra, en un solo cobro, en una página segura de Stripe." : "Pagas ahora en una página segura de Stripe.", Icon: CreditCard, enabled: true },
             ] as const).map(({ value, title, text, Icon, enabled }) => (
-              <label key={value} className={`flex min-h-11 items-start gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${enabled ? "cursor-pointer" : "cursor-not-allowed opacity-60"} ${values.method === value ? "border-hoja bg-menta/60" : "border-borde-campo bg-white"}`}>
+              <label key={value} className={`flex min-h-11 items-start gap-3 rounded-2xl border px-4 py-3 text-[13.5px] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${enabled ? "cursor-pointer" : "cursor-not-allowed opacity-60"} ${values.method === value ? "border-hoja bg-menta/60" : "border-borde-campo bg-superficie"}`}>
                 <input type="radio" name="pago" checked={values.method === value} disabled={!enabled && values.method !== value} onChange={() => set("method", value)} className="mt-1 size-4 accent-[var(--hoja)]" />
                 <span>
                   <span className="flex items-center gap-2 font-bold text-tinta">
@@ -415,7 +415,7 @@ function StoreSummary({ group, quote, delivery, deliveryError, deliveryLoading, 
       {deliveryError ? <Alert tone="warning">{deliveryError}</Alert> : null}
       {delivery ? (
         delivery.shipments.map((shipment, index) => (
-          <div key={index} className="flex flex-col gap-1.5 rounded-2xl border border-borde bg-white/70 p-3 text-[13px]">
+          <div key={index} className="flex flex-col gap-1.5 rounded-2xl border border-borde bg-superficie/70 p-3 text-[13px]">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <Badge tone={shipment.delivery_class === "express" ? "positive" : "neutral"}>{classLabel(shipment)}</Badge>

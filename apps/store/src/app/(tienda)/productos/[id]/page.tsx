@@ -49,7 +49,7 @@ export default async function ProductoPage({ params }: Props) {
   };
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <nav aria-label="Ruta de navegación" className="text-[13px] text-tinta-suave">
         <Link href="/catalogo" className="font-bold text-hoja hover:underline">

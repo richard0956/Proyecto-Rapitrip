@@ -5,7 +5,7 @@ import { activeFilterCount, filtersHref, KIND_OPTIONS, type CatalogFilters } fro
 import { FiltersPanel } from "./filters-panel";
 
 const label = "text-[11px] font-bold uppercase tracking-[0.14em] text-tinta-suave";
-const input = "min-h-11 w-full rounded-full border border-borde-campo bg-white px-4 text-sm text-tinta placeholder:text-tinta-suave/70 focus-visible:outline-2 focus-visible:outline-hoja";
+const input = "min-h-11 w-full rounded-full border border-borde-campo bg-superficie px-4 text-sm text-tinta placeholder:text-tinta-suave/70 focus-visible:outline-2 focus-visible:outline-hoja";
 
 type Props = {
   /** Ruta que muestra el catálogo; el formulario y los enlaces vuelven a ella. */
@@ -107,7 +107,7 @@ export function CatalogFilters({ base, filters, categories, stores }: Props) {
         </label>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" className="inline-flex min-h-11 items-center rounded-full bg-hoja px-6 text-sm font-bold text-white shadow-pulsa transition-colors duration-500 hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+          <button type="submit" className="inline-flex min-h-11 items-center rounded-full bg-hoja px-6 text-sm font-bold text-sobre-acento shadow-pulsa transition-colors duration-500 hover:bg-selva focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
             Aplicar filtros
           </button>
           {count > 0 ? (
@@ -126,7 +126,7 @@ function CategoryLink({ href, current, count, children }: { href: string; curren
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`flex min-h-11 items-center justify-between gap-2 rounded-full px-3 text-sm transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-hoja ${current ? "bg-hoja font-bold text-white" : "text-tinta hover:bg-menta/60"}`}
+      className={`flex min-h-11 items-center justify-between gap-2 rounded-full px-3 text-sm transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-hoja ${current ? "bg-hoja font-bold text-sobre-acento" : "text-tinta hover:bg-menta/60"}`}
     >
       <span className="truncate">{children}</span>
       {count !== undefined ? <span className={`text-xs ${current ? "text-white/80" : "text-tinta-suave"}`}>{count}</span> : null}

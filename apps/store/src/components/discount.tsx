@@ -4,7 +4,7 @@ import { formatMoney } from "@/lib/money";
 export function DiscountBadge({ pct, className = "" }: { pct: number; className?: string }) {
   if (pct <= 0) return null;
   return (
-    <span className={`inline-flex items-center rounded-full bg-hoja px-2.5 py-1 text-[11px] font-extrabold leading-none text-white shadow-sm ${className}`}>
+    <span className={`inline-flex items-center rounded-full bg-hoja px-2.5 py-1 text-[11px] font-extrabold leading-none text-sobre-acento shadow-sm ${className}`}>
       <span aria-hidden="true">-{pct}%</span>
       <span className="sr-only">Descuento del {pct} por ciento</span>
     </span>

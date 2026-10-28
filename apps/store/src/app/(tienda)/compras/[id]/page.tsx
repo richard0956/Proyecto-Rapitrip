@@ -55,11 +55,11 @@ export default async function CompraPage({ params, searchParams }: { params: Pro
   const confirming = waiting && pago === "ok";
 
   return (
-    <main className="mx-auto max-w-[760px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[760px]">
       {/* Con el pago recién hecho, la pantalla se actualiza sola hasta que Stripe confirme. */}
       {confirming ? <AutoRefresh everyMs={4_000} maxAttempts={15} /> : null}
 
-      <div role="status" className="flex items-start gap-3 rounded-2xl border border-borde bg-white/70 p-5">
+      <div role="status" className="flex items-start gap-3 rounded-2xl border border-borde bg-superficie/70 p-5">
         <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-hoja" />
         <div>
           <h1 className="text-[22px] font-extrabold leading-tight text-tinta">Compra realizada</h1>

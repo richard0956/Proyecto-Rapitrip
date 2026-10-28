@@ -1,7 +1,7 @@
 /** Estado de carga de las páginas de la tienda: bloques que ocupan el lugar del contenido mientras llega. */
 export default function Loading() {
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10" aria-busy="true">
+    <main className="mx-auto max-w-[1180px]" aria-busy="true">
       <p role="status" className="sr-only">
         Cargando…
       </p>

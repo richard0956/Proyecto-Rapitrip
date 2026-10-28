@@ -59,7 +59,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
   const units = buildUnits(visible, orders);
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-tinta">Mis pedidos</h1>
       <p className="mb-6 mt-1 text-[14px] text-tinta-suave">Sigue tus compras y tus pedidos, y repite los que más te gustan.</p>
 

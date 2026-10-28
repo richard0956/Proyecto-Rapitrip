@@ -59,10 +59,10 @@ export function QuickAdd({ product }: { product: CatalogProduct }) {
     );
   }
 
-  const step = "flex size-8 items-center justify-center rounded-full ring-1 ring-white/50 transition-colors duration-300 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-40";
+  const step = "flex size-8 items-center justify-center rounded-full ring-1 ring-sobre-acento/40 transition-colors duration-300 hover:bg-sobre-acento/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sobre-acento disabled:opacity-40";
   return (
     <>
-      <div className="relative z-10 flex min-h-10 w-full max-w-[164px] items-center justify-between rounded-full bg-selva px-1 text-white shadow-pulsa">
+      <div className="relative z-10 flex min-h-10 w-full max-w-[164px] items-center justify-between rounded-full bg-selva px-1 text-sobre-acento shadow-pulsa">
         <button type="button" onClick={() => change(quantity - 1)} aria-label={`Quitar uno de ${product.name}`} className={step}>
           <Minus aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
         </button>

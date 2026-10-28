@@ -16,8 +16,8 @@ const pillars: { icon: LucideIcon; title: string; text: string }[] = [
 
 export default function SobreNosotrosPage() {
   return (
-    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 px-3 sm:gap-8 sm:px-6">
-      <section aria-labelledby="titulo" className="relative isolate overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,var(--selva)_0%,#0d5644_60%,#14705a_100%)] px-6 py-12 text-white sm:px-12 sm:py-16">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 sm:gap-8">
+      <section aria-labelledby="titulo" className="relative isolate overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,var(--panel)_0%,#0d5644_60%,#14705a_100%)] dark:bg-[linear-gradient(180deg,#0b1a2e_0%,#0b2236_60%,#0e2c3a_100%)] px-6 py-12 text-white sm:px-12 sm:py-16">
         <div aria-hidden="true" className="absolute -right-24 -top-24 -z-10 size-96 rounded-full bg-esmeralda/20 blur-3xl" />
         <Reveal>
           <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-esmeralda">Sobre nosotros</p>
@@ -30,12 +30,12 @@ export default function SobreNosotrosPage() {
         </Reveal>
       </section>
 
-      <Reveal className="rounded-[2rem] bg-white p-5 shadow-[0_30px_60px_-44px_rgb(6_54_42/0.4)] ring-1 ring-selva/[0.04] sm:p-10">
+      <Reveal className="rounded-[2rem] bg-superficie p-5 shadow-[0_30px_60px_-44px_rgb(6_54_42/0.4)] ring-1 ring-selva/[0.04] sm:p-10">
         <h2 className="text-[24px] font-bold tracking-tight text-tinta sm:text-[30px]">Cómo funciona</h2>
         <ul className="stagger mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {pillars.map(({ icon, title, text }) => (
-            <li key={title} className="rounded-tarjeta bg-white p-5 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05]">
-              <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-menta to-white text-hoja">
+            <li key={title} className="rounded-tarjeta bg-superficie p-5 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05]">
+              <span aria-hidden="true" className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-menta to-superficie text-hoja">
                 {createElement(icon, { className: "size-6" })}
               </span>
               <h3 className="mt-4 text-[16px] font-bold text-tinta">{title}</h3>
@@ -46,21 +46,21 @@ export default function SobreNosotrosPage() {
       </Reveal>
 
       <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link href="/catalogo" className="group flex items-center justify-between gap-4 rounded-[1.75rem] bg-white p-6 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.05] hover:bg-crema">
+        <Link href="/catalogo" className="group flex items-center justify-between gap-4 rounded-[1.75rem] bg-superficie p-6 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.05] hover:bg-crema">
           <span>
             <span className="block text-[18px] font-bold text-tinta">Explora el catálogo</span>
             <span className="mt-1 block text-[13.5px] text-tinta-suave">Productos de todos los comercios afiliados.</span>
           </span>
-          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-selva text-white transition-transform group-hover:translate-x-0.5">
+          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-selva text-sobre-acento transition-transform group-hover:translate-x-0.5">
             <ChevronRight className="size-4" />
           </span>
         </Link>
-        <Link href="/vende" className="group flex items-center justify-between gap-4 rounded-[1.75rem] bg-selva p-6 text-white shadow-pulsa hover:bg-tinta">
+        <Link href="/vende" className="group flex items-center justify-between gap-4 rounded-[1.75rem] bg-panel p-6 text-white shadow-pulsa hover:opacity-95">
           <span>
             <span className="block text-[18px] font-bold">¿Tienes un negocio?</span>
             <span className="mt-1 block text-[13.5px] text-nav-texto">Afilia tu comercio y vende en Rapitrip.</span>
           </span>
-          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-selva transition-transform group-hover:translate-x-0.5">
+          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full bg-superficie text-selva transition-transform group-hover:translate-x-0.5">
             <ChevronRight className="size-4" />
           </span>
         </Link>

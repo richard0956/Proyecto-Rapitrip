@@ -27,4 +27,10 @@
   --rosa: #fde7e4;
   --rojo: #a53b3b;
   --naranja: #d96c2a;
+  /* Superficie de tarjetas y campos (blanco en claro). */
+  --superficie: #ffffff;
+  /* Paneles oscuros de la marca (héroes, franjas, menú móvil): verde selva en claro. */
+  --panel: #06362a;
+  /* Texto e íconos sobre el color de acción (botones verdes): blanco en claro. */
+  --sobre-acento: #ffffff;
 }

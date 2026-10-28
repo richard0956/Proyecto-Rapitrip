@@ -6,6 +6,43 @@
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+/*
+ * Modo oscuro «Medianoche»: fondo azul casi negro y el verde convertido en esmeralda luminoso. Solo cambia el valor de los
+ * tokens, así que toda la tienda (y los componentes de @rapitrip/ui) lo hereda sin tocar cada pantalla. En oscuro, «selva»
+ * y «hoja» son el color de acción luminoso (los botones llevan texto «sobre-acento», oscuro); los paneles de marca usan «panel».
+ * Lo activa `data-theme="dark"` en <html>, que fija el script del <head> antes del primer pintado.
+ */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --crema: #060b14;
+  --papel: #0d1522;
+  --superficie: #0d1522;
+  --panel: #0b1a2e;
+  --sobre-acento: #04261b;
+  --selva: #3ee0a4;
+  --selva-panel: #0e2238;
+  --hoja: #3ee0a4;
+  --esmeralda: #3ee0a4;
+  --exito: #5fe3b0;
+  --marino: #7cc0e8;
+  --menta: #0f2a2b;
+  --menta-borde: #1f4a47;
+  --bruma: #1a3446;
+  --nav-texto: #cfdcea;
+  --borde: #1c2a3d;
+  --borde-campo: #2a3b54;
+  --tinta: #e8eef5;
+  --tinta-suave: #94a3b8;
+  --calido: #231a10;
+  --durazno: #2b1e15;
+  --durazno-texto: #f5b382;
+  --lavanda: #18203d;
+  --rosa: #2a151b;
+  --rojo: #f28b8b;
+  --naranja: #f5a05c;
 }
 
 body {

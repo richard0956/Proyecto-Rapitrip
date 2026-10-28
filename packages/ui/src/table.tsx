@@ -5,7 +5,7 @@ import { cn } from "./cn";
 export function Table({ caption, className, children }: { caption: string; className?: string; children: React.ReactNode }) {
   return (
     // La región con desplazamiento debe poder usarse con teclado aunque la tabla no tenga enlaces ni botones (WCAG 2.1.1).
-    <div role="region" aria-label={caption} tabIndex={0} className={cn("overflow-x-auto rounded-panel border border-borde bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja", className)}>
+    <div role="region" aria-label={caption} tabIndex={0} className={cn("overflow-x-auto rounded-panel border border-borde bg-superficie focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja", className)}>
       <table className="w-full min-w-[560px] border-collapse text-left text-cuerpo">
         <caption className="sr-only">{caption}</caption>
         {children}

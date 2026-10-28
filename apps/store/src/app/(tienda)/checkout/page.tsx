@@ -18,7 +18,7 @@ export default async function CheckoutPage() {
   const addresses = (data ?? []).map((row) => ({ id: row.id as string, label: row.label as string, address: row.address as string, phone: row.phone, is_default: !!row.is_default, latitude: row.latitude, longitude: row.longitude, department: row.department }));
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-tinta">Confirmar compra</h1>
       <p className="mb-6 mt-1 text-[14px] text-tinta-suave">Revisa tu dirección, tus entregas y elige cómo pagar.</p>
       <CheckoutForm addresses={addresses} profilePhone={profile.phone ?? ""} quoteAction={quoteCartAction} quoteGroup={quoteGroupAction} placeCheckout={placeCheckout} />

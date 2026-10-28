@@ -20,7 +20,7 @@ export function FiltersPanel({ activeCount, children }: { activeCount: number; c
           <SlidersHorizontal aria-hidden="true" className="size-4" />
           Filtros
         </span>
-        {activeCount > 0 ? <span className="rounded-full bg-hoja px-2 py-0.5 text-[11px] text-white">{activeCount}</span> : null}
+        {activeCount > 0 ? <span className="rounded-full bg-hoja px-2 py-0.5 text-[11px] text-sobre-acento">{activeCount}</span> : null}
       </button>
       <div id={id} className={`${open ? "block" : "hidden"} mt-3 lg:mt-0 lg:block`}>
         {children}

@@ -72,7 +72,7 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
   const finalStatus = isFinalStatus(status);
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       {/* Mientras el pedido siga abierto, la pantalla se actualiza sola cada 30 s si la pestaña está visible. */}
       {!finalStatus && !confirming ? <AutoRefresh everyMs={30_000} /> : null}
 
@@ -116,7 +116,7 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
             const done = index <= step;
             return (
               <li key={s} aria-current={index === step ? "step" : undefined} className={`flex flex-col items-center gap-1.5 text-center text-[11.5px] font-bold ${done ? "text-hoja" : "text-tinta-suave"}`}>
-                <span aria-hidden="true" className={`flex size-8 items-center justify-center rounded-full ${done ? "bg-hoja text-white" : "bg-menta/70 text-tinta-suave"}`}>
+                <span aria-hidden="true" className={`flex size-8 items-center justify-center rounded-full ${done ? "bg-hoja text-sobre-acento" : "bg-menta/70 text-tinta-suave"}`}>
                   {done ? <Check className="size-4" /> : <Circle className="size-3" />}
                 </span>
                 {orderStatusLabel[s]}

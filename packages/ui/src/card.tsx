@@ -8,7 +8,7 @@ import { cn } from "./cn";
 export function Card({ className, outerClassName, children, ...props }: HTMLAttributes<HTMLDivElement> & { outerClassName?: string }) {
   return (
     <div className={cn("flex rounded-concha bg-selva/[0.035] p-1.5 shadow-suave ring-1 ring-selva/[0.07]", outerClassName)}>
-      <div className={cn("min-w-0 flex-1 rounded-[calc(1.75rem-0.375rem)] bg-papel p-5 shadow-[inset_0_1px_1px_rgb(255_255_255/0.95)]", className)} {...props}>
+      <div className={cn("min-w-0 flex-1 rounded-[calc(1.75rem-0.375rem)] bg-papel p-5 shadow-[inset_0_1px_1px_rgb(255_255_255/0.95)] dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.05)]", className)} {...props}>
         {children}
       </div>
     </div>

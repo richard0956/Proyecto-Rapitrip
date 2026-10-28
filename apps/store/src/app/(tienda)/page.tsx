@@ -26,21 +26,21 @@ const productGrid = "stagger mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4
  * y sus tarjetas (las listas con `stagger`) entran escalonadas detrás.
  */
 function Tray({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <Reveal className={`rounded-[2rem] bg-white p-5 shadow-[0_30px_60px_-44px_rgb(6_54_42/0.4)] ring-1 ring-selva/[0.04] sm:p-10 ${className}`}>{children}</Reveal>;
+  return <Reveal className={`rounded-[2rem] bg-superficie p-5 shadow-[0_30px_60px_-44px_rgb(6_54_42/0.4)] ring-1 ring-selva/[0.04] sm:p-10 ${className}`}>{children}</Reveal>;
 }
 
 /** Estado de «Ofertas y promociones» cuando ningún comercio tiene rebajas activas. */
 function DealsEmpty() {
   return (
-    <div className="mt-6 flex flex-col items-center gap-4 rounded-tarjeta bg-gradient-to-br from-calido via-white to-menta/60 px-6 py-10 text-center ring-1 ring-selva/[0.05] sm:flex-row sm:text-left">
-      <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-white text-naranja shadow-[0_12px_24px_-14px_rgb(6_54_42/0.45)]">
+    <div className="mt-6 flex flex-col items-center gap-4 rounded-tarjeta bg-gradient-to-br from-calido via-superficie to-menta/60 px-6 py-10 text-center ring-1 ring-selva/[0.05] sm:flex-row sm:text-left">
+      <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-superficie text-naranja shadow-[0_12px_24px_-14px_rgb(6_54_42/0.45)]">
         <BadgePercent className="size-7" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[16px] font-bold text-tinta">Pronto verás aquí las ofertas</p>
         <p className="mt-1 text-[13.5px] text-tinta-suave">Cuando un comercio rebaje un producto, aparece primero en esta sección.</p>
       </div>
-      <Link href="/catalogo" className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-white hover:bg-tinta">
+      <Link href="/catalogo" className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-sobre-acento hover:bg-tinta">
         Ver el catálogo <ChevronRight aria-hidden="true" className="size-4" />
       </Link>
     </div>
@@ -63,10 +63,10 @@ async function needsAddress() {
 /** Invitación a guardar la primera dirección de entrega, arriba de la portada. */
 function AddressNudge() {
   return (
-    <section aria-labelledby="sin-direccion" className="flex flex-col gap-4 rounded-[1.75rem] bg-white p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06] sm:flex-row sm:items-center sm:p-5">
+    <section aria-labelledby="sin-direccion" className="flex flex-col gap-4 rounded-[1.75rem] bg-superficie p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06] sm:flex-row sm:items-center sm:p-5">
       <span aria-hidden="true" className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-menta to-bruma text-hoja">
         <MapPin className="size-6" />
-        <span className="absolute -right-0.5 -top-0.5 size-3 animate-pulse rounded-full bg-naranja ring-2 ring-white" />
+        <span className="absolute -right-0.5 -top-0.5 size-3 animate-pulse rounded-full bg-naranja ring-2 ring-superficie" />
       </span>
       <div className="min-w-0 flex-1">
         <h2 id="sin-direccion" className="text-[16px] font-bold text-tinta">
@@ -74,7 +74,7 @@ function AddressNudge() {
         </h2>
         <p className="mt-0.5 text-[13px] text-tinta-suave">Guarda tu casa o tu trabajo: la elegimos por ti al pagar y calculamos el envío desde ahí.</p>
       </div>
-      <Link href="/perfil/direcciones" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-white transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+      <Link href="/perfil/direcciones" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-sobre-acento transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
         <Plus aria-hidden="true" className="size-4" />
         Agregar dirección
       </Link>
@@ -102,7 +102,7 @@ export default async function Home() {
   const picks = [...deals.slice(1), ...topSold, ...recent].filter((product, index, all) => product.cover_path && all.findIndex((p) => p.id === product.id) === index);
 
   return (
-    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 px-3 sm:gap-8 sm:px-6">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 sm:gap-8">
       {askAddress ? (
         <Reveal>
           <AddressNudge />
@@ -211,9 +211,9 @@ export default async function Home() {
 
       {/* Para comercios: al final de la portada, fuera del encabezado. */}
       <Reveal>
-      <section aria-labelledby="vende" className="relative isolate overflow-hidden rounded-[2rem] bg-selva px-6 py-10 text-white sm:px-12 sm:py-12">
+      <section aria-labelledby="vende" className="relative isolate overflow-hidden rounded-[2rem] bg-panel px-6 py-10 text-white sm:px-12 sm:py-12">
         <div aria-hidden="true" className="absolute -right-20 -top-24 -z-10 size-80 rounded-full bg-esmeralda/20 blur-2xl" />
-        <div aria-hidden="true" className="absolute -bottom-32 left-1/3 -z-10 size-80 rounded-full bg-marino/60 blur-3xl" />
+        <div aria-hidden="true" className="absolute -bottom-32 left-1/3 -z-10 size-80 rounded-full bg-marino/60 blur-3xl dark:bg-marino/15" />
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto]">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-esmeralda ring-1 ring-white/15">
@@ -225,7 +225,7 @@ export default async function Home() {
             <ol className="mt-5 grid max-w-[640px] grid-cols-1 gap-3 sm:grid-cols-3">
               {["Envía tu solicitud", "Revisamos tus datos", "Firmamos y activamos"].map((step, index) => (
                 <li key={step} className="flex items-center gap-3 rounded-2xl bg-white/[0.06] p-3 text-[13px] font-semibold ring-1 ring-white/10">
-                  <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-esmeralda text-[12px] font-extrabold text-selva">
+                  <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-esmeralda text-[12px] font-extrabold text-panel">
                     {index + 1}
                   </span>
                   {step}
@@ -235,10 +235,10 @@ export default async function Home() {
           </div>
           <Link
             href="/vende"
-            className="group inline-flex min-h-12 items-center gap-3 self-center justify-self-start rounded-full bg-white py-1.5 pl-5 pr-1.5 text-[14px] font-semibold text-selva transition-colors hover:bg-menta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:justify-self-end"
+            className="group inline-flex min-h-12 items-center gap-3 self-center justify-self-start rounded-full bg-superficie py-1.5 pl-5 pr-1.5 text-[14px] font-semibold text-selva transition-colors hover:bg-menta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white md:justify-self-end"
           >
             Afiliar mi comercio
-            <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-selva text-white transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
+            <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-selva text-sobre-acento transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
               <ChevronRight className="size-4" />
             </span>
           </Link>

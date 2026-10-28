@@ -24,7 +24,7 @@ export function SortSelect({ value }: { value: CatalogSort }) {
       <select
         value={value}
         onChange={(e) => change(e.target.value)}
-        className="min-h-11 rounded-full border border-borde-campo bg-white px-4 text-[13px] font-bold text-tinta focus-visible:outline-2 focus-visible:outline-hoja"
+        className="min-h-11 rounded-full border border-borde-campo bg-superficie px-4 text-[13px] font-bold text-tinta focus-visible:outline-2 focus-visible:outline-hoja"
       >
         {SORT_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>

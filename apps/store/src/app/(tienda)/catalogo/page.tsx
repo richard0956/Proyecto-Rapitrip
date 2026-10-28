@@ -28,7 +28,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
   const href = (page: number) => filtersHref(base, filters, { pagina: page });
 
   return (
-    <main className="mx-auto flex max-w-[1180px] flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
+    <main className="mx-auto flex max-w-[1180px] flex-col gap-6">
       <header className="text-center">
         <h1 className="text-[28px] font-extrabold leading-tight tracking-tight text-tinta sm:text-[36px]">Catálogo</h1>
         <p className="mt-1 text-[14px] text-tinta-suave">Tecnología, hogar, herramientas, moda y mucho más de los comercios de Rapitrip.</p>

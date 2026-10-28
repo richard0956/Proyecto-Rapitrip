@@ -12,7 +12,7 @@ export function IntroSplash() {
         <img src="/brand/emblema-192.webp" width={163} height={192} alt="" className="h-16 w-auto" />
       </div>
       <p className="intro-word font-titulo text-[28px] font-bold leading-none tracking-tight text-white">Rapitrip</p>
-      <p className="intro-tag text-[10.5px] font-bold uppercase tracking-[0.22em] text-bruma">Seguridad y Confianza</p>
+      <p className="intro-tag text-[10.5px] font-bold uppercase tracking-[0.22em] text-bruma dark:text-nav-texto/70">Seguridad y Confianza</p>
       <div className="intro-line" />
     </div>
   );

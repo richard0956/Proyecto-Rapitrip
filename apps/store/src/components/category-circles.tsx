@@ -45,12 +45,12 @@ export function CategoryCircles({ base, filters, categories }: { base: string; f
   if (categories.length === 0) return null;
   const iconClass = "size-7 sm:size-8";
   return (
-    <nav aria-label="Categorías" className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:mx-0 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
+    <nav aria-label="Categorías" className="-mx-3 overflow-x-auto px-3 [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:mx-0 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
       <ul className="flex w-max snap-x gap-2 pb-1 sm:gap-3 lg:w-auto lg:flex-wrap lg:justify-center">
         <Circle
           href={filtersHref(base, filters, { categoria: null, pagina: 1 })}
           current={!filters.categoria}
-          tone="bg-white ring-selva/25 text-selva"
+          tone="bg-superficie ring-selva/25 text-selva"
           label="Todas"
           icon={<LayoutGrid className={iconClass} strokeWidth={1.6} />}
         />

@@ -20,7 +20,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
   if (!profile) redirect(`/ingresar?next=${encodeURIComponent("/perfil")}&expirada=1`);
 
   return (
-    <main className="mx-auto max-w-[1176px] px-4 py-8 sm:px-8 sm:py-10">
+    <main className="mx-auto max-w-[1180px]">
       <h1 className="text-[26px] font-extrabold leading-tight text-tinta">Mi perfil</h1>
       <p className="mt-1 text-[13.5px] text-tinta-suave">Tus datos de contacto en Rapitrip.</p>
       {clave === "ok" ? <Alert className="mt-5">Tu contraseña se actualizó.</Alert> : null}

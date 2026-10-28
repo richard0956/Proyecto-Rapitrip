@@ -199,7 +199,7 @@ function StoreSection({ group, name, quote, error, loading }: { group: StoreGrou
                   <p className="text-[15px] font-extrabold text-hoja">{q ? formatMoney(q.line_total) : ""}</p>
                 </div>
                 <div className="mt-auto flex items-center justify-between gap-2">
-                  <div role="group" aria-label={`Cantidad de ${q?.product_name ?? "producto"}`} className="flex items-center rounded-full border border-borde-campo bg-white">
+                  <div role="group" aria-label={`Cantidad de ${q?.product_name ?? "producto"}`} className="flex items-center rounded-full border border-borde-campo bg-superficie">
                     <button type="button" aria-label="Menos" onClick={() => updateCart((c) => setQuantity(c, line.variantId, line.quantity - 1, max))} className="flex size-11 items-center justify-center rounded-full hover:bg-menta/70 focus-visible:outline-2 focus-visible:outline-hoja">
                       <Minus aria-hidden="true" className="size-4" />
                     </button>

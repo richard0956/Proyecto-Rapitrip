@@ -7,7 +7,7 @@ const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 
 export function LegalPage({ title, intro, sections, other }: { title: string; intro: string; sections: LegalSection[]; other: { href: string; label: string } }) {
   return (
-    <main className="mx-auto max-w-[760px] px-4 pb-8 sm:px-8">
+    <main className="mx-auto max-w-[760px]">
       <p className="text-[13px] font-bold uppercase tracking-wider text-exito">Legal</p>
       <h1 className="mt-2 text-balance text-[34px] font-extrabold leading-tight text-tinta sm:text-[42px]">{title}</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-tinta-suave">{intro}</p>

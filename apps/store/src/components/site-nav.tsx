@@ -9,6 +9,7 @@ import type { CustomerResult } from "@/lib/result";
 import { AddressPicker, type HeaderAddress } from "./address-picker";
 import { BrandMark } from "./brand-mark";
 import { CartLink } from "./cart-link";
+import { ThemeToggle } from "./theme-toggle";
 
 type Props = {
   signedIn: boolean;
@@ -19,7 +20,7 @@ type Props = {
 };
 
 /** Vidrio esmerilado del encabezado fijo: blanco translúcido que desenfoca lo que pasa por detrás. */
-const glass = "bg-white/85 backdrop-blur-xl backdrop-saturate-150 transition-shadow duration-500 ease-fluido";
+const glass = "bg-superficie/85 backdrop-blur-xl backdrop-saturate-150 transition-shadow duration-500 ease-fluido";
 
 /** Los apartados clave de la tienda: una sola fila de pestañas debajo de la barra principal. */
 const sections = [
@@ -159,7 +160,7 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
                 aria-expanded={open}
                 aria-controls="menu-movil"
                 aria-label={open ? "Cerrar menú" : "Abrir menú"}
-                className="relative flex size-11 items-center justify-center rounded-full bg-selva text-white transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja md:hidden"
+                className="relative flex size-11 items-center justify-center rounded-full bg-selva text-sobre-acento transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja md:hidden"
               >
                 <span aria-hidden="true" className="absolute h-px w-[18px] -translate-y-[5px] bg-current" />
                 <span aria-hidden="true" className="absolute h-px w-[18px] bg-current" />
@@ -193,7 +194,8 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
                   Ingresar
                 </Link>
               )}
-              <CartLink />
+              <ThemeToggle />
+            <CartLink />
             </div>
           </div>
 
@@ -217,7 +219,7 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
           aria-label="Menú móvil"
           inert={!open}
           className={cn(
-            "fixed inset-0 z-40 flex flex-col justify-center gap-1 overflow-y-auto bg-selva/[0.97] px-8 pb-10 pt-24 backdrop-blur-3xl transition-[opacity,transform] duration-700 ease-fluido md:hidden",
+            "fixed inset-0 z-40 flex flex-col justify-center gap-1 overflow-y-auto bg-panel/[0.97] px-8 pb-10 pt-24 backdrop-blur-3xl transition-[opacity,transform] duration-700 ease-fluido md:hidden",
             open ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0",
           )}
         >
@@ -247,7 +249,7 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
           ))}
           {signedIn ? (
             <form action={signOut} className="mt-6">
-              <button type="submit" className="inline-flex min-h-11 items-center gap-2 rounded-full px-1 text-base font-bold text-bruma focus-visible:outline-2 focus-visible:outline-esmeralda">
+              <button type="submit" className="inline-flex min-h-11 items-center gap-2 rounded-full px-1 text-base font-bold text-bruma focus-visible:outline-2 focus-visible:outline-esmeralda dark:text-nav-texto/70">
                 <LogOut className="size-5" aria-hidden="true" />
                 Salir
               </button>
@@ -271,10 +273,10 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-[13px] font-semibold transition-colors duration-500 ease-fluido focus-visible:outline-2 focus-visible:outline-hoja",
-                        active ? "bg-selva text-white shadow-pulsa" : "text-tinta hover:bg-white",
+                        active ? "bg-selva text-sobre-acento shadow-pulsa" : "text-tinta hover:bg-superficie dark:hover:bg-selva/10",
                       )}
                     >
-                      <Icon aria-hidden="true" className={cn("size-4", active ? "text-esmeralda" : "text-hoja")} />
+                      <Icon aria-hidden="true" className={cn("size-4", active ? "text-esmeralda dark:text-sobre-acento" : "text-hoja")} />
                       {label}
                     </Link>
                   </li>

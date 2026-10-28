@@ -6,7 +6,7 @@ import Link from "next/link";
 /** Fallo inesperado en una página de la tienda: se puede reintentar sin perder el carrito (vive en el navegador). */
 export default function TiendaError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center">
+    <main className="mx-auto flex max-w-xl flex-col items-center py-16 text-center">
       <h1 className="text-[28px] font-extrabold tracking-tight text-tinta">Algo salió mal</h1>
       <p role="alert" className="mt-2 text-[13.5px] text-tinta-suave">
         No pudimos cargar esta página. Tu carrito sigue guardado. Inténtalo de nuevo en unos segundos.

@@ -70,7 +70,7 @@ export function OrderUnitCard({ unit }: { unit: OrderUnit }) {
             <span className="text-[15px] font-extrabold text-hoja">{formatMoney(unit.total)}</span>
           </div>
         </div>
-        <ul className="flex flex-col divide-y divide-borde rounded-2xl border border-borde bg-white/60">
+        <ul className="flex flex-col divide-y divide-borde rounded-2xl border border-borde bg-superficie/60">
           {unit.orders.map((order) => (
             <li key={order.id} className="flex flex-col gap-1.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">

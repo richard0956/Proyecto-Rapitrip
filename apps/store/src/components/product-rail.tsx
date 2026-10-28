@@ -36,7 +36,7 @@ export function ProductRail({ label, children }: { label: string; children: Reac
     if (node) node.scrollBy({ left: direction * node.clientWidth * 0.85, behavior: "smooth" });
   }
 
-  const arrow = "absolute top-[38%] z-20 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-tinta shadow-flota ring-1 ring-selva/10 transition-[opacity,transform] duration-500 ease-fluido hover:scale-105 focus-visible:outline-2 focus-visible:outline-hoja disabled:pointer-events-none disabled:opacity-0 md:flex";
+  const arrow = "absolute top-[38%] z-20 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-superficie text-tinta shadow-flota ring-1 ring-selva/10 transition-[opacity,transform] duration-500 ease-fluido hover:scale-105 focus-visible:outline-2 focus-visible:outline-hoja disabled:pointer-events-none disabled:opacity-0 md:flex";
 
   return (
     <div className="relative mt-6">

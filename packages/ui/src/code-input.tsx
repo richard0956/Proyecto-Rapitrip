@@ -67,7 +67,7 @@ export function CodeInput({ label, value, onChange, error, length = 6, className
             onPaste={(event) => onPaste(index, event)}
             onFocus={(event) => event.target.select()}
             className={cn(
-              "size-[52px] rounded-campo border border-borde-campo bg-white text-center text-2xl font-extrabold text-tinta transition-colors focus-visible:border-hoja focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-hoja",
+              "size-[52px] rounded-campo border border-borde-campo bg-superficie text-center text-2xl font-extrabold text-tinta transition-colors focus-visible:border-hoja focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-hoja",
               error && "border-rojo",
             )}
           />

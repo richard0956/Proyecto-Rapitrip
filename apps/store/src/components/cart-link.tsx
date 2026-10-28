@@ -17,12 +17,12 @@ export function CartLink({ className = "" }: { className?: string }) {
       href="/carrito"
       aria-label={filled ? `Carrito, ${count} ${count === 1 ? "producto" : "productos"}` : "Carrito vacío"}
       className={`relative flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-500 ease-fluido focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja ${
-        filled ? "bg-selva text-white shadow-pulsa hover:bg-tinta" : "bg-white text-tinta ring-1 ring-selva/[0.08] hover:bg-crema"
+        filled ? "bg-selva text-sobre-acento shadow-pulsa hover:bg-tinta" : "bg-superficie text-tinta ring-1 ring-selva/[0.08] hover:bg-crema"
       } ${className}`}
     >
       {filled ? <ShoppingBasket aria-hidden="true" className="size-5" /> : <ShoppingCart aria-hidden="true" className="size-5" />}
       {filled ? (
-        <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-esmeralda px-1 text-[11px] font-extrabold leading-none text-selva ring-2 ring-white">
+        <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-esmeralda px-1 text-[11px] font-extrabold leading-none text-panel ring-2 ring-superficie">
           {count > 99 ? "99+" : count}
         </span>
       ) : null}

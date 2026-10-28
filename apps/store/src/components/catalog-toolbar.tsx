@@ -39,7 +39,7 @@ export function CatalogToolbar({ base, filters, stores }: { base: string; filter
       action={base}
       role="search"
       aria-label="Filtros del catálogo"
-      className="flex flex-col gap-2 rounded-[1.75rem] bg-white p-3 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.05]"
+      className="flex flex-col gap-2 rounded-[1.75rem] bg-superficie p-3 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.05]"
     >
       {filters.categoria ? <input type="hidden" name="categoria" value={filters.categoria} /> : null}
       {filters.q ? <input type="hidden" name="q" value={filters.q} /> : null}
@@ -91,7 +91,7 @@ export function CatalogToolbar({ base, filters, stores }: { base: string; filter
           </label>
 
           <div className="flex shrink-0 items-center gap-1">
-            <button type="submit" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-white shadow-pulsa transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+            <button type="submit" className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-sobre-acento shadow-pulsa transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
               <SlidersHorizontal aria-hidden="true" className="size-4" />
               Aplicar
             </button>

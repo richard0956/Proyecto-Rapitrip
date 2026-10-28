@@ -54,11 +54,11 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
               return (
                 <label
                   key={v.id}
-                  className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-[13px] font-bold transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${selected ? "border-hoja bg-hoja text-white" : "border-borde-campo bg-papel text-tinta hover:bg-menta/70"} ${v.available ? "" : "opacity-60"}`}
+                  className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-[13px] font-bold transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja ${selected ? "border-hoja bg-hoja text-sobre-acento" : "border-borde-campo bg-papel text-tinta hover:bg-menta/70"} ${v.available ? "" : "opacity-60"}`}
                 >
                   <input type="radio" name={`variante-${groupId}`} value={v.id} checked={selected} onChange={() => { setVariantId(v.id); setQuantity(1); setNotice(null); }} className="sr-only" />
                   {v.name} · {formatMoney(v.price)}
-                  {v.discount_pct ? <DiscountBadge pct={v.discount_pct} className={selected ? "bg-white !text-hoja" : ""} /> : null}
+                  {v.discount_pct ? <DiscountBadge pct={v.discount_pct} className={selected ? "bg-superficie !text-hoja" : ""} /> : null}
                   {v.available ? "" : " · Agotado"}
                 </label>
               );
@@ -74,7 +74,7 @@ export function AddToCart({ storeId, storeName, storeOpen, variants }: Props) {
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div role="group" aria-label="Cantidad" className="flex items-center rounded-full border border-borde-campo bg-white">
+        <div role="group" aria-label="Cantidad" className="flex items-center rounded-full border border-borde-campo bg-superficie">
           <button type="button" aria-label="Menos" disabled={quantity <= 1} onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="flex size-11 items-center justify-center rounded-full hover:bg-menta/70 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-hoja">
             <Minus aria-hidden="true" className="size-4" />
           </button>

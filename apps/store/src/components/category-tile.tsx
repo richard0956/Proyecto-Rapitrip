@@ -59,7 +59,7 @@ const icons: [RegExp, LucideIcon][] = [
 ];
 
 /** Fondos pastel que se repiten en orden, como las fotos sobre colores suaves de la referencia. */
-const tones = ["from-menta to-white text-hoja", "from-durazno to-white text-durazno-texto", "from-lavanda to-white text-marino", "from-calido to-white text-naranja", "from-rosa to-white text-rojo"];
+const tones = ["from-menta to-superficie text-hoja", "from-durazno to-superficie text-durazno-texto", "from-lavanda to-superficie text-marino", "from-calido to-superficie text-naranja", "from-rosa to-superficie text-rojo"];
 
 export function categoryIcon(name: string): LucideIcon {
   return icons.find(([pattern]) => pattern.test(name))?.[1] ?? Tag;
@@ -71,7 +71,7 @@ export function CategoryTile({ category, index }: { category: Category; index: n
     <li>
       <Link
         href={`/catalogo?categoria=${category.id}`}
-        className="group flex h-full flex-col items-center rounded-tarjeta bg-white p-3 text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] focus-visible:outline-2 focus-visible:outline-hoja motion-reduce:hover:translate-y-0"
+        className="group flex h-full flex-col items-center rounded-tarjeta bg-superficie p-3 text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] focus-visible:outline-2 focus-visible:outline-hoja motion-reduce:hover:translate-y-0"
       >
         <span aria-hidden="true" className={`flex aspect-square w-full items-center justify-center rounded-2xl bg-gradient-to-br ${tones[index % tones.length]}`}>
           {createElement(categoryIcon(category.name), { className: "size-10 transition-transform duration-500 ease-fluido group-hover:scale-110 sm:size-12", strokeWidth: 1.6 })}

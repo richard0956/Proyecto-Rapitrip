@@ -9,7 +9,7 @@ export const buttonStyles = cva(
   {
     variants: {
       variant: {
-        primary: "bg-hoja text-white shadow-pulsa hover:bg-selva",
+        primary: "bg-hoja text-sobre-acento shadow-pulsa hover:bg-selva",
         secondary: "bg-papel text-hoja shadow-[inset_0_0_0_1.5px_var(--hoja)] hover:bg-menta",
         soft: "bg-calido text-tinta hover:bg-durazno",
         ghost: "bg-transparent text-hoja hover:bg-menta",
@@ -21,7 +21,7 @@ export const buttonStyles = cva(
 );
 
 const islandStyles = {
-  primary: "bg-white/15",
+  primary: "bg-superficie/15",
   secondary: "bg-hoja/10",
   soft: "bg-tinta/10",
   ghost: "bg-hoja/10",

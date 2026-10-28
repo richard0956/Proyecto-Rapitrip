@@ -7,7 +7,7 @@ const v = (name) => ({ opacityValue }) => {
 };
 const names = [
   "selva", "selva-panel", "hoja", "esmeralda", "marino", "exito", "menta", "menta-borde", "bruma", "nav-texto", "crema", "papel", "borde", "borde-campo",
-  "tinta", "tinta-suave", "calido", "durazno", "durazno-texto", "lavanda", "rosa", "rojo", "naranja",
+  "tinta", "tinta-suave", "calido", "durazno", "durazno-texto", "lavanda", "rosa", "rojo", "naranja", "superficie", "panel", "sobre-acento",
 ];
 
 /** @type {import('tailwindcss').Config} */
