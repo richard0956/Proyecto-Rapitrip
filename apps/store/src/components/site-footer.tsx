@@ -28,6 +28,7 @@ const columns = [
     title: "Rapitrip",
     links: [
       { href: "/sobre-nosotros", label: "Sobre nosotros" },
+      { href: "/vende", label: "Vende en Rapitrip" },
       { href: "/terminos", label: "Términos" },
       { href: "/privacidad", label: "Privacidad" },
     ],

@@ -45,7 +45,7 @@ describe("CommerceForm", () => {
     render(<CommerceForm initialName="Juan Téllez" submit={submit} />);
     expect(screen.queryByLabelText("Número RUC")).not.toBeInTheDocument();
     const user = userEvent.setup();
-    await user.selectOptions(screen.getByLabelText("Tipo de vendedor"), "empresa");
+    await user.click(screen.getByRole("radio", { name: /Empresa/ }));
     await user.type(screen.getByLabelText("Nombre del negocio"), "Distribuidora Norte");
     await user.type(screen.getByLabelText("Teléfono"), "+505 8456 2210");
     await user.type(screen.getByLabelText("Dirección del negocio"), "Km 9 Carretera Masaya");
@@ -62,11 +62,11 @@ describe("CommerceForm", () => {
   it("al volver a vendedor propio se borra el RUC", async () => {
     render(<CommerceForm initialName="Juan" submit={vi.fn()} />);
     const user = userEvent.setup();
-    await user.selectOptions(screen.getByLabelText("Tipo de vendedor"), "empresa");
+    await user.click(screen.getByRole("radio", { name: /Empresa/ }));
     await user.type(screen.getByLabelText("Número RUC"), "J0310000012345");
-    await user.selectOptions(screen.getByLabelText("Tipo de vendedor"), "informal");
+    await user.click(screen.getByRole("radio", { name: /Vendedor propio/ }));
     expect(screen.queryByLabelText("Número RUC")).not.toBeInTheDocument();
-    await user.selectOptions(screen.getByLabelText("Tipo de vendedor"), "empresa");
+    await user.click(screen.getByRole("radio", { name: /Empresa/ }));
     expect(screen.getByLabelText("Número RUC")).toHaveValue("");
   });
 
