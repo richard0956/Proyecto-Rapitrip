@@ -14,7 +14,7 @@ export default function TiendaLayout({ children }: { children: ReactNode }) {
         Saltar al contenido
       </a>
       <SiteHeader />
-      <div id="contenido" className="flex-1 px-3 pt-6 sm:px-6 sm:pt-8">
+      <div id="contenido" className="flex-1 px-3 pt-5 sm:px-6 md:pt-3">
         {children}
       </div>
       <SiteFooter />

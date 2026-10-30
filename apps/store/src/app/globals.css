@@ -101,7 +101,17 @@ p {
   }
 }
 
+/* La línea de la ruta del héroe corre despacio, como si los vehículos avanzaran. */
+@keyframes ruta-corre {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  .hero-ruta {
+    animation: ruta-corre 1.2s linear infinite;
+  }
   .reveal[data-visible="true"] .stagger > * {
     animation: stagger-in 0.75s var(--ease-fluido) backwards;
     animation-delay: calc(180ms + var(--n, 0) * 70ms);
