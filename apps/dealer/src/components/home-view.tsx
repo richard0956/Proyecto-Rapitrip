@@ -1,7 +1,7 @@
 "use client";
 
-import { Alert, Card, EmptyState, Reveal } from "@rapitrip/ui";
-import { BellRing } from "lucide-react";
+import { Alert, Reveal } from "@rapitrip/ui";
+import { BellRing, ChevronRight, PackageSearch } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { friendlyError } from "@/lib/api-error";
@@ -11,12 +11,12 @@ import type { CourierMe, CourierOffer, CourierOrder } from "@/lib/types";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { useEvidenceQueue } from "@/lib/use-evidence-queue";
 import { usePolling } from "@/lib/use-polling";
-import { AvailabilityCard } from "./availability-card";
 import { ConnectionBanner } from "./connection-banner";
+import { HomeHero } from "./home-hero";
 import { OfferCard } from "./offer-card";
 import { OrderCard } from "./order-card";
-import { PageHeader } from "./page-header";
-import { LoadingList } from "./skeleton";
+import { SectionTitle, Tray, WarmEmpty } from "./panel";
+import { Skeleton } from "./skeleton";
 
 const POLL_MS = 15_000;
 
@@ -100,65 +100,110 @@ export function HomeView() {
   const offer = offers[0] ?? null;
   const open = orders.filter((order) => order.status !== "entregado");
   const delivered = orders.filter((order) => order.status === "entregado");
+  const cashToCollect = open.reduce((total, order) => total + (order.cash_total != null ? Number(order.cash_total) : 0), 0);
+  const available = me?.available === true;
 
   return (
     <div className="flex flex-col">
       <ConnectionBanner pending={queue.pending.length} />
-      <div className="px-4 pb-4 pt-5">
-        <PageHeader eyebrow="Tu jornada" title={`Hola${me?.full_name ? `, ${me.full_name.split(" ")[0]}` : ""}`} description="Tus propuestas y pedidos de hoy." />
-      </div>
 
-      <div className="flex flex-col gap-4 px-4 pb-6">
-        {notice ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
+      <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
         {!loaded ? (
-          <LoadingList label="Cargando tus pedidos…" rows={3} height="h-32" />
+          <>
+            <p role="status" className="sr-only">
+              Cargando tus pedidos…
+            </p>
+            <Skeleton className="h-[340px] rounded-[2rem]" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </>
         ) : (
           <>
-            <AvailabilityCard available={me?.available === true} busy={busy === "disponible"} onToggle={toggleAvailable} />
+            <Reveal>
+              <HomeHero
+                name={me?.full_name?.trim().split(/\s+/)[0] || null}
+                available={available}
+                since={me?.available_since ?? null}
+                busy={busy === "disponible"}
+                inProgress={open.length}
+                deliveredToday={delivered.length}
+                cashToCollect={cashToCollect}
+                onToggle={toggleAvailable}
+              />
+            </Reveal>
+
+            {notice ? <Alert tone={notice.tone}>{notice.text}</Alert> : null}
 
             {push === "inactivo" ? (
-              <Link href="/perfil" className="block rounded-campo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
-                <Alert tone="warning" icon={<BellRing className="size-[18px]" />}>
-                  <span className="font-bold">Activa los avisos</span> para enterarte de las propuestas aunque la aplicación esté cerrada.
-                </Alert>
-              </Link>
+              <Reveal>
+                <PushNudge />
+              </Reveal>
             ) : null}
 
             {offer ? <OfferCard key={offer.offer_id} offer={offer} busy={busy === "oferta"} onAccept={() => answer(offer, true)} onReject={(reason) => answer(offer, false, reason)} /> : null}
 
-            <section aria-labelledby="abiertos" className="flex flex-col gap-3">
-              <h2 id="abiertos" className="text-lg font-extrabold text-tinta">
-                Mis pedidos
-              </h2>
-              {open.length === 0 ? (
-                <EmptyState title="No tienes pedidos abiertos">{me?.available ? "Cuando coordinación te proponga uno, aparecerá aquí." : "Marca que estás disponible para recibir propuestas."}</EmptyState>
-              ) : (
-                open.map((order, index) => (
-                  <Reveal key={order.order_id} index={index}>
-                    <OrderCard order={order} />
-                  </Reveal>
-                ))
-              )}
-            </section>
+            <Tray>
+              <section aria-labelledby="abiertos" className="flex flex-col gap-3">
+                <SectionTitle id="abiertos" title="Mis pedidos" text={open.length > 0 ? "Toca un pedido para ver qué sigue." : undefined} count={open.length} />
+                {open.length === 0 ? (
+                  <OrdersEmpty available={available} />
+                ) : (
+                  open.map((order, index) => (
+                    <Reveal key={order.order_id} index={index}>
+                      <OrderCard order={order} />
+                    </Reveal>
+                  ))
+                )}
+              </section>
+            </Tray>
 
             {delivered.length > 0 ? (
-              <section aria-labelledby="hoy" className="flex flex-col gap-3">
-                <h2 id="hoy" className="text-lg font-extrabold text-tinta">
-                  Entregados hoy
-                </h2>
-                {delivered.map((order) => (
-                  <OrderCard key={order.order_id} order={order} />
-                ))}
-                <Card className="p-4 text-center text-[13px] text-tinta-suave">
-                  <Link href="/historial" className="font-bold text-hoja underline-offset-2 hover:underline">
-                    Ver mi historial
-                  </Link>
-                </Card>
-              </section>
+              <Tray>
+                <section aria-labelledby="hoy" className="flex flex-col gap-3">
+                  <SectionTitle id="hoy" title="Entregados hoy" href="/historial" linkLabel="Historial" count={delivered.length} />
+                  {delivered.map((order) => (
+                    <OrderCard key={order.order_id} order={order} />
+                  ))}
+                </section>
+              </Tray>
             ) : null}
           </>
         )}
       </div>
     </div>
+  );
+}
+
+/** Sin pedidos abiertos: un estado cálido que dice qué hacer. */
+function OrdersEmpty({ available }: { available: boolean }) {
+  return (
+    <WarmEmpty icon={<PackageSearch className="size-7" />} title="No tienes pedidos abiertos">
+      {available ? "Cuando coordinación te proponga uno, aparecerá aquí." : "Toca «Empezar» arriba para recibir propuestas."}
+    </WarmEmpty>
+  );
+}
+
+/** Invitación a activar los avisos, con la forma de la tarjeta «¿A dónde llevamos tus pedidos?» de la tienda. */
+function PushNudge() {
+  return (
+    <section aria-labelledby="avisos" className="flex items-center gap-3.5 rounded-[1.75rem] bg-superficie p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06]">
+      <span aria-hidden="true" className="relative flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-menta to-bruma text-hoja">
+        <BellRing className="size-6" />
+        <span className="absolute -right-0.5 -top-0.5 size-3 animate-pulse rounded-full bg-naranja ring-2 ring-superficie motion-reduce:animate-none" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 id="avisos" className="text-[15px] font-bold text-tinta">
+          Activa los avisos
+        </h2>
+        <p className="mt-0.5 text-[12.5px] text-tinta-suave">Entérate de las propuestas aunque la aplicación esté cerrada.</p>
+      </div>
+      <Link
+        href="/perfil"
+        aria-label="Activar los avisos en tu perfil"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-selva text-sobre-acento transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
+      >
+        <ChevronRight aria-hidden="true" className="size-5" />
+      </Link>
+    </section>
   );
 }

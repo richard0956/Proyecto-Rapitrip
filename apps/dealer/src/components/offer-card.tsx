@@ -1,7 +1,7 @@
 "use client";
 
-import { Alert, Button, Card, cn, Dialog, Eyebrow, Field } from "@rapitrip/ui";
-import { MapPin, Package, Route } from "lucide-react";
+import { Alert, Button, cn, Dialog, Field } from "@rapitrip/ui";
+import { Banknote, Check, MapPin, Package, Route } from "lucide-react";
 import { useState } from "react";
 import { departmentName } from "@/lib/department";
 import { formatCountdown, rejectReasons } from "@/lib/offers";
@@ -19,8 +19,8 @@ type Props = {
 
 function Detail({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <li className="flex items-start gap-3">
-      <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-hoja">
+    <li className="flex items-start gap-3 rounded-2xl bg-crema px-3 py-2.5">
+      <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-menta text-hoja">
         {icon}
       </span>
       <span className="min-w-0 flex-1 pt-1">{children}</span>
@@ -42,30 +42,47 @@ export function OfferCard({ offer, busy, onAccept, onReject }: Props) {
   const reasonValid = reason.length === 0 || (reason.length >= 5 && reason.length <= 200);
 
   return (
-    <Card outerClassName="bg-menta/60 ring-2 ring-hoja" className="flex flex-col gap-4 p-5" aria-live="polite">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Eyebrow className="shrink-0 whitespace-nowrap">Nueva propuesta</Eyebrow>
-          <ClassBadge value={offer.delivery_class} />
+    <section aria-labelledby="propuesta" aria-live="polite" className="flex flex-col gap-4 rounded-[2rem] bg-superficie p-4 shadow-flota ring-2 ring-esmeralda/70">
+      <div className="flex items-center justify-between gap-3 px-1">
+        <h2 id="propuesta" className="inline-flex items-center gap-2 text-[18px] font-bold tracking-tight text-tinta">
+          <span aria-hidden="true" className="relative flex size-2.5">
+            <span className="absolute inset-0 animate-ping rounded-full bg-esmeralda/60 motion-reduce:hidden" />
+            <span className="relative size-2.5 rounded-full bg-esmeralda" />
+          </span>
+          Nueva propuesta
+        </h2>
+        <ClassBadge value={offer.delivery_class} />
+      </div>
+
+      {/* Bloque oscuro como el héroe del inicio: cuánto paga y cuánto tiempo queda para decidir. */}
+      <div className="relative isolate overflow-clip rounded-[1.5rem] bg-[linear-gradient(160deg,var(--panel)_0%,#0d5644_100%)] p-4 text-white">
+        <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-48 rounded-full bg-esmeralda/25 blur-3xl" />
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[12px] font-semibold text-white/70">Te pagan</p>
+            <p className="mt-1 font-titulo text-[36px] font-extrabold leading-none tracking-tight tabular-nums">{formatMoney(offer.courier_pay)}</p>
+          </div>
+          <p
+            className={cn("shrink-0 rounded-full px-3 py-1.5 font-mono text-[15px] font-extrabold tabular-nums ring-1 transition-colors duration-500 ease-fluido", urgent || expired ? "bg-rosa text-rojo ring-rosa" : "bg-white/10 text-esmeralda ring-white/15")}
+            aria-label={expired ? "La propuesta venció" : `Quedan ${formatCountdown(left)}`}
+          >
+            {expired ? "Venció" : formatCountdown(left)}
+          </p>
         </div>
-        <p className={cn("shrink-0 rounded-full px-3 py-1 font-mono text-base font-extrabold tabular-nums transition-colors duration-500 ease-fluido", urgent ? "bg-rosa text-rojo" : "bg-menta text-hoja")} aria-label={expired ? "La propuesta venció" : `Quedan ${formatCountdown(left)}`}>
-          {expired ? "Venció" : formatCountdown(left)}
-        </p>
+        {offer.cash_total != null ? (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-durazno px-3 py-1 text-[12.5px] font-bold text-durazno-texto">
+            <Banknote aria-hidden="true" className="size-3.5" />
+            Cobras {formatMoney(offer.cash_total)} en efectivo
+          </p>
+        ) : null}
+        <div aria-hidden="true" className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className={cn("h-full origin-left rounded-full transition-transform duration-1000 ease-fluido", urgent ? "bg-rojo" : "bg-esmeralda")} style={{ transform: `scaleX(${expired ? 0 : remaining})` }} />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold text-tinta-suave">Te pagan</p>
-        <p className="font-titulo text-[34px] font-extrabold leading-none tracking-tight tabular-nums text-tinta">{formatMoney(offer.courier_pay)}</p>
-        {offer.cash_total != null ? <p className="text-[12.5px] font-bold text-durazno-texto">Cobras {formatMoney(offer.cash_total)} en efectivo</p> : null}
-      </div>
-
-      <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-menta-borde/60">
-        <div className={cn("h-full origin-left rounded-full transition-transform duration-1000 ease-fluido", urgent ? "bg-rojo" : "bg-hoja")} style={{ transform: `scaleX(${expired ? 0 : remaining})` }} />
-      </div>
-
-      <ul className="flex flex-col gap-3 text-[14px]">
+      <ul className="flex flex-col gap-2 text-[14px] text-tinta">
         <Detail icon={<Package className="size-4" />}>
-          <span className="font-extrabold text-tinta">Pedido {offer.number}</span> · {offer.store_name}
+          <span className="font-extrabold">Pedido {offer.number}</span> · {offer.store_name}
           <span className="block text-[12.5px] text-tinta-suave">
             {Number(offer.item_count)} producto{Number(offer.item_count) === 1 ? "" : "s"}
           </span>
@@ -78,13 +95,26 @@ export function OfferCard({ offer, busy, onAccept, onReject }: Props) {
       </ul>
 
       {expired ? <Alert tone="warning">La propuesta venció. Si sigues disponible, coordinación puede enviarte otra.</Alert> : null}
-      <div className="grid grid-cols-[1fr_2fr] gap-3">
-        <Button variant="secondary" className="min-h-14 text-base" disabled={busy || expired} onClick={() => setRejecting(true)}>
+      <div className="grid grid-cols-[1fr_2fr] gap-2.5">
+        <button
+          type="button"
+          disabled={busy || expired}
+          onClick={() => setRejecting(true)}
+          className="min-h-14 rounded-full bg-crema text-[15px] font-bold text-tinta ring-1 ring-borde transition-[background-color,transform] duration-500 ease-fluido hover:bg-rosa hover:text-rojo active:scale-[0.98] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
+        >
           Rechazar
-        </Button>
-        <Button variant="primary" className="min-h-14 text-base" disabled={busy || expired} onClick={onAccept}>
+        </button>
+        <button
+          type="button"
+          disabled={busy || expired}
+          onClick={onAccept}
+          className="group inline-flex min-h-14 items-center justify-between gap-2 rounded-full bg-selva py-1.5 pl-6 pr-1.5 text-[15px] font-bold text-sobre-acento shadow-pulsa transition-[background-color,transform] duration-500 ease-fluido hover:bg-tinta active:scale-[0.98] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
+        >
           {busy ? "Un momento…" : "Aceptar"}
-        </Button>
+          <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-full bg-esmeralda text-panel transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
+            <Check className="size-5" />
+          </span>
+        </button>
       </div>
 
       <Dialog open={rejecting} onClose={() => setRejecting(false)} title="¿Por qué la rechazas?">
@@ -125,6 +155,6 @@ export function OfferCard({ offer, busy, onAccept, onReject }: Props) {
           </div>
         </div>
       </Dialog>
-    </Card>
+    </section>
   );
 }
