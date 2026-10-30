@@ -71,7 +71,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
           aria-controls={panelId}
           aria-label={current ? `Entregar en ${current.label}: ${current.address}` : `Entregar en: ${title}`}
           title={current ? `${current.label} · ${current.address}` : title}
-          className="flex h-full min-w-0 items-center gap-1.5 rounded-full pl-4 pr-2.5 text-[13px] font-semibold text-tinta transition-colors duration-500 ease-fluido hover:bg-white/70 focus-visible:outline-2 focus-visible:outline-hoja"
+          className="flex h-full min-w-0 items-center gap-1.5 rounded-full pl-4 pr-2.5 text-[13px] font-semibold text-tinta transition-colors duration-500 ease-fluido hover:bg-superficie/70 dark:hover:bg-selva/10 focus-visible:outline-2 focus-visible:outline-hoja"
         >
           <span aria-hidden="true" className="relative shrink-0 text-hoja">
             <MapPin className="size-4" />
@@ -137,10 +137,10 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
               </p>
             ) : null}
             <div className="mt-1 flex gap-2 border-t border-selva/[0.06] p-2">
-              <Link href="/perfil/direcciones" className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-crema text-[12.5px] font-semibold text-tinta hover:bg-menta">
+              <Link href="/ajustes/direcciones" className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-crema text-[12.5px] font-semibold text-tinta hover:bg-menta">
                 <Plus aria-hidden="true" className="size-4" /> Nueva
               </Link>
-              <Link href="/perfil/direcciones" className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-crema text-[12.5px] font-semibold text-tinta hover:bg-menta">
+              <Link href="/ajustes/direcciones" className="inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-crema text-[12.5px] font-semibold text-tinta hover:bg-menta">
                 <Settings2 aria-hidden="true" className="size-4" /> Administrar
               </Link>
             </div>
@@ -155,7 +155,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
               {signedIn ? "Guarda tu casa o tu trabajo y lo elegimos por ti al pagar." : "Ingresa a tu cuenta para guardar tus direcciones de entrega."}
             </p>
             <Link
-              href={signedIn ? "/perfil/direcciones" : `/ingresar?next=${encodeURIComponent("/perfil/direcciones")}`}
+              href={signedIn ? "/ajustes/direcciones" : `/ingresar?next=${encodeURIComponent("/ajustes/direcciones")}`}
               className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-selva text-[13px] font-semibold text-sobre-acento hover:bg-tinta"
             >
               {signedIn ? (

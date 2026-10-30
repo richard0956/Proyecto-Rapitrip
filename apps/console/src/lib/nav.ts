@@ -53,6 +53,7 @@ export const adminNav: NavSection[] = [
     items: [
       { href: "/admin/auditoria", label: "Auditoría y accesos", icon: "clock", also: ["/admin/accesos"] },
       { href: "/admin/incidentes", label: "Incidentes de TI", icon: "shield" },
+      { href: "/admin/comentarios", label: "Comentarios", icon: "layers" },
       { href: "/admin/datos-personales", label: "Datos personales", icon: "lock", roles: ["superadmin"] },
     ],
   },

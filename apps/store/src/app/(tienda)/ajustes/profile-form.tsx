@@ -35,7 +35,7 @@ export function ProfileForm({ initial, save }: { initial: Values; save: (values:
       const outcome = await save(values);
       if (!outcome.ok && outcome.expired) {
         saveDraft(DRAFT_KEY, values);
-        router.replace(`/ingresar?next=${encodeURIComponent("/perfil")}&expirada=1`);
+        router.replace(`/ingresar?next=${encodeURIComponent("/ajustes")}&expirada=1`);
         return;
       }
       setResult(outcome);

@@ -74,7 +74,7 @@ function AddressNudge() {
         </h2>
         <p className="mt-0.5 text-[13px] text-tinta-suave">Guarda tu casa o tu trabajo: la elegimos por ti al pagar y calculamos el envío desde ahí.</p>
       </div>
-      <Link href="/perfil/direcciones" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-sobre-acento transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+      <Link href="/ajustes/direcciones" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-selva px-5 text-[13px] font-semibold text-sobre-acento transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
         <Plus aria-hidden="true" className="size-4" />
         Agregar dirección
       </Link>

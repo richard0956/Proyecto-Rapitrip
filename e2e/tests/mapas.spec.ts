@@ -97,11 +97,11 @@ test.describe("@backend mapas · ubicación de tienda y destino del pedido", () 
     await context.grantPermissions(["geolocation"], { origin: STORE_URL });
     await context.setGeolocation(MANAGUA);
 
-    await page.goto(`${STORE_URL}/ingresar?next=%2Fperfil%2Fdirecciones`);
+    await page.goto(`${STORE_URL}/ingresar?next=%2Fajustes%2Fdirecciones`);
     await page.getByLabel("Correo").fill(email);
     await page.getByLabel("Contraseña").fill(PASSWORD);
     await page.getByRole("button", { name: "Ingresar", exact: true }).click();
-    await expect(page).toHaveURL(/\/perfil\/direcciones$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/ajustes\/direcciones$/, { timeout: 30_000 });
 
     // Libreta de direcciones: la dirección escrita y su pin.
     await page.getByRole("button", { name: "Agregar dirección" }).click();

@@ -3,7 +3,7 @@ import { safeNext } from "./safe-next";
 
 describe("safeNext", () => {
   it("acepta rutas internas con su query", () => {
-    expect(safeNext("/perfil")).toBe("/perfil");
+    expect(safeNext("/ajustes")).toBe("/ajustes");
     expect(safeNext("/vende?paso=2")).toBe("/vende?paso=2");
   });
 
@@ -17,7 +17,7 @@ describe("safeNext", () => {
 
   it("usa el valor de respaldo si falta", () => {
     expect(safeNext(undefined)).toBe("/");
-    expect(safeNext("", "/perfil")).toBe("/perfil");
-    expect(safeNext(["/perfil", "/otra"])).toBe("/perfil");
+    expect(safeNext("", "/ajustes")).toBe("/ajustes");
+    expect(safeNext(["/ajustes", "/otra"])).toBe("/ajustes");
   });
 });

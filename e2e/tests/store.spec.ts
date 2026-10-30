@@ -15,8 +15,8 @@ test.describe("@backend tienda · cuenta del cliente", () => {
   test.skip(!hasBackend, backendHint);
 
   test("las rutas protegidas llevan a ingresar y conservan el destino", async ({ page }) => {
-    await page.goto(`${STORE_URL}/perfil`);
-    await expect(page).toHaveURL(/\/ingresar\?next=%2Fperfil$/);
+    await page.goto(`${STORE_URL}/ajustes`);
+    await expect(page).toHaveURL(/\/ingresar\?next=%2Fajustes$/);
     await page.goto(`${STORE_URL}/vende`);
     await expect(page).toHaveURL(/\/ingresar\?next=%2Fvende$/);
   });
@@ -33,9 +33,9 @@ test.describe("@backend tienda · cuenta del cliente", () => {
     await expect(page.getByRole("status")).toContainText(`Si ${email} no tenía cuenta`);
 
     await confirmEmail(email);
-    await signIn(page, email, "?next=%2Fperfil");
-    await expect(page).toHaveURL(/\/perfil$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mi perfil");
+    await signIn(page, email, "?next=%2Fajustes");
+    await expect(page).toHaveURL(/\/ajustes$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ana Pérez");
     await expect(page.getByLabel("Nombre completo")).toHaveValue("Ana Pérez");
     await expectNoViolations(page);
 
@@ -89,13 +89,14 @@ test.describe("@backend tienda · cuenta del cliente", () => {
     }
   });
 
-  test("cerrar sesión devuelve al inicio y /perfil vuelve a pedir ingreso", async ({ page }) => {
+  test("cerrar sesión devuelve al inicio y /cuenta vuelve a pedir ingreso", async ({ page }) => {
     const email = uniqueEmail("salir");
     await createUser(email);
-    await signIn(page, email, "?next=%2Fperfil");
-    await page.getByRole("button", { name: /Salir/ }).click();
+    await signIn(page, email, "?next=%2Fajustes");
+    await page.getByRole("button", { name: "Mi cuenta" }).click();
+    await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await expect(page).toHaveURL(`${STORE_URL}/`);
-    await page.goto(`${STORE_URL}/perfil`);
+    await page.goto(`${STORE_URL}/ajustes`);
     await expect(page).toHaveURL(/\/ingresar/);
   });
 });

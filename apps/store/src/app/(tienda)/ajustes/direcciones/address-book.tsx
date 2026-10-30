@@ -48,7 +48,7 @@ export function AddressBook({ addresses, actions }: { addresses: SavedAddress[];
       const outcome = await task();
       if (!outcome.ok && outcome.expired) {
         if (draft) saveDraft(DRAFT_KEY, draft);
-        router.replace(`/ingresar?next=${encodeURIComponent("/perfil/direcciones")}&expirada=1`);
+        router.replace(`/ingresar?next=${encodeURIComponent("/ajustes/direcciones")}&expirada=1`);
         return;
       }
       setResult(outcome);

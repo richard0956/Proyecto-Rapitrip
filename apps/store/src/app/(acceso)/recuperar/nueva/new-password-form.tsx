@@ -29,7 +29,7 @@ export function NewPasswordForm() {
       setBusy(false);
       return;
     }
-    router.replace("/perfil?clave=ok");
+    router.replace("/ajustes/seguridad?clave=ok");
     router.refresh();
   }
 

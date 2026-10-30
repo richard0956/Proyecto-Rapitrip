@@ -28,7 +28,7 @@ describe("ProfileForm", () => {
     await user.clear(screen.getByLabelText("Nombre completo"));
     await user.type(screen.getByLabelText("Nombre completo"), "Ana María Pérez");
     await user.click(screen.getByRole("button", { name: "Guardar cambios" }));
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/ingresar?next=%2Fperfil&expirada=1"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/ingresar?next=%2Fajustes&expirada=1"));
     expect(JSON.parse(sessionStorage.getItem("rapitrip:perfil") ?? "{}")).toEqual({ fullName: "Ana María Pérez", phone: "" });
   });
 

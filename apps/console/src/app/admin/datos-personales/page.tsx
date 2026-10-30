@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/shell";
 import { formatDate } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
-import { confirmAnonymization, getClientDetail, requestExport } from "./actions";
+import { confirmAnonymization, getClientDetail, requestExport, resolveDeletion } from "./actions";
 import { CandidateActions, ExportForm } from "./controls";
+import { DeletionRequests, type DeletionRequest } from "./deletion-requests";
 
 const candidatesSchema = z.array(z.object({ user_id: z.string().uuid(), candidate_since: z.string().nullable(), last_sign_in_at: z.string().nullable() }));
 
@@ -18,6 +19,8 @@ export default async function DatosPersonalesPage() {
   const parsed = candidatesSchema.safeParse(data ?? []);
   if (error || !parsed.success) console.error("[datos-personales]", error?.message ?? "formato inesperado");
   const rows = parsed.success ? parsed.data : [];
+  const { data: deletionData } = await supabase.rpc("list_deletion_requests");
+  const deletions = (deletionData ?? []) as DeletionRequest[];
 
   return (
     <>
@@ -38,6 +41,10 @@ export default async function DatosPersonalesPage() {
               { header: "Acciones", cell: (row) => <CandidateActions userId={row.user_id} detail={getClientDetail} anonymize={confirmAnonymization} /> },
             ]}
           />
+        </Card>
+        <Card>
+          <CardHeader title="Solicitudes de eliminación" subtitle="Clientes que pidieron eliminar su cuenta desde la tienda" />
+          <DeletionRequests rows={deletions} resolve={resolveDeletion} />
         </Card>
         <Card>
           <CardHeader title="Exportar datos" subtitle="El archivo se cifra y solo tú ves la frase para abrirlo" />

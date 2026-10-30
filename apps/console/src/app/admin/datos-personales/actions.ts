@@ -48,3 +48,19 @@ export async function requestExport(input: unknown): Promise<ExportResult> {
   const result = await invokeFunction<{ url: string; passphrase: string; count: number }>("export-data", parsed.data);
   return result.ok ? { ok: true, ...result.data } : result;
 }
+
+/** Atiende (anonimiza la cuenta y borra su foto) o rechaza una solicitud de eliminación del titular. */
+export async function resolveDeletion(input: unknown): Promise<ActionResult> {
+  const parsed = z.object({ id: z.string().uuid(), approve: z.boolean(), note: z.string().trim().min(5, "La nota es obligatoria (mínimo 5 caracteres).").max(500) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  if (!(await requireDirector())) return { ok: false, error: "No tienes permiso para esta acción." };
+  const supabase = await serverSupabase();
+  const { data: userId, error } = await supabase.rpc("resolve_deletion_request", { p_id: parsed.data.id, p_approve: parsed.data.approve, p_note: parsed.data.note });
+  if (error) return failure(error);
+  if (parsed.data.approve && userId) {
+    const { data: files } = await supabase.storage.from("avatars").list(userId);
+    if (files?.length) await supabase.storage.from("avatars").remove(files.map((file) => `${userId}/${file.name}`));
+  }
+  revalidatePath("/admin/datos-personales");
+  return { ok: true };
+}

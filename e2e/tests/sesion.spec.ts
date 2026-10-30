@@ -66,12 +66,12 @@ test.describe("@backend sesión · renovación del token y sesiones simultáneas
     await expect(console_).toHaveURL(/\/admin$/, { timeout: 30_000 });
 
     // Recargar una no afecta a la otra: cada app usa su propia cookie de sesión.
-    await store.goto(`${STORE_URL}/perfil`);
-    await expect(store.getByRole("heading", { level: 1 })).toHaveText("Mi perfil");
+    await store.goto(`${STORE_URL}/ajustes`);
+    await expect(store.getByRole("heading", { name: "Datos personales" })).toBeVisible();
     await console_.goto(`${CONSOLE_URL}/admin/usuarios`);
     await expect(console_.getByRole("heading", { level: 1 })).toBeVisible();
-    await store.goto(`${STORE_URL}/perfil`);
-    await expect(store).toHaveURL(/\/perfil$/);
+    await store.goto(`${STORE_URL}/ajustes`);
+    await expect(store).toHaveURL(/\/ajustes$/);
 
     const cookies = (await context.cookies()).map((c) => c.name);
     expect(cookies.some((name) => name.startsWith("rapitrip-store-auth"))).toBe(true);

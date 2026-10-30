@@ -286,7 +286,7 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, quoteGroup,
             </div>
           ) : null}
           <p className="mt-3 text-xs text-tinta-suave">
-            <Link href="/perfil/direcciones" className="font-bold text-hoja hover:underline">
+            <Link href="/ajustes/direcciones" className="font-bold text-hoja hover:underline">
               Administrar mis direcciones
             </Link>
           </p>

@@ -15,6 +15,32 @@ html {
  * y «hoja» son el color de acción luminoso (los botones llevan texto «sobre-acento», oscuro); los paneles de marca usan «panel».
  * Lo activa `data-theme="dark"` en <html>, que fija el script del <head> antes del primer pintado.
  */
+/*
+ * Cambio de tema: el círculo de `switchTheme` (lib/theme.ts) recorta la vista nueva; las vistas no llevan su fundido por
+ * defecto para que el borde del círculo se vea nítido. Sin transiciones de vista, `cambiando-tema` funde los colores.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+html.cambiando-tema,
+html.cambiando-tema *,
+html.cambiando-tema *::before,
+html.cambiando-tema *::after {
+  transition:
+    background-color 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    color 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    fill 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    stroke 0.5s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
 html[data-theme="dark"] {
   color-scheme: dark;
   --crema: #060b14;

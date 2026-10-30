@@ -26,7 +26,7 @@ describe("AddressPicker", () => {
     render(<AddressPicker signedIn addresses={[]} setDefault={vi.fn()} />);
     expect(screen.getByText("Agrega tu dirección")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { expanded: false }));
-    expect(screen.getByRole("link", { name: /Agregar dirección/ })).toHaveAttribute("href", "/perfil/direcciones");
+    expect(screen.getByRole("link", { name: /Agregar dirección/ })).toHaveAttribute("href", "/ajustes/direcciones");
   });
 
   it("sin sesión lleva a ingresar", async () => {

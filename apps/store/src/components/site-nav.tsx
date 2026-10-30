@@ -1,19 +1,22 @@
 "use client";
 
-import { Avatar, cn, Lema } from "@rapitrip/ui";
-import { Flame, Home, LayoutGrid, LogOut, Percent, Search, Sparkles, Store, UserRound } from "lucide-react";
+import { cn, Lema } from "@rapitrip/ui";
+import { Flame, Home, LayoutGrid, LogOut, Percent, Search, Settings, Sparkles, Store, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { CustomerResult } from "@/lib/result";
+import { AccountMenu } from "./account-menu";
 import { AddressPicker, type HeaderAddress } from "./address-picker";
 import { BrandMark } from "./brand-mark";
 import { CartLink } from "./cart-link";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeSync } from "./theme-picker";
 
 type Props = {
   signedIn: boolean;
   email: string | null;
+  /** Enlace firmado de la foto de perfil, si el cliente subió una. */
+  photo?: string | null;
   addresses: HeaderAddress[];
   setDefault: (id: string) => Promise<CustomerResult>;
   signOut: () => Promise<void>;
@@ -95,7 +98,7 @@ function LocationSearch({ id, signedIn, addresses, setDefault, className = "" }:
  * final de la portada y en el pie. En móvil la barra deja el menú, la marca y el carrito; la ubicación con el buscador baja a su
  * propia fila.
  */
-export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Props) {
+export function SiteNav({ signedIn, email, photo = null, addresses, setDefault, signOut }: Props) {
   const pathname = usePathname();
   const params = useSearchParams();
   const orden = params.get("orden");
@@ -138,8 +141,8 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
   }, [open]);
 
   const menu = signedIn
-    ? [...sections.slice(1), { href: "/pedidos", label: "Mis pedidos" }, { href: "/perfil", label: "Mi perfil" }, { href: "/perfil/direcciones", label: "Mis direcciones" }]
-    : [...sections.slice(1), { href: "/ingresar", label: "Ingresar" }, { href: "/registro", label: "Crear cuenta" }];
+    ? [...sections.slice(1), { href: "/pedidos", label: "Mis pedidos" }, { href: "/ajustes", label: "Ajustes" }]
+    : [...sections.slice(1), { href: "/ajustes", label: "Ajustes" }, { href: "/ingresar", label: "Ingresar" }, { href: "/registro", label: "Crear cuenta" }];
 
   return (
     <>
@@ -179,14 +182,7 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
                   <Link href="/pedidos" className="inline-flex min-h-11 items-center rounded-full px-3 text-[13px] font-semibold text-tinta hover:bg-crema">
                     Mis pedidos
                   </Link>
-                  <Link href="/perfil" aria-label="Mi perfil" className="rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
-                    <Avatar name={email} />
-                  </Link>
-                  <form action={signOut}>
-                    <button type="submit" aria-label="Salir" className="flex size-11 items-center justify-center rounded-full text-tinta-suave hover:bg-crema hover:text-hoja">
-                      <LogOut className="size-4" aria-hidden="true" />
-                    </button>
-                  </form>
+                  <AccountMenu email={email} photo={photo} signOut={signOut} />
                 </div>
               ) : (
                 <Link href="/ingresar" className="hidden min-h-11 items-center gap-2 rounded-full bg-crema px-4 text-[13px] font-semibold text-tinta transition-colors hover:bg-menta md:inline-flex">
@@ -194,8 +190,17 @@ export function SiteNav({ signedIn, email, addresses, setDefault, signOut }: Pro
                   Ingresar
                 </Link>
               )}
-              <ThemeToggle />
-            <CartLink />
+              <ThemeSync />
+              <Link
+                href="/ajustes"
+                aria-label="Ajustes"
+                title="Ajustes"
+                aria-current={pathname.startsWith("/ajustes") ? "page" : undefined}
+                className="group flex size-11 shrink-0 items-center justify-center rounded-full bg-superficie text-tinta ring-1 ring-selva/[0.08] transition-colors duration-500 ease-fluido hover:bg-crema focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja aria-[current=page]:bg-selva aria-[current=page]:text-sobre-acento"
+              >
+                <Settings aria-hidden="true" className="size-5 transition-transform duration-700 ease-fluido group-hover:rotate-90" />
+              </Link>
+              <CartLink />
             </div>
           </div>
 

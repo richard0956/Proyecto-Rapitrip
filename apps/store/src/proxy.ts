@@ -2,7 +2,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Rutas que exigen sesión. El resto de la tienda es pública e indexable. */
-const protectedPaths = ["/perfil", "/vende", "/recuperar/nueva", "/checkout", "/pedidos"];
+// En «Ajustes», Preferencias y Ayuda son públicas; las secciones de la cuenta piden sesión (la portada de Ajustes lo decide sola).
+const protectedPaths = ["/ajustes/direcciones", "/ajustes/seguridad", "/ajustes/datos", "/vende", "/recuperar/nueva", "/checkout", "/pedidos"];
 
 /** Renueva las cookies de sesión y redirige por comodidad. Cada página protegida vuelve a comprobar la sesión en el servidor. */
 export async function proxy(request: NextRequest) {

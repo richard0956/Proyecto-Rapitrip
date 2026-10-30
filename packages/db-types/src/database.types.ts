@@ -66,20 +66,6 @@ export type Database = {
                         Relationships: [
                     
                   ]
-                },"courier_me": {
-                  Row: {
-                    "available": boolean | null,"available_since": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"vehicle_class": string | null,"vehicle_type": string | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
-                         }
-                        Update: {
-                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
-                         }
-                        Relationships: [
-                          
-                        ]
                 },"courier_invitations": {
                   Row: {
                     "accepted_at": string | null,"courier_id": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
@@ -92,18 +78,32 @@ export type Database = {
                            "accepted_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                          }
                         Relationships: [
-                          
-                        ]
+                    
+                  ]
+                },"courier_me": {
+                  Row: {
+                    "available": boolean | null,"available_since": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"status": string | null,"vehicle_class": string | null,"vehicle_type": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                         }
+                        Update: {
+                           "available"?: boolean | null,"available_since"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"status"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"couriers_list": {
                   Row: {
                     "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"push_enabled": boolean | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: boolean | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Update: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: boolean | null,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Relationships: [
                     
@@ -122,6 +122,20 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"delivery_issues_list": {
+                  Row: {
+                    "attended_at": string | null,"attended_by": string | null,"attended_note": string | null,"courier_id": string | null,"created_at": string | null,"id": string | null,"kind": string | null,"order_id": string | null,"reason": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"delivery_zones_list": {
                   Row: {
                     "courier_pay": number | null,"customer_fee": number | null,"margin": number | null,"up_to_km": number | null,"zone": number | null
@@ -136,20 +150,6 @@ export type Database = {
                         Relationships: [
                     
                   ]
-                },"delivery_issues_list": {
-                  Row: {
-                    "attended_at": string | null,"attended_by": string | null,"attended_note": string | null,"courier_id": string | null,"created_at": string | null,"id": string | null,"kind": string | null,"order_id": string | null,"reason": string | null,"status": string | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
-                         }
-                        Update: {
-                           "attended_at"?: string | null,"attended_by"?: string | null,"attended_note"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"id"?: string | null,"kind"?: string | null,"order_id"?: string | null,"reason"?: string | null,"status"?: string | null
-                         }
-                        Relationships: [
-                          
-                        ]
                 },"evidence_settings_list": {
                   Row: {
                     "alert_distance_m": number | null,"require_delivery_code": boolean | null,"require_delivery_photo": boolean | null,"require_pickup_code": boolean | null,"require_pickup_photo": boolean | null,"retention_days": number | null,"updated_at": string | null
@@ -162,8 +162,8 @@ export type Database = {
                            "alert_distance_m"?: number | null,"require_delivery_code"?: boolean | null,"require_delivery_photo"?: boolean | null,"require_pickup_code"?: boolean | null,"require_pickup_photo"?: boolean | null,"retention_days"?: number | null,"updated_at"?: string | null
                          }
                         Relationships: [
-                          
-                        ]
+                    
+                  ]
                 },"inventory_list": {
                   Row: {
                     "available": boolean | null,"commerce_id": string | null,"low_stock_threshold": number | null,"product_id": string | null,"product_name": string | null,"product_status": string | null,"quantity": number | null,"sku": string | null,"stock_state": string | null,"store_id": string | null,"store_name": string | null,"track_stock": boolean | null,"updated_at": string | null,"variant_id": string | null,"variant_name": string | null,"variant_status": string | null
@@ -250,6 +250,20 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"my_deletion_requests": {
+                  Row: {
+                    "created_at": string | null,"id": string | null,"resolution_note": string | null,"resolved_at": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "created_at"?: string | null,"id"?: string | null,"resolution_note"?: string | null,"resolved_at"?: string | null,"status"?: string | null
+                         }
+                        Update: {
+                           "created_at"?: string | null,"id"?: string | null,"resolution_note"?: string | null,"resolved_at"?: string | null,"status"?: string | null
+                         }
+                        Relationships: [
+                    
+                  ]
                 },"my_order_units": {
                   Row: {
                     "checkout_id": string | null,"created_at": string | null,"order_count": number | null,"payment_status": string | null,"total": number | null,"unit_id": string | null
@@ -260,7 +274,7 @@ export type Database = {
                   ]
                 },"my_profile": {
                   Row: {
-                    "created_at": string | null,"email": string | null,"full_name": string | null,"id": string | null,"last_sign_in_at": string | null,"phone": string | null,"status": "activa"|"anonimizada" | null
+                    "avatar_path": string | null,"created_at": string | null,"email": string | null,"full_name": string | null,"id": string | null,"last_sign_in_at": string | null,"notify_order_email": boolean | null,"phone": string | null,"status": "activa"|"anonimizada" | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -278,8 +292,8 @@ export type Database = {
                            "created_at"?: string | null,"endpoint"?: string | null,"id"?: string | null,"last_seen_at"?: string | null,"user_agent"?: string | null
                          }
                         Relationships: [
-                          
-                        ]
+                    
+                  ]
                 },"my_roles": {
                   Row: {
                     "commerce_id": string | null,"granted_at": string | null,"id": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "activo"|"suspendido"|"revocado" | null
@@ -322,6 +336,28 @@ export type Database = {
                         Relationships: [
                     
                   ]
+                },"order_evidence_list": {
+                  Row: {
+                    "courier_id": string | null,"distance_m": number | null,"file_path": string | null,"flag_reason": string | null,"flagged": boolean | null,"id": string | null,"kind": string | null,"note": string | null,"order_id": string | null,"purged_at": string | null,"sha256": string | null,"taken_at": string | null,"units_count": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
+                         }
+                        Update: {
+                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
+                         }
+                        Relationships: [
+                    
+                  ]
+                },"order_evidence_status": {
+                  Row: {
+                    "complete": boolean | null,"courier_id": string | null,"failed_attempts": number | null,"flagged_count": number | null,"has_delivery": boolean | null,"has_pickup": boolean | null,"number": number | null,"order_id": string | null,"status": string | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
                 },"order_items_list": {
                   Row: {
                     "id": string | null,"line_total": number | null,"order_id": string | null,"product_name": string | null,"quantity": number | null,"sku": string | null,"unit_price": number | null,"variant_id": string | null,"variant_name": string | null
@@ -336,58 +372,30 @@ export type Database = {
                         Relationships: [
                     
                   ]
-                },"order_evidence_list": {
-                  Row: {
-                    "courier_id": string | null,"distance_m": number | null,"file_path": string | null,"flag_reason": string | null,"flagged": boolean | null,"id": string | null,"kind": string | null,"note": string | null,"order_id": string | null,"purged_at": string | null,"sha256": string | null,"taken_at": string | null,"units_count": number | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
-                         }
-                        Update: {
-                           "courier_id"?: string | null,"distance_m"?: number | null,"file_path"?: string | null,"flag_reason"?: string | null,"flagged"?: boolean | null,"id"?: string | null,"kind"?: string | null,"note"?: string | null,"order_id"?: string | null,"purged_at"?: string | null,"sha256"?: string | null,"taken_at"?: string | null,"units_count"?: number | null
-                         }
-                        Relationships: [
-                          
-                        ]
-                },"order_evidence_status": {
-                  Row: {
-                    "complete": boolean | null,"courier_id": string | null,"failed_attempts": number | null,"flagged_count": number | null,"has_delivery": boolean | null,"has_pickup": boolean | null,"number": number | null,"order_id": string | null,"status": string | null
-                  }
-                  ComputedFields: never
-                  Insert: {
-                           "complete"?: boolean | null,"courier_id"?: string | null,"failed_attempts"?: number | null,"flagged_count"?: number | null,"has_delivery"?: boolean | null,"has_pickup"?: boolean | null,"number"?: number | null,"order_id"?: string | null,"status"?: string | null
-                         }
-                        Update: {
-                           "complete"?: boolean | null,"courier_id"?: string | null,"failed_attempts"?: number | null,"flagged_count"?: number | null,"has_delivery"?: boolean | null,"has_pickup"?: boolean | null,"number"?: number | null,"order_id"?: string | null,"status"?: string | null
-                         }
-                        Relationships: [
-                          
-                        ]
                 },"order_offers_list": {
                   Row: {
                     "courier_id": string | null,"expires_at": string | null,"id": string | null,"offered_at": string | null,"offered_by": string | null,"order_id": string | null,"reject_reason": string | null,"responded_at": string | null,"status": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: string | null
+                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: never
                          }
                         Update: {
-                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: string | null
+                           "courier_id"?: string | null,"expires_at"?: string | null,"id"?: string | null,"offered_at"?: string | null,"offered_by"?: string | null,"order_id"?: string | null,"reject_reason"?: string | null,"responded_at"?: string | null,"status"?: never
                          }
                         Relationships: [
-                          
-                        ]
+                    
+                  ]
                 },"orders_list": {
                   Row: {
-                    "cash_received_at": string | null,"cash_collected": number | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
+                    "cash_collected": number | null,"cash_received_at": string | null,"cash_session_id": string | null,"cashier_id": string | null,"channel": string | null,"checkout_id": string | null,"class_reason": string | null,"client_id": string | null,"commerce_id": string | null,"confirmed_at": string | null,"courier_id": string | null,"created_at": string | null,"delivered_at": string | null,"delivery_class": string | null,"delivery_fee": number | null,"destination_department": string | null,"eta_max_days": number | null,"eta_min_days": number | null,"expires_at": string | null,"id": string | null,"item_count": number | null,"number": number | null,"origin_department": string | null,"payment_method": string | null,"payment_ref": string | null,"payment_status": string | null,"reclassified_at": string | null,"reclassified_reason": string | null,"status": string | null,"status_reason": string | null,"store_id": string | null,"store_name": string | null,"subtotal": number | null,"total": number | null,"updated_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "cash_received_at"?: string | null,"cash_collected"?: number | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_collected"?: number | null,"cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Update: {
-                           "cash_received_at"?: string | null,"cash_collected"?: number | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
+                           "cash_collected"?: number | null,"cash_received_at"?: string | null,"cash_session_id"?: string | null,"cashier_id"?: string | null,"channel"?: string | null,"checkout_id"?: string | null,"class_reason"?: string | null,"client_id"?: string | null,"commerce_id"?: string | null,"confirmed_at"?: string | null,"courier_id"?: string | null,"created_at"?: string | null,"delivered_at"?: string | null,"delivery_class"?: string | null,"delivery_fee"?: number | null,"destination_department"?: string | null,"eta_max_days"?: number | null,"eta_min_days"?: number | null,"expires_at"?: string | null,"id"?: string | null,"item_count"?: never,"number"?: number | null,"origin_department"?: string | null,"payment_method"?: string | null,"payment_ref"?: string | null,"payment_status"?: string | null,"reclassified_at"?: string | null,"reclassified_reason"?: string | null,"status"?: string | null,"status_reason"?: string | null,"store_id"?: string | null,"store_name"?: string | null,"subtotal"?: number | null,"total"?: number | null,"updated_at"?: string | null
                          }
                         Relationships: [
                     
@@ -536,11 +544,14 @@ export type Database = {
 "bootstrap_superadmin":
 { Args: { "p_user": string }; Returns: undefined
                            },
-"cancel_order_offer":
-{ Args: { "p_offer": string }; Returns: undefined
+"cancel_account_deletion":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "cancel_invitation":
 { Args: { "p_id": string }; Returns: undefined
+                           },
+"cancel_order_offer":
+{ Args: { "p_offer": string }; Returns: undefined
                            },
 "cash_session_incidents_for":
 { Args: { "p_session": string }; Returns: {
@@ -588,6 +599,11 @@ export type Database = {
               "amount_cents": number,"order_id": string,"order_number": number,"payment_intent_id": string
             }[]
                            },
+"claim_push":
+{ Args: { "p_limit"?: number }; Returns: {
+              "auth": string,"endpoint": string,"expires_at": string,"kind": string,"offer_id": string,"outbox_id": string,"p256dh": string,"subscription_id": string
+            }[]
+                           },
 "close_cash_session":
 { Args: { "p_counted": number,"p_note"?: string }; Returns: Json
                            },
@@ -605,13 +621,22 @@ export type Database = {
               "price": number,"product_name": string,"quantity": number,"sku": string,"store_id": string,"store_name": string,"variant_id": string,"variant_name": string
             }[]
                            },
+"courier_accept_offer":
+{ Args: { "p_offer": string }; Returns: string
+                           },
+"courier_add_evidence":
+{ Args: { "p_kind": string,"p_latitude"?: number,"p_longitude"?: number,"p_note"?: string,"p_order": string,"p_path": string,"p_sha256": string,"p_units"?: number }; Returns: string
+                           },
+"courier_cash_code":
+{ Args: { "p_order": string }; Returns: string
+                           },
 "courier_daily":
 { Args: { "p_courier": string,"p_from": string,"p_to": string }; Returns: {
               "day": string,"deliveries": number,"km": number
             }[]
                            },
-"courier_accept_offer":
-{ Args: { "p_offer": string }; Returns: string
+"courier_deliver":
+{ Args: { "p_cash"?: number,"p_code"?: string,"p_note"?: string,"p_order": string,"p_received_by"?: string }; Returns: string
                            },
 "courier_history":
 { Args: { "p_days"?: number }; Returns: {
@@ -619,7 +644,7 @@ export type Database = {
             }[]
                            },
 "courier_offers":
-{ Args: { [_ in never]: never }; Returns: {
+{ Args: Record<PropertyKey, never>; Returns: {
               "cash_total": number,"courier_pay": number,"delivery_class": string,"destination_department": string,"distance_km": number,"expires_at": string,"item_count": number,"number": number,"offer_id": string,"offered_at": string,"order_id": string,"payment_method": string,"store_address": string,"store_name": string
             }[]
                            },
@@ -628,36 +653,32 @@ export type Database = {
               "cash_registered": boolean,"cash_total": number,"client_first_name": string,"delivered_at": string,"delivery_address": string,"delivery_class": string,"delivery_notes": string,"delivery_phone": string,"dest_latitude": number,"dest_longitude": number,"destination_department": string,"eta_max_days": number,"items": Json,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_latitude": number,"store_longitude": number,"store_name": string,"store_phone": string,"updated_at": string
             }[]
                            },
-"courier_orders":
-{ Args: { [_ in never]: never }; Returns: {
-              "assigned_updated_at": string,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"destination_department": string,"eta_max_days": number,"item_count": number,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_name": string,"store_phone": string
+"courier_order_evidence":
+{ Args: { "p_order": string }; Returns: {
+              "evidence_id": string,"flag_reason": string,"flagged": boolean,"kind": string,"note": string,"taken_at": string,"units_count": number
             }[]
-                           },
-"courier_cash_code":
-{ Args: { "p_order": string }; Returns: string
-                           },
-"courier_deliver":
-{ Args: { "p_cash"?: number,"p_code"?: string,"p_note"?: string,"p_order": string,"p_received_by"?: string }; Returns: string
                            },
 "courier_order_issues":
 { Args: { "p_order": string }; Returns: {
               "attended_note": string,"created_at": string,"issue_id": string,"kind": string,"reason": string,"status": string
             }[]
                            },
+"courier_orders":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "assigned_updated_at": string,"cash_registered": boolean,"cash_total": number,"delivered_at": string,"delivery_class": string,"destination_department": string,"eta_max_days": number,"item_count": number,"number": number,"order_id": string,"payment_method": string,"status": string,"store_address": string,"store_name": string,"store_phone": string
+            }[]
+                           },
 "courier_pick_up":
 { Args: { "p_code"?: string,"p_order": string }; Returns: string
+                           },
+"courier_reject_offer":
+{ Args: { "p_offer": string,"p_reason"?: string }; Returns: undefined
                            },
 "courier_release_order":
 { Args: { "p_order": string,"p_reason": string }; Returns: undefined
                            },
 "courier_report_problem":
 { Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: string
-                           },
-"resolve_delivery_issue":
-{ Args: { "p_issue": string,"p_note": string }; Returns: undefined
-                           },
-"courier_reject_offer":
-{ Args: { "p_offer": string,"p_reason"?: string }; Returns: undefined
                            },
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined
@@ -719,11 +740,19 @@ export type Database = {
 "department_for_point":
 { Args: { "p_latitude": number,"p_longitude": number }; Returns: string
                            },
+"evidence_pending_purge":
+{ Args: { "p_limit"?: number }; Returns: {
+              "evidence_id": string,"file_path": string
+            }[]
+                           },
 "export_dataset":
 { Args: { "p_dataset": string,"p_from"?: string,"p_reason": string,"p_to"?: string }; Returns: Json
                            },
 "finish_accept_invitation":
 { Args: { "p_token_hash": string,"p_user": string }; Returns: boolean
+                           },
+"finish_push":
+{ Args: { "p_error"?: string,"p_gone"?: (string)[],"p_outbox": string,"p_sent": boolean }; Returns: undefined
                            },
 "get_client_detail":
 { Args: { "p_user": string }; Returns: Json
@@ -731,11 +760,24 @@ export type Database = {
 "list_anonymization_candidates":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"list_deletion_requests":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"email": string,"full_name": string,"id": string,"reason": string,"user_id": string
+            }[]
+                           },
+"list_feedback":
+{ Args: { "p_limit"?: number }; Returns: {
+              "created_at": string,"full_name": string,"id": string,"message": string,"rating": number,"topic": string
+            }[]
+                           },
 "login_events_page":
 { Args: { "p_before"?: number,"p_from"?: string,"p_limit"?: number,"p_result"?: string,"p_to"?: string,"p_user"?: string }; Returns: Json
                            },
 "lookup_auth_user":
 { Args: { "p_email": string }; Returns: Json
+                           },
+"mark_evidence_purged":
+{ Args: { "p_ids": (string)[] }; Returns: number
                            },
 "mark_order_paid":
 { Args: { "p_order": string }; Returns: undefined
@@ -746,9 +788,20 @@ export type Database = {
 "mark_outbox":
 { Args: { "p_error"?: string,"p_id": string,"p_ok": boolean }; Returns: undefined
                            },
+"my_delivery_code":
+{ Args: { "p_order": string }; Returns: string
+                           },
 "my_return_request":
 { Args: { "p_order": string }; Returns: {
               "decided_at": string,"decision_note": string,"payment_method": string,"photo_count": number,"reason": string,"request_id": string,"requested_at": string,"status": string
+            }[]
+                           },
+"offer_order_to_courier":
+{ Args: { "p_courier": string,"p_order": string }; Returns: string
+                           },
+"offerable_couriers":
+{ Args: { "p_order": string }; Returns: {
+              "active_orders": number,"courier_id": string,"department": string,"full_name": string,"vehicle_class": string
             }[]
                            },
 "open_cash_session":
@@ -756,6 +809,9 @@ export type Database = {
                            },
 "order_distance_km":
 { Args: { "p_order": string }; Returns: number
+                           },
+"order_pickup_code":
+{ Args: { "p_order": string }; Returns: string
                            },
 "order_route_points":
 { Args: { "p_order": string }; Returns: {
@@ -800,6 +856,9 @@ export type Database = {
               "cancelled_units": number,"orders": number,"product_id": string,"reserved_units": number,"sales": number,"units": number
             }[]
                            },
+"push_kick":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "quote_cart":
 { Args: { "p_items": Json,"p_store": string }; Returns: Json
                            },
@@ -811,59 +870,6 @@ export type Database = {
                            },
 "reactivate_role":
 { Args: { "p_reason": string,"p_role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor","p_user": string }; Returns: undefined
-                           },
-"offer_order_to_courier":
-{ Args: { "p_courier": string,"p_order": string }; Returns: string
-                           },
-"offerable_couriers":
-{ Args: { "p_order": string }; Returns: {
-              "active_orders": number,"courier_id": string,"department": string,"full_name": string,"vehicle_class": string
-            }[]
-                           },
-"courier_add_evidence":
-{ Args: { "p_kind": string,"p_latitude"?: number,"p_longitude"?: number,"p_note"?: string,"p_order": string,"p_path": string,"p_sha256": string,"p_units"?: number }; Returns: string
-                           },
-"courier_order_evidence":
-{ Args: { "p_order": string }; Returns: {
-              "evidence_id": string,"flag_reason": string,"flagged": boolean,"kind": string,"note": string,"taken_at": string,"units_count": number
-            }[]
-                           },
-"evidence_pending_purge":
-{ Args: { "p_limit"?: number }; Returns: {
-              "evidence_id": string,"file_path": string
-            }[]
-                           },
-"mark_evidence_purged":
-{ Args: { "p_ids": string[] }; Returns: number
-                           },
-"my_delivery_code":
-{ Args: { "p_order": string }; Returns: string
-                           },
-"order_pickup_code":
-{ Args: { "p_order": string }; Returns: string
-                           },
-"reset_order_code_attempts":
-{ Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: undefined
-                           },
-"set_evidence_settings":
-{ Args: { "p_alert_distance_m": number,"p_delivery_code": boolean,"p_delivery_photo": boolean,"p_pickup_code": boolean,"p_pickup_photo": boolean,"p_retention_days": number }; Returns: undefined
-                           },
-"claim_push":
-{ Args: { "p_limit"?: number }; Returns: {
-              "auth": string,"endpoint": string,"expires_at": string,"kind": string,"offer_id": string,"outbox_id": string,"p256dh": string,"subscription_id": string
-            }[]
-                           },
-"finish_push":
-{ Args: { "p_error"?: string,"p_gone"?: string[],"p_outbox": string,"p_sent": boolean }; Returns: undefined
-                           },
-"push_kick":
-{ Args: { [_ in never]: never }; Returns: boolean
-                           },
-"register_push_subscription":
-{ Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string,"p_user_agent"?: string }; Returns: string
-                           },
-"unregister_push_subscription":
-{ Args: { "p_endpoint": string }; Returns: undefined
                            },
 "read_courier_document":
 { Args: { "p_id": string }; Returns: string
@@ -885,6 +891,9 @@ export type Database = {
                            },
 "register_courier_cash":
 { Args: { "p_order": string }; Returns: string
+                           },
+"register_push_subscription":
+{ Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string,"p_user_agent"?: string }; Returns: string
                            },
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
@@ -912,11 +921,23 @@ export type Database = {
 "report_incident":
 { Args: { "p_description": string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion" }; Returns: string
                            },
+"request_account_deletion":
+{ Args: { "p_reason"?: string }; Returns: string
+                           },
 "request_return":
 { Args: { "p_order": string,"p_photos": (string)[],"p_reason": string }; Returns: string
                            },
 "reset_mfa":
 { Args: { "p_reason": string,"p_target": string }; Returns: undefined
+                           },
+"reset_order_code_attempts":
+{ Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: undefined
+                           },
+"resolve_deletion_request":
+{ Args: { "p_approve": boolean,"p_id": string,"p_note": string }; Returns: string
+                           },
+"resolve_delivery_issue":
+{ Args: { "p_issue": string,"p_note": string }; Returns: undefined
                            },
 "return_cash_to_customer":
 { Args: { "p_request": string }; Returns: undefined
@@ -945,6 +966,9 @@ export type Database = {
 "save_address":
 { Args: { "p_address": string,"p_id": string,"p_label": string,"p_latitude"?: number,"p_longitude"?: number,"p_make_default"?: boolean,"p_phone"?: string,"p_reference"?: string }; Returns: string
                            },
+"send_feedback":
+{ Args: { "p_message": string,"p_rating": number,"p_topic": string }; Returns: string
+                           },
 "set_address_department":
 { Args: { "p_department": string,"p_id": string }; Returns: undefined
                            },
@@ -963,6 +987,9 @@ export type Database = {
 "set_delivery_class_limits":
 { Args: { "p_order_kg": number,"p_side_cm": number,"p_sum_cm": number,"p_unit_kg": number }; Returns: undefined
                            },
+"set_evidence_settings":
+{ Args: { "p_alert_distance_m": number,"p_delivery_code": boolean,"p_delivery_photo": boolean,"p_pickup_code": boolean,"p_pickup_photo": boolean,"p_retention_days": number }; Returns: undefined
+                           },
 "set_incident_status":
 { Args: { "p_id": string,"p_resolution"?: string,"p_status": "abierto"|"en_atencion"|"resuelto" }; Returns: undefined
                            },
@@ -971,6 +998,12 @@ export type Database = {
                            },
 "set_master_item_status":
 { Args: { "p_id": string,"p_reason"?: string,"p_status": string }; Returns: undefined
+                           },
+"set_my_avatar":
+{ Args: { "p_path": string }; Returns: undefined
+                           },
+"set_my_notifications":
+{ Args: { "p_order_email": boolean }; Returns: undefined
                            },
 "set_order_status":
 { Args: { "p_order": string,"p_reason"?: string,"p_to": string }; Returns: undefined
@@ -1026,6 +1059,9 @@ export type Database = {
                            },
 "touch_session":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"unregister_push_subscription":
+{ Args: { "p_endpoint": string }; Returns: undefined
                            },
 "update_courier":
 { Args: { "p_document_path"?: string,"p_full_name": string,"p_id": string,"p_phone": string,"p_vehicle_type": string }; Returns: undefined

@@ -36,6 +36,15 @@ const nextConfig = {
   // Se abre en http://127.0.0.1 (cookies y redirecciones de Supabase); sin esto Next bloquea la hidratación en desarrollo y los botones no responden.
   allowedDevOrigins: ["127.0.0.1"],
   env: { NEXT_PUBLIC_AUTH_COOKIE_NAME: "rapitrip-store-auth" },
+  // «Mi perfil» y luego «Mi cuenta» pasaron a «Ajustes»: los enlaces viejos (correos, marcadores) siguen funcionando.
+  async redirects() {
+    return [
+      { source: "/perfil", destination: "/ajustes", permanent: true },
+      { source: "/perfil/:path*", destination: "/ajustes/:path*", permanent: true },
+      { source: "/cuenta", destination: "/ajustes", permanent: true },
+      { source: "/cuenta/:path*", destination: "/ajustes/:path*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

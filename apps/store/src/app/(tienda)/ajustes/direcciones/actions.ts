@@ -9,7 +9,7 @@ import { expiredMessage, expiredResult, type CustomerResult } from "@/lib/result
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
 
-const PATH = "/perfil/direcciones";
+const PATH = "/ajustes/direcciones";
 
 /** Crea (sin `id`) o edita una dirección propia. Las coordenadas del mapa se aceptan pero hoy ninguna pantalla las envía. */
 export async function saveAddress(input: unknown): Promise<CustomerResult> {
