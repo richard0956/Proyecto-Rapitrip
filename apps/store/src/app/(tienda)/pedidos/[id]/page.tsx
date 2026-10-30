@@ -1,6 +1,6 @@
 import { Alert, Badge, Card } from "@rapitrip/ui";
 import { MapView } from "@rapitrip/maps";
-import { Check, Circle, MapPin, Smartphone, StickyNote } from "lucide-react";
+import { MapPin, Smartphone, StickyNote } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -8,7 +8,7 @@ import { isUuid } from "@/lib/catalog";
 import { withinReturnWindow, type ReturnStatus } from "@/lib/returns";
 import { classLabel, etaText } from "@/lib/delivery-class";
 import { formatMoney } from "@/lib/money";
-import { awaitingPaymentConfirmation, customerCanCancel, isFinalStatus, isOrderStatus, orderStatusHint, orderStatusLabel, orderStatusTone, progressIndex, progressSteps, remainingText } from "@/lib/orders";
+import { awaitingPaymentConfirmation, customerCanCancel, isFinalStatus, isOrderStatus, orderStatusHint, orderStatusLabel, orderStatusTone, progressIndex, remainingText } from "@/lib/orders";
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
 import { startCardPayment } from "../../checkout/actions";
@@ -17,6 +17,7 @@ import { AutoRefresh } from "./auto-refresh";
 import { DeliveryCodeCard } from "./delivery-code-card";
 import { DeliveryProof, type DeliveryProofData } from "./delivery-proof";
 import { OrderActions } from "./order-actions";
+import { OrderProgress } from "./order-progress";
 import { ReturnForm } from "./return-form";
 import { ReturnStatusCard } from "./return-status";
 import { PaymentWatch } from "./payment-watch";
@@ -111,19 +112,7 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
       </div>
 
       {step >= 0 || waitingPayment ? (
-        <ol aria-label="Avance del pedido" className="mt-6 grid max-w-3xl grid-cols-3 gap-3 sm:grid-cols-6">
-          {progressSteps.map((s, index) => {
-            const done = index <= step;
-            return (
-              <li key={s} aria-current={index === step ? "step" : undefined} className={`flex flex-col items-center gap-1.5 text-center text-[11.5px] font-bold ${done ? "text-hoja" : "text-tinta-suave"}`}>
-                <span aria-hidden="true" className={`flex size-8 items-center justify-center rounded-full ${done ? "bg-hoja text-sobre-acento" : "bg-menta/70 text-tinta-suave"}`}>
-                  {done ? <Check className="size-4" /> : <Circle className="size-3" />}
-                </span>
-                {orderStatusLabel[s]}
-              </li>
-            );
-          })}
-        </ol>
+        <OrderProgress step={step} deliveryClass={deliveryClass} finished={finalStatus} />
       ) : null}
 
       <div className="mt-8 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
