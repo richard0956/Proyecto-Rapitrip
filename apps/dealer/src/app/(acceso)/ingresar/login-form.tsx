@@ -4,9 +4,10 @@ import { Alert, Button, Field } from "@rapitrip/ui";
 import { emailSchema } from "@rapitrip/validation";
 import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { claimsHaveCourierRole } from "@/lib/claims";
 import { getSupabase } from "@/lib/client";
+import { useKeyboardFit } from "@/lib/use-keyboard-fit";
 
 const genericError = "No pudimos iniciar sesión. Revisa tus datos e inténtalo de nuevo.";
 
@@ -17,6 +18,8 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  useKeyboardFit(formRef);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -46,9 +49,10 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <Field label="Correo" icon={<Mail className="size-4" />} type="email" autoComplete="username" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldError ?? undefined} required />
-      <Field label="Contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+    <form ref={formRef} onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+      {/* `text-base` (16px): con menos, Safari del iPhone amplía la página al enfocar el campo. */}
+      <Field label="Correo" icon={<Mail className="size-4" />} className="text-base" type="email" autoComplete="username" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} error={fieldError ?? undefined} required />
+      <Field label="Contraseña" icon={<Lock className="size-4" />} className="text-base" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       {error ? <Alert tone="error">{error}</Alert> : null}
       <Button variant="primary" type="submit" className="min-h-12 w-full text-base" disabled={busy || !email || !password}>
         {busy ? "Ingresando…" : "Ingresar"}
