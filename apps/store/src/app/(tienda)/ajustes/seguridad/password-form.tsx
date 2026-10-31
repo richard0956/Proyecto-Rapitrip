@@ -1,22 +1,13 @@
 "use client";
 
-import { Alert, Button, CodeInput, Field } from "@rapitrip/ui";
-import { passwordSchema } from "@rapitrip/validation";
-import { Lock } from "lucide-react";
+import { Alert, Button, CodeInput } from "@rapitrip/ui";
+import { passwordProblem, passwordStrength } from "@rapitrip/validation";
 import { useState, useTransition, type FormEvent } from "react";
+import { NewPasswordFields } from "@/components/new-password-fields";
 import type { PasswordResult } from "./actions";
 
-/** Fuerza orientativa: largo, mayúsculas y minúsculas, números y símbolos. Solo informa; la regla real es 8 a 72 caracteres. */
-export function passwordStrength(password: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
-  if (!password) return { score: 0, label: "" };
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
-  if (/\d/.test(password) && /[^A-Za-z0-9]/.test(password)) score++;
-  const value = Math.min(score, 4) as 0 | 1 | 2 | 3 | 4;
-  return { score: value, label: ["Muy débil", "Débil", "Aceptable", "Buena", "Fuerte"][value] ?? "" };
-}
+// La fuerza orientativa vive en @rapitrip/validation; se reexporta aquí para quien ya la importaba desde este archivo.
+export { passwordStrength };
 
 type Actions = { change: (input: unknown) => Promise<PasswordResult>; sendCode: () => Promise<PasswordResult> };
 
@@ -32,12 +23,12 @@ export function PasswordForm({ actions }: { actions: Actions }) {
   const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
   const [message, setMessage] = useState<{ tone: "info" | "error"; text: string } | null>(null);
   const [pending, start] = useTransition();
-  const strength = passwordStrength(password);
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setMessage(null);
-    if (!passwordSchema.safeParse(password).success) return setErrors({ password: "La contraseña debe tener entre 8 y 72 caracteres." });
+    const problem = passwordProblem(password);
+    if (problem) return setErrors({ password: problem });
     if (password !== confirm) return setErrors({ confirm: "Las contraseñas no coinciden." });
     if (needsCode && code.length !== 6) return setMessage({ tone: "error", text: "Escribe el código de 6 dígitos que te enviamos." });
     setErrors({});
@@ -69,23 +60,9 @@ export function PasswordForm({ actions }: { actions: Actions }) {
     });
   }
 
-  const bar = ["bg-borde", "bg-rojo", "bg-naranja", "bg-hoja", "bg-esmeralda"][strength.score];
   return (
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <Field label="Contraseña nueva" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} required />
-          <div aria-hidden="true" className="flex gap-1">
-            {[1, 2, 3, 4].map((step) => (
-              <span key={step} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${strength.score >= step ? bar : "bg-borde"}`} />
-            ))}
-          </div>
-          <p className="text-[12px] text-tinta-suave" aria-live="polite">
-            {strength.label ? `Seguridad: ${strength.label}` : "Entre 8 y 72 caracteres. Mezcla letras, números y símbolos."}
-          </p>
-        </div>
-        <Field label="Repite la contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} error={errors.confirm} required />
-      </div>
+      <NewPasswordFields label="Contraseña nueva" password={password} onPasswordChange={setPassword} confirm={confirm} onConfirmChange={setConfirm} errors={errors} />
 
       {needsCode ? (
         <div className="flex flex-col gap-3 rounded-2xl bg-crema/70 p-4 ring-1 ring-borde">

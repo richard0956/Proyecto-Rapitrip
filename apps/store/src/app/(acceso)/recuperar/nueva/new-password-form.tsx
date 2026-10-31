@@ -1,11 +1,11 @@
 "use client";
 
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
-import { Alert, Button, Field } from "@rapitrip/ui";
-import { passwordSchema } from "@rapitrip/validation";
-import { Lock } from "lucide-react";
+import { Alert, Button } from "@rapitrip/ui";
+import { passwordProblem } from "@rapitrip/validation";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { NewPasswordFields } from "@/components/new-password-fields";
 
 export function NewPasswordForm() {
   const router = useRouter();
@@ -18,7 +18,8 @@ export function NewPasswordForm() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!passwordSchema.safeParse(password).success) return setErrors({ password: "La contraseña debe tener entre 8 y 72 caracteres." });
+    const problem = passwordProblem(password);
+    if (problem) return setErrors({ password: problem });
     if (password !== confirm) return setErrors({ confirm: "Las contraseñas no coinciden." });
     setErrors({});
     setBusy(true);
@@ -35,8 +36,7 @@ export function NewPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      <Field label="Contraseña nueva" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} error={errors.password} hint="Entre 8 y 72 caracteres." required />
-      <Field label="Repite la contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} error={errors.confirm} required />
+      <NewPasswordFields label="Contraseña nueva" password={password} onPasswordChange={setPassword} confirm={confirm} onConfirmChange={setConfirm} errors={errors} />
       {error ? <Alert tone="error">{error}</Alert> : null}
       <Button variant="primary" type="submit" className="w-full" disabled={busy || !password || !confirm}>
         {busy ? "Guardando…" : "Guardar contraseña"}
