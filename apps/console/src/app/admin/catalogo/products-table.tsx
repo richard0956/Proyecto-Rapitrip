@@ -68,6 +68,8 @@ export function ProductsTable({ rows, categories, brands, types, periodLabel, up
     { header: "Stock", cell: (row) => (row.outOfStock > 0 ? <Badge tone="danger">Agotado</Badge> : row.reorder > 0 ? <Badge tone="warning">Reorden</Badge> : "—") },
     {
       header: "Acción",
+      // Ancho justo para el botón, alineado a la derecha y con el mismo respiro que el borde izquierdo de la tabla.
+      className: "w-px whitespace-nowrap pr-5 text-right",
       cell: (row) => (
         <Button variant="secondary" aria-label={`${row.status === "archivado" ? "Ver" : "Editar"} ${row.name}`} onClick={() => setEditing(row)}>
           {row.status === "archivado" ? "Ver" : "Editar"}

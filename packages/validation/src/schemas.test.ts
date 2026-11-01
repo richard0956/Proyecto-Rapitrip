@@ -31,9 +31,19 @@ import {
 
 describe("passwordSchema", () => {
   it("exige entre 8 y 72 caracteres", () => {
-    expect(passwordSchema.safeParse("1234567").success).toBe(false);
-    expect(passwordSchema.safeParse("12345678").success).toBe(true);
-    expect(passwordSchema.safeParse("x".repeat(73)).success).toBe(false);
+    expect(passwordSchema.safeParse("Ab1!xyz").success).toBe(false);
+    expect(passwordSchema.safeParse("Ab1!xyzw").success).toBe(true);
+    expect(passwordSchema.safeParse(`Ab1!${"x".repeat(69)}`).success).toBe(false);
+  });
+
+  it("exige minúscula, mayúscula, número y símbolo", () => {
+    expect(passwordSchema.safeParse("12345678").success).toBe(false);
+    expect(passwordSchema.safeParse("abcdefgh").success).toBe(false);
+    expect(passwordSchema.safeParse("ABCDEFG1!").success).toBe(false);
+    expect(passwordSchema.safeParse("abcdefg1!").success).toBe(false);
+    expect(passwordSchema.safeParse("Abcdefgh1").success).toBe(false);
+    expect(passwordSchema.safeParse("Abcdefg1!").success).toBe(true);
+    expect(passwordSchema.safeParse("Clave Larga 2026").success).toBe(true);
   });
 });
 

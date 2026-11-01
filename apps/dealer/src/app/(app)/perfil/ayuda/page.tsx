@@ -1,6 +1,6 @@
-import { CircleHelp, ClipboardList, Mail, MessageSquareHeart, Siren, Workflow } from "lucide-react";
-import { FeedbackForm } from "@/components/feedback-form";
+import { CircleHelp, ClipboardList, Mail, MonitorX, Siren, Workflow } from "lucide-react";
 import { HelpFaq, type FaqItem } from "@/components/help-faq";
+import { IncidentForm } from "@/components/incident-form";
 import { SettingsHeader, SettingsSection } from "@/components/settings-header";
 import { statusLabel, stepFor } from "@/lib/order-steps";
 
@@ -39,14 +39,14 @@ const faq: FaqItem[] = [
   { topic: "cuenta", q: "¿Cómo cambio mi contraseña?", a: "En Perfil → Cuenta → Cambiar contraseña. Si te lo pide, confirma con el código de 6 dígitos que llega a tu correo." },
   { topic: "cuenta", q: "Olvidé mi contraseña", a: "Pide a coordinación que te envíe una invitación nueva; con ella vuelves a crear tu acceso." },
   { topic: "cuenta", q: "Mis datos están mal (teléfono, vehículo…)", a: "Tus datos los registra coordinación. Pídeles que los corrijan; los verás actualizados en Perfil → Cuenta." },
-  { topic: "cuenta", q: "Perdí mi teléfono", a: "Desde otro teléfono, ingresa y ve a Perfil → Cuenta → «Cerrar en todos». Así nadie más puede usar tu cuenta." },
+  { topic: "cuenta", q: "Perdí mi teléfono", a: "Desde otro teléfono, ingresa y ve a Perfil → Cuenta → «Cerrar en todos». Así nadie más puede usar tu cuenta. Luego repórtalo abajo como incidente de «Mi cuenta»." },
 ];
 
-/** Ayuda, como la de la tienda pero para la calle: lo urgente primero, la guía de un pedido, los estados, preguntas y comentarios. */
+/** Ayuda, como la de la tienda pero para la calle: lo urgente primero, la guía de un pedido, los estados, preguntas y el reporte de incidentes de TI. */
 export default function AyudaPage() {
   return (
     <div className="flex flex-col gap-4 px-4 pb-6 pt-4">
-      <SettingsHeader icon={<CircleHelp aria-hidden="true" className="size-3.5" />} title="Ayuda" text="Cómo funciona un pedido, qué significa cada estado y respuestas rápidas." />
+      <SettingsHeader icon={<CircleHelp aria-hidden="true" className="size-3.5" />} title="Ayuda" text="Cómo funciona un pedido, qué significa cada estado y cómo reportar un fallo." />
 
       {/* Lo urgente primero: durante un pedido, el aviso a coordinación es más rápido que cualquier pregunta frecuente. */}
       <section aria-labelledby="urgente" className="flex items-start gap-3.5 rounded-[1.75rem] bg-superficie p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06]">
@@ -96,8 +96,9 @@ export default function AyudaPage() {
         <HelpFaq items={faq} />
       </SettingsSection>
 
-      <SettingsSection id="comentarios" icon={<MessageSquareHeart className="size-5" />} title="Comentarios" text="Cuéntanos cómo te va; lo lee el equipo de Rapitrip.">
-        <FeedbackForm />
+      {/* En lugar de comentarios: un reporte de incidente de TI, que llega a «Incidentes de TI» de la consola. */}
+      <SettingsSection id="incidente" icon={<MonitorX className="size-5" />} title="Reportar un incidente de TI" text="¿La app falla o notas algo raro en tu cuenta? Avísale al equipo de TI.">
+        <IncidentForm />
       </SettingsSection>
 
       {contactEmail ? (

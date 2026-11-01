@@ -188,14 +188,14 @@ export type Database = {
                   ]
                 },"it_incidents_list": {
                   Row: {
-                    "created_at": string | null,"description": string | null,"id": string | null,"origin": "automatico"|"manual" | null,"resolution": string | null,"resolved_at": string | null,"severity": "baja"|"media"|"alta" | null,"status": "abierto"|"en_atencion"|"resuelto" | null,"type": "seguridad"|"interrupcion" | null
+                    "created_at": string | null,"description": string | null,"id": string | null,"origin": "automatico"|"manual" | null,"reported_from": string | null,"resolution": string | null,"resolved_at": string | null,"severity": "baja"|"media"|"alta" | null,"source": string | null,"status": "abierto"|"en_atencion"|"resuelto" | null,"type": "seguridad"|"interrupcion" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
+                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"reported_from"?: string | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: string | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
                          }
                         Update: {
-                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
+                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"reported_from"?: string | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: string | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
                          }
                         Relationships: [
                     
@@ -679,6 +679,9 @@ export type Database = {
                            },
 "courier_report_problem":
 { Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: string
+                           },
+"courier_report_incident":
+{ Args: { "p_description": string,"p_device"?: string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
                            },
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined

@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { isStrongPassword, PASSWORD_MAX, PASSWORD_MIN } from "./password";
 
 export const emailSchema = z.string().trim().toLowerCase().email("correo inválido");
+/** Contraseña nueva: 8 a 72 caracteres con minúscula, mayúscula, número y símbolo (la misma regla que aplica Auth). */
 export const passwordSchema = z
   .string()
-  .min(8, "mínimo 8 caracteres")
-  .max(72, "máximo 72 caracteres");
+  .min(PASSWORD_MIN, `mínimo ${PASSWORD_MIN} caracteres`)
+  .max(PASSWORD_MAX, `máximo ${PASSWORD_MAX} caracteres`)
+  .refine(isStrongPassword, "debe incluir mayúscula, minúscula, número y símbolo");
 export const phoneSchema = z.string().regex(/^[0-9+() -]{8,20}$/, "teléfono inválido");
 export const fullNameSchema = z.string().trim().min(2, "mínimo 2 caracteres").max(120, "máximo 120 caracteres");
 export const reasonSchema = z.string().trim().min(5, "el motivo exige al menos 5 caracteres").max(500);

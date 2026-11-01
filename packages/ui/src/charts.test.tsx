@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { BarChart } from "./bar-chart";
+import { ColumnList } from "./column-list";
+import { DonutChart } from "./donut-chart";
 import { HBarList } from "./hbar-list";
 import { KpiCard } from "./kpi-card";
 import { LineChart } from "./line-chart";
@@ -81,6 +83,46 @@ describe("HBarList", () => {
 
   it("una lista vacía lo explica", () => {
     render(<HBarList items={[]} />);
+    expect(screen.getByText("Sin datos")).toBeInTheDocument();
+  });
+});
+
+describe("DonutChart", () => {
+  it("dibuja una porción por valor positivo y muestra total y porcentajes", () => {
+    const { container } = render(
+      <DonutChart
+        ariaLabel="Pedidos por estado"
+        totalLabel="pedidos"
+        items={[
+          { label: "Listo", value: 8, color: "var(--esmeralda)" },
+          { label: "Entregado", value: 4, color: "var(--hoja)" },
+          { label: "Sin pedidos", value: 0, color: "var(--rojo)" },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("img", { name: "Pedidos por estado" })).toBeInTheDocument();
+    expect(container.querySelectorAll("circle")).toHaveLength(2);
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("67 %")).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain("NaN");
+  });
+
+  it("con todo en cero lo explica", () => {
+    render(<DonutChart ariaLabel="Vacío" items={[{ label: "Listo", value: 0, color: "red" }]} />);
+    expect(screen.getByText("Sin datos")).toBeInTheDocument();
+  });
+});
+
+describe("ColumnList", () => {
+  it("una columna por elemento con el valor formateado y sin NaN en cero", () => {
+    const { container } = render(<ColumnList ariaLabel="Ventas" items={[{ label: "Café Central", value: 1050 }, { label: "Tienda B", value: 0 }]} formatValue={(n) => `C$ ${n}`} />);
+    expect(container.querySelectorAll("li")).toHaveLength(2);
+    expect(screen.getAllByText("C$ 1050").length).toBeGreaterThan(0);
+    expect(container.innerHTML).not.toContain("NaN");
+  });
+
+  it("una lista vacía lo explica", () => {
+    render(<ColumnList ariaLabel="Ventas" items={[]} />);
     expect(screen.getByText("Sin datos")).toBeInTheDocument();
   });
 });

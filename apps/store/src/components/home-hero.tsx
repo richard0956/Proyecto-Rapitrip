@@ -58,16 +58,17 @@ function CenterPiece({ photo, picks }: { photo: string | null; picks: CatalogPro
 }
 
 /**
- * Héroe de la portada, a la manera de la referencia: panel verde que se aclara hacia abajo, «Rapitrip» enorme arriba con la
+ * Héroe de la portada: panel verde completo en diagonal (azul noche en oscuro), con destellos esmeralda, «Rapitrip» enorme arriba con la
  * etiqueta inclinada, la pieza central delante de las letras, el llamado abajo a la izquierda y la oferta abajo a la derecha.
  */
 export function HomeHero({ featured, picks, photo }: { featured: CatalogProduct | null; picks: CatalogProduct[]; photo: string | null }) {
   return (
     <section
       aria-labelledby="titulo"
-      className="relative isolate flex flex-col items-center overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,var(--panel)_0%,#0d5644_55%,#14705a_100%)] lg:bg-[linear-gradient(180deg,var(--panel)_0%,#0d5644_38%,#5fae92_68%,#e9f5ef_92%)] dark:bg-[linear-gradient(180deg,#0b1a2e_0%,#0b2034_55%,#0d2a38_100%)] dark:lg:bg-[linear-gradient(180deg,#0b1a2e_0%,#0b2236_42%,#0e2c3a_70%,#0d1522_94%)] px-5 pb-6 pt-8 lg:block lg:h-[440px] lg:p-0"
+      className="relative isolate flex flex-col items-center overflow-hidden rounded-[2rem] bg-[linear-gradient(160deg,var(--panel)_0%,#0d5644_58%,#14705a_100%)] dark:bg-[linear-gradient(160deg,#0b1a2e_0%,#0b2236_58%,#0e2c3a_100%)] px-5 pb-6 pt-8 lg:block lg:h-[440px] lg:p-0"
     >
-      <div aria-hidden="true" className="absolute -left-24 top-24 -z-10 size-96 rounded-full bg-esmeralda/15 blur-3xl" />
+      <div aria-hidden="true" className="absolute -right-24 -top-28 -z-10 size-96 rounded-full bg-esmeralda/20 blur-3xl" />
+      <div aria-hidden="true" className="absolute -bottom-32 -left-24 -z-10 size-96 rounded-full bg-esmeralda/10 blur-3xl" />
 
       {/* Estrellas de la marca, repartidas en los huecos del héroe. */}
       <Sparkle aria-hidden="true" className="absolute left-[44%] top-[9%] hidden size-7 fill-esmeralda text-esmeralda sm:block" />
@@ -83,16 +84,16 @@ export function HomeHero({ featured, picks, photo }: { featured: CatalogProduct 
       </div>
 
       <Reveal className="relative z-20 mt-10 w-full lg:absolute lg:bottom-[4.5rem] lg:left-10 lg:mt-0 lg:w-auto lg:max-w-[440px]">
-        <h1 id="titulo" className="text-[24px] font-bold leading-tight tracking-tight text-white lg:text-[36px] lg:text-tinta">
+        <h1 id="titulo" className="text-[24px] font-bold leading-tight tracking-tight text-white lg:text-[36px]">
           Todo lo que buscas, de comercios de confianza
         </h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-white/85 lg:text-[17px] lg:text-tinta-suave">Tecnología, hogar, muebles, herramientas, moda y mucho más. Compra en varias tiendas y recíbelo en tu puerta.</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-nav-texto lg:text-[17px]">Tecnología, hogar, muebles, herramientas, moda y mucho más. Compra en varias tiendas y recíbelo en tu puerta.</p>
         <Link
           href="/catalogo"
-          className="group mt-5 inline-flex min-h-12 items-center gap-3 rounded-full bg-selva py-1.5 pl-5 pr-1.5 text-[14px] font-semibold text-sobre-acento shadow-pulsa transition-colors duration-500 ease-fluido hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
+          className="group mt-5 inline-flex min-h-12 items-center gap-3 rounded-full bg-esmeralda py-1.5 pl-5 pr-1.5 text-[14px] font-semibold text-panel shadow-pulsa transition-colors duration-500 ease-fluido hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           Comprar ahora
-          <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-superficie text-selva transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
+          <span aria-hidden="true" className="flex size-9 items-center justify-center rounded-full bg-panel text-esmeralda transition-transform duration-500 ease-fluido group-hover:translate-x-0.5">
             <ChevronRight className="size-4" />
           </span>
         </Link>

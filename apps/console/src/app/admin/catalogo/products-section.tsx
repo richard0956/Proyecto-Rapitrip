@@ -1,4 +1,4 @@
-import { Alert, Card, CardHeader, HBarList, KpiCard } from "@rapitrip/ui";
+import { Alert, Card, CardHeader, ColumnList, HBarList, KpiCard } from "@rapitrip/ui";
 import { Banknote, Boxes, PackageX, Trophy } from "lucide-react";
 import { FilterChips } from "@/components/filter-chips";
 import type { ProductRow, ProductStatus } from "@/lib/catalog-products";
@@ -78,7 +78,7 @@ export async function ProductsSection({ period, categories, brands, types }: { p
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="p-5">
           <CardHeader title="Productos más vendidos" subtitle={`Unidades, ${word}`} />
-          <HBarList items={bestSellers.slice(0, 8).map((row) => ({ label: `${row.name} · ${row.storeName}`, value: row.sold, tone: "hoja" as const }))} formatValue={(n) => `${n} u.`} />
+          <ColumnList ariaLabel={`Productos más vendidos, ${word}`} items={bestSellers.slice(0, 8).map((row) => ({ label: row.name, detail: row.storeName, value: row.sold }))} formatValue={(n) => `${n} u.`} />
         </Card>
         <Card className="p-5">
           <CardHeader title="Punto de reorden de stock" subtitle="Las variantes más bajas primero" />

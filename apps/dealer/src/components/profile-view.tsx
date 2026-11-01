@@ -18,7 +18,7 @@ import { GreenPanel, PanelTag, SectionTitle, Tray } from "./panel";
 const sections: { href: string; label: string; text: string; icon: LucideIcon }[] = [
   { href: "/perfil/preferencias", label: "Preferencias", text: "Avisos, mapas, pantalla y tema", icon: Palette },
   { href: "/perfil/cuenta", label: "Cuenta", text: "Tus datos, contraseña y sesiones", icon: ShieldCheck },
-  { href: "/perfil/ayuda", label: "Ayuda", text: "Preguntas frecuentes y comentarios", icon: CircleHelp },
+  { href: "/perfil/ayuda", label: "Ayuda", text: "Preguntas y reportar un fallo de la app", icon: CircleHelp },
 ];
 
 /** Perfil: quién eres (panel verde) y la entrada a los ajustes, cada uno en su pantalla. Cierra con «Cerrar sesión». */

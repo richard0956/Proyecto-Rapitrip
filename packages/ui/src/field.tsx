@@ -1,13 +1,13 @@
 import { useId, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "./cn";
 
-export type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: ReactNode; hint?: string; hideLabel?: boolean };
+export type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; icon?: ReactNode; hint?: string; hideLabel?: boolean; /** Elemento al final del campo, dentro del recuadro (por ejemplo, el ojo de mostrar contraseña). */ trailing?: ReactNode };
 
 export const fieldLabel = "text-xs font-bold text-tinta-suave";
 export const fieldBox =
   "flex min-h-11 items-center gap-2 rounded-campo border border-borde-campo bg-superficie px-3.5 text-tinta transition-colors focus-within:border-hoja focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-hoja";
 
-export function Field({ label, error, icon, hint, hideLabel, className, id, ...props }: FieldProps) {
+export function Field({ label, error, icon, hint, hideLabel, trailing, className, id, ...props }: FieldProps) {
   const auto = useId();
   const inputId = id ?? auto;
   const messageId = `${inputId}-message`;
@@ -29,6 +29,7 @@ export function Field({ label, error, icon, hint, hideLabel, className, id, ...p
           className={cn("min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-tinta-suave", className)}
           {...props}
         />
+        {trailing ? <span className="-mr-2 shrink-0">{trailing}</span> : null}
       </div>
       {error || hint ? (
         <p id={messageId} className={cn("text-xs", error ? "font-bold text-tinta" : "text-tinta-suave")}>

@@ -1,4 +1,4 @@
-import { acceptInvitationSchema } from "@rapitrip/validation";
+import { acceptInvitationSchema, passwordProblem } from "@rapitrip/validation";
 
 export type AcceptResult = { ok: true } | { ok: false; message: string };
 
@@ -6,6 +6,8 @@ const fallback = "No pudimos completar la invitación. Inténtalo de nuevo.";
 
 /** Llama a la Edge Function `accept-invitation`. Solo muestra mensajes que la función diseñó para el usuario. */
 export async function acceptInvitation(input: { token: string; password: string; fullName: string }, fetcher: typeof fetch = fetch): Promise<AcceptResult> {
+  const weak = passwordProblem(input.password);
+  if (weak) return { ok: false, message: weak };
   const parsed = acceptInvitationSchema.safeParse({ token: input.token, password: input.password, full_name: input.fullName || undefined });
   if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? fallback };
 

@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "db:start": "supabase start",
+    "fn:serve": "supabase functions serve --env-file supabase/functions/.env",
+    "outbox:loop": "node scripts/dev/outbox-loop.mjs",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",

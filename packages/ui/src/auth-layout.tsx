@@ -9,6 +9,8 @@ export type AuthLayoutProps = {
   text: string;
   points: string[];
   footer?: string | null;
+  /** Botón opcional (por ejemplo «volver») que se coloca junto al logo; recibe el tono del fondo donde va. */
+  back?: (tone: "dark" | "light") => ReactNode;
   children: ReactNode;
 };
 
@@ -16,14 +18,17 @@ export type AuthLayoutProps = {
  * Pantalla partida compacta: panel de marca en verde (con un toque del azul secundario) a la izquierda, solo en escritorio,
  * y el formulario en una tarjeta de doble bisel a la derecha. Las medidas se ajustan a la altura para que todo quepa en un portátil.
  */
-export function AuthLayout({ subtitle, headline, text, points, footer, children }: AuthLayoutProps) {
+export function AuthLayout({ subtitle, headline, text, points, footer, back, children }: AuthLayoutProps) {
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
       <aside className="relative hidden overflow-hidden bg-panel px-10 py-8 text-white lg:flex lg:flex-col xl:px-14">
         <div aria-hidden="true" className="pointer-events-none absolute -right-40 -top-40 size-[460px] rounded-full bg-esmeralda/20 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-32 size-[420px] rounded-full bg-marino/60 blur-3xl dark:bg-marino/15" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-white/15 to-transparent" />
-        <Logo tone="dark" subtitle={subtitle} priority className="relative" />
+        <div className="relative flex items-center gap-3">
+          {back?.("dark")}
+          <Logo tone="dark" subtitle={subtitle} priority />
+        </div>
         <div className="relative my-auto max-w-[460px] py-8">
           <h2 className="text-[clamp(26px,3.2vw,36px)] font-bold leading-[1.1] tracking-tight [text-wrap:balance]">{headline}</h2>
           <p className="mt-4 text-[14.5px] leading-relaxed text-nav-texto/80">{text}</p>
@@ -45,7 +50,11 @@ export function AuthLayout({ subtitle, headline, text, points, footer, children 
       </aside>
       <main className="relative flex min-h-dvh flex-col items-center justify-center gap-6 overflow-hidden px-4 py-8">
         <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-menta/70 blur-3xl" />
-        <Logo tone="light" subtitle={subtitle} priority className="relative lg:hidden [&_img]:h-9" />
+        {/* En móvil el logo queda centrado y la flecha se pega a su izquierda sin moverlo. */}
+        <div className="relative lg:hidden">
+          {back ? <div className="absolute right-full top-1/2 mr-3 -translate-y-1/2">{back("light")}</div> : null}
+          <Logo tone="light" subtitle={subtitle} priority className="[&_img]:h-9" />
+        </div>
         <div className="relative w-full max-w-[420px]">{children}</div>
       </main>
     </div>

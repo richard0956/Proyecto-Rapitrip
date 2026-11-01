@@ -15,6 +15,8 @@ jwt_expiry = 300
 enable_signup = true
 enable_anonymous_sign_ins = false
 minimum_password_length = 8
+# Auth también exige minúscula, mayúscula, número y símbolo, para que la regla no se pueda saltar llamando a la API directamente.
+password_requirements = "lower_upper_letters_digits_symbols"
 
 [auth.email.template.confirmation]
 subject = "Confirma tu correo en Rapitrip"
@@ -51,6 +53,25 @@ double_confirm_changes = true
 enable_confirmations = true
 secure_password_change = true
 otp_expiry = 3600
+
+# Correo de cuentas (confirmación, recuperación, cambio de correo).
+# LOCAL (por defecto): no hay SMTP y los correos caen en el buzón de pruebas http://127.0.0.1:54324, para registrar cualquier correo.
+# REAL (Resend): descomenta el bloque, deja la API key en supabase/.env (RESEND_API_KEY) y reinicia con `pnpm db:stop` + `pnpm db:start`.
+# Sin dominio verificado en Resend, el remitente solo puede ser onboarding@resend.dev y solo entrega al correo dueño de la cuenta
+# de Resend; para cualquier destinatario hay que verificar un dominio propio y usar un remitente de ese dominio.
+# [auth.email.smtp]
+# enabled = true
+# host = "smtp.resend.com"
+# port = 465
+# user = "resend"
+# pass = "env(RESEND_API_KEY)"
+# admin_email = "onboarding@resend.dev"
+# sender_name = "Rapitrip"
+
+# Con SMTP propio Auth limita los correos por hora (por defecto 2): se sube para poder probar registros y recuperaciones sin esperar.
+# En producción conviene un valor acorde al tráfico real.
+[auth.rate_limit]
+email_sent = 30
 
 [auth.mfa.totp]
 enroll_enabled = true

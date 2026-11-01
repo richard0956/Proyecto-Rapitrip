@@ -1,4 +1,4 @@
-import { Alert, Card, CardHeader, DataTable, EmptyState, HBarList, KpiCard, LineChart, buttonStyles } from "@rapitrip/ui";
+import { Alert, Card, CardHeader, ColumnList, DataTable, DonutChart, EmptyState, KpiCard, LineChart, buttonStyles } from "@rapitrip/ui";
 import { Ban, Banknote, FileText, Mail, PackageCheck, ShieldCheck, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AttentionRow } from "@/components/attention-row";
@@ -10,7 +10,7 @@ import { first, optionalUuid, type SearchParams } from "@/lib/filters";
 import { timeAgo } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { formatMoney } from "@/lib/money";
-import { orderStatuses, orderStatusLabel } from "@/lib/orders";
+import { orderStatuses, orderStatusLabel, type OrderStatus } from "@/lib/orders";
 import { serverSupabase } from "@/lib/supabase";
 
 export const metadata = { title: "Inicio" };
@@ -23,6 +23,20 @@ async function count(query: PromiseLike<{ count: number | null; error: { message
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
+
+// Espera en ámbar, en curso en verdes y azul, terminados en verde oscuro; cancelados y rechazados en rojo y tinta.
+const statusColor: Record<OrderStatus, string> = {
+  pendiente_pago: "var(--tinta-suave)",
+  por_confirmar: "var(--naranja)",
+  en_validacion: "var(--durazno-texto)",
+  confirmado: "var(--bruma)",
+  preparando: "var(--selva-panel)",
+  listo: "var(--esmeralda)",
+  en_camino: "var(--marino)",
+  entregado: "var(--hoja)",
+  cancelado: "var(--rojo)",
+  rechazado: "var(--tinta)",
+};
 
 export default async function AdminHome({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
@@ -75,11 +89,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
   const vs = period.key === "mes" ? "el mes anterior" : period.key === "quincena" ? "la quincena anterior" : period.key === "7d" ? "los 7 días anteriores" : "ayer";
   const periodWord = period.key === "hoy" ? "hoy" : period.key === "7d" ? "7 días" : period.key === "quincena" ? "esta quincena" : "este mes";
 
-  const statusBars = orderStatuses.flatMap((status) => {
+  const statusSlices = orderStatuses.flatMap((status) => {
     const found = statusRows.find((row) => row.status === status);
-    return found ? [{ label: orderStatusLabel[status], value: Number(found.orders), tone: status === "cancelado" || status === "rechazado" ? ("marino" as const) : ("hoja" as const) }] : [];
+    return found ? [{ label: orderStatusLabel[status], value: Number(found.orders), color: statusColor[status] }] : [];
   });
-  const storeBars = (byStore.data ?? []).slice(0, 6).map((row) => ({ label: row.store_name ?? "Tienda", value: Number(row.sales), tone: "hoja" as const }));
+  const storeColumns = (byStore.data ?? []).slice(0, 6).map((row) => ({ label: row.store_name ?? "Tienda", value: Number(row.sales) }));
   const overdueCount = Number(overdue.data ?? 0);
   const repeat = rejections.data ?? [];
   const pendingRows = (pending.data ?? []).flatMap((row) => (row.id ? [{ id: row.id, name: row.business_name ?? "Sin nombre", ago: timeAgo(row.created_at) }] : []));
@@ -171,11 +185,11 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="p-5">
           <CardHeader title="Pedidos por estado" />
-          <HBarList items={statusBars} />
+          <DonutChart items={statusSlices} ariaLabel={`Pedidos por estado, ${period.label}`} totalLabel="pedidos" />
         </Card>
         <Card className="p-5">
           <CardHeader title="Ventas por tienda" />
-          <HBarList items={storeBars} formatValue={formatMoney} />
+          <ColumnList items={storeColumns} ariaLabel={`Ventas por tienda, ${period.label}`} formatValue={compactMoney} />
         </Card>
       </div>
 

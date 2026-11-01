@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { acceptInvitation } from "./accept-invitation";
 
 const token = "a".repeat(43);
-const input = { token, password: "una-clave-larga", fullName: "Ana Pérez" };
+const input = { token, password: "Una-clave-larga-1", fullName: "Ana Pérez" };
 const reply = (status: number, body: unknown = {}) => vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status }));
 
 beforeEach(() => {
@@ -17,13 +17,20 @@ describe("acceptInvitation", () => {
     expect(await acceptInvitation(input, fetcher as unknown as typeof fetch)).toEqual({ ok: true });
     const [url, init] = fetcher.mock.calls[0]!;
     expect(url).toBe("http://127.0.0.1:54321/functions/v1/accept-invitation");
-    expect(JSON.parse(init.body)).toEqual({ token, password: "una-clave-larga", full_name: "Ana Pérez" });
+    expect(JSON.parse(init.body)).toEqual({ token, password: "Una-clave-larga-1", full_name: "Ana Pérez" });
   });
 
   it("rechaza una contraseña corta sin llamar al servidor", async () => {
     const fetcher = reply(200);
     const result = await acceptInvitation({ ...input, password: "corta" }, fetcher as unknown as typeof fetch);
     expect(result.ok).toBe(false);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("rechaza una contraseña sin mayúscula, número o símbolo, explicando qué falta", async () => {
+    const fetcher = reply(200);
+    const result = await acceptInvitation({ ...input, password: "una-clave-larga" }, fetcher as unknown as typeof fetch);
+    expect(result).toMatchObject({ ok: false, message: expect.stringContaining("mayúscula, minúscula, número y símbolo") });
     expect(fetcher).not.toHaveBeenCalled();
   });
 

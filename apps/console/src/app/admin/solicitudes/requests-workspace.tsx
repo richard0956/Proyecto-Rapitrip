@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Badge, Button, Card, DataTable, pillStyles, TextareaField, type Column } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, DataTable, TextareaField, type Column } from "@rapitrip/ui";
 import { Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -31,6 +31,7 @@ const tabs = [
 ] as const;
 const statusTone = { pendiente: "warning", aprobada: "positive", rechazada: "danger" } as const;
 const statusText = { pendiente: "Pendiente", aprobada: "Aprobada", rechazada: "Rechazada" } as const;
+const selectClass = "min-h-10 rounded-full border border-borde-campo bg-papel px-3.5 text-[13px] font-bold text-tinta";
 
 export function RequestsWorkspace({ rows, approve, reject }: Props) {
   const router = useRouter();
@@ -88,27 +89,27 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
     <div className="flex flex-col gap-5">
       <Card className="p-5">
         <div className="mb-3.5 flex flex-wrap items-center gap-2">
-          <div role="tablist" aria-label="Estado de la solicitud" className="flex flex-wrap gap-2">
+          <input type="search" aria-label="Buscar negocio" placeholder="Buscar negocio…" value={query} onChange={(e) => setQuery(e.target.value)} className="min-h-10 w-full rounded-full border border-borde-campo bg-papel px-4 text-[13px] text-tinta sm:w-72" />
+          <select aria-label="Estado de la solicitud" value={tab} onChange={(e) => setTab(e.target.value as RequestRow["status"])} className={selectClass}>
             {tabs.map(({ key, label }) => (
-              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => setTab(key)} className={pillStyles(tab === key)}>
+              <option key={key} value={key}>
                 {label} · {rows.filter((r) => r.status === key).length}
-              </button>
+              </option>
             ))}
-          </div>
-          <div role="group" aria-label="Tipo" className="flex flex-wrap gap-2">
+          </select>
+          <select aria-label="Tipo" value={kindFilter} onChange={(e) => setKindFilter(e.target.value as typeof kindFilter)} className={selectClass}>
             {(
               [
-                ["todos", "Todos", inTab.length],
+                ["todos", "Todos los tipos", inTab.length],
                 ["empresa", "Comercios", inTab.filter((row) => row.details.kind === "empresa").length],
                 ["informal", "Vendedores", inTab.filter((row) => row.details.kind === "informal").length],
               ] as const
             ).map(([key, label, total]) => (
-              <button key={key} type="button" aria-pressed={kindFilter === key} onClick={() => setKindFilter(key)} className={pillStyles(kindFilter === key)}>
+              <option key={key} value={key}>
                 {label} · {total}
-              </button>
+              </option>
             ))}
-          </div>
-          <input type="search" aria-label="Buscar negocio" placeholder="Buscar negocio…" value={query} onChange={(e) => setQuery(e.target.value)} className="ml-auto min-h-10 w-full rounded-full border border-borde-campo bg-papel px-4 text-[13px] text-tinta sm:w-64" />
+          </select>
         </div>
         <DataTable caption="Solicitudes de comercio" columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="No hay solicitudes aquí" emptyHint="Cuando un comercio pida vender, aparecerá en «Pendientes»." />
       </Card>

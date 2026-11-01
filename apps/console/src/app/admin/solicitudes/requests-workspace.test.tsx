@@ -27,10 +27,10 @@ describe("RequestsWorkspace", () => {
     const user = userEvent.setup();
     setup();
     expect(bodyRows()).toHaveLength(2);
-    await user.click(screen.getByRole("button", { name: "Vendedores · 1" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Tipo" }), "informal");
     expect(bodyRows()).toHaveLength(1);
     expect(screen.getByText("Doña Marta Frutas")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Comercios · 1" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Tipo" }), "empresa");
     expect(bodyRows()).toHaveLength(1);
     expect(screen.getByText("Panadería La Esperanza")).toBeInTheDocument();
   });
@@ -40,7 +40,16 @@ describe("RequestsWorkspace", () => {
     setup();
     await user.type(screen.getByRole("searchbox", { name: "Buscar negocio" }), "marta");
     expect(bodyRows()).toHaveLength(1);
-    await user.click(screen.getByRole("button", { name: "Comercios · 1" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Tipo" }), "empresa");
     expect(screen.getByText("No hay solicitudes aquí")).toBeInTheDocument();
+  });
+
+  it("el estado se elige en un desplegable con el conteo de cada uno", async () => {
+    const user = userEvent.setup();
+    setup();
+    expect(screen.getByRole("option", { name: "Aprobadas · 1" })).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Estado de la solicitud" }), "aprobada");
+    expect(bodyRows()).toHaveLength(1);
+    expect(screen.getByText("Ferretería Núñez")).toBeInTheDocument();
   });
 });

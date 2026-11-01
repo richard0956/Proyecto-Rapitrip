@@ -28,7 +28,21 @@ export default async function IncidentesPage() {
         columns={[
           { header: "Fecha", cell: (row) => <span className="whitespace-nowrap tabular-nums">{formatDateTime(row.created_at)}</span> },
           { header: "Tipo", cell: (row) => (row.type === "seguridad" ? "Seguridad" : "Interrupción") },
-          { header: "Origen", cell: (row) => (row.origin === "automatico" ? "Automático" : "Manual") },
+          {
+            header: "Origen",
+            // Los que manda el repartidor desde su app (Ayuda) dicen de qué pantalla vienen.
+            cell: (row) =>
+              row.source === "repartidor" ? (
+                <span className="flex flex-col">
+                  <span>Repartidor</span>
+                  {row.reported_from ? <span className="text-xs text-tinta-suave">{row.reported_from}</span> : null}
+                </span>
+              ) : row.origin === "automatico" ? (
+                "Automático"
+              ) : (
+                "Manual"
+              ),
+          },
           { header: "Gravedad", cell: (row) => (row.severity ? <Badge tone={severityTone[row.severity]}>{{ baja: "Baja", media: "Media", alta: "Alta" }[row.severity]}</Badge> : "—") },
           { header: "Descripción", cell: (row) => <span className="line-clamp-2 max-w-sm">{row.description}</span> },
           { header: "Estado", cell: (row) => (row.status ? <Badge tone={statusTone[row.status]}>{statusLabel[row.status]}</Badge> : "—") },

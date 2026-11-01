@@ -30,7 +30,7 @@ export function AcceptForm({ token }: { token: string }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <Field label="Nombre completo" icon={<UserRound className="size-4" />} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-      <Field label="Contraseña" icon={<Lock className="size-4" />} hint="Entre 8 y 72 caracteres." type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+      <Field label="Contraseña" icon={<Lock className="size-4" />} hint="De 8 a 72 caracteres, con mayúscula, minúscula, número y símbolo." type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
       <Field label="Repite la contraseña" icon={<Lock className="size-4" />} type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} error={mismatch ? "Las contraseñas no coinciden." : undefined} required />
       {error ? <Alert tone="error">{error}</Alert> : null}
       <Button variant="primary" type="submit" className="w-full" disabled={busy || !password || !confirm}>
