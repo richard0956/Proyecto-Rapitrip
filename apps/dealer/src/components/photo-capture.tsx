@@ -52,7 +52,7 @@ export function PhotoCapture({ label, hint, uploadedAt, pending, allowRetake, on
         htmlFor={id}
         className={cn(
           "flex min-h-14 cursor-pointer items-center justify-center gap-2.5 rounded-campo border-2 border-dashed px-4 text-[15px] font-bold focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-hoja",
-          done ? "border-hoja bg-menta text-hoja" : pending ? "border-naranja bg-durazno text-durazno-texto" : "border-borde-campo bg-white text-tinta",
+          done ? "border-hoja bg-menta text-hoja" : pending ? "border-naranja bg-durazno text-durazno-texto" : "border-borde-campo bg-superficie text-tinta",
           (working || locked) && "cursor-default opacity-80",
         )}
       >

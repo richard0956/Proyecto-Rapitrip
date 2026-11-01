@@ -29,7 +29,7 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-full text-[11.5px] font-bold transition-[background-color,color,transform] duration-500 ease-fluido active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja",
-                  active ? "bg-hoja text-white shadow-pulsa" : "text-tinta-suave hover:bg-menta/70",
+                  active ? "bg-hoja text-sobre-acento shadow-pulsa" : "text-tinta-suave hover:bg-menta/70",
                 )}
               >
                 <Icon className="size-[22px]" aria-hidden="true" />

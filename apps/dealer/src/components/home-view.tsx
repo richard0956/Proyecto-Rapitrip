@@ -3,14 +3,17 @@
 import { Alert, Reveal } from "@rapitrip/ui";
 import { BellRing, ChevronRight, PackageSearch } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { friendlyError } from "@/lib/api-error";
 import { getSupabase } from "@/lib/client";
+import { playOfferAlert } from "@/lib/offer-alert";
+import { usePrefs } from "@/lib/prefs";
 import { readPushStatus, type PushStatus } from "@/lib/push-client";
 import type { CourierMe, CourierOffer, CourierOrder } from "@/lib/types";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { useEvidenceQueue } from "@/lib/use-evidence-queue";
 import { usePolling } from "@/lib/use-polling";
+import { useWakeLock } from "@/lib/use-wake-lock";
 import { ConnectionBanner } from "./connection-banner";
 import { HomeHero } from "./home-hero";
 import { OfferCard } from "./offer-card";
@@ -59,6 +62,19 @@ export function HomeView() {
   useEffect(() => {
     void readPushStatus().then(setPush);
   }, []);
+
+  // Preferencias de este teléfono: pantalla encendida mientras está disponible y aviso al llegar una propuesta nueva.
+  const prefs = usePrefs();
+  useWakeLock(prefs.awake && me?.available === true);
+  const newestOffer = offers[0]?.offer_id ?? null;
+  const seenOffer = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!loaded) return;
+    // La primera carga solo registra lo que ya estaba: suena lo que llega con la app abierta, no lo que había al abrirla.
+    const isNew = seenOffer.current !== undefined && newestOffer !== null && newestOffer !== seenOffer.current;
+    seenOffer.current = newestOffer;
+    if (isNew && prefs.alert) void playOfferAlert();
+  }, [loaded, newestOffer, prefs.alert]);
 
   async function toggleAvailable(next: boolean) {
     setBusy("disponible");
@@ -198,8 +214,8 @@ function PushNudge() {
         <p className="mt-0.5 text-[12.5px] text-tinta-suave">Entérate de las propuestas aunque la aplicación esté cerrada.</p>
       </div>
       <Link
-        href="/perfil"
-        aria-label="Activar los avisos en tu perfil"
+        href="/perfil/preferencias"
+        aria-label="Activar los avisos en Preferencias"
         className="flex size-11 shrink-0 items-center justify-center rounded-full bg-selva text-sobre-acento transition-colors hover:bg-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
       >
         <ChevronRight aria-hidden="true" className="size-5" />

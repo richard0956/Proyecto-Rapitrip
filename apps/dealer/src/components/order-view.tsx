@@ -10,11 +10,13 @@ import { captureEvidence } from "@/lib/capture";
 import { getSupabase } from "@/lib/client";
 import { mapsUrl, telHref } from "@/lib/links";
 import { formatMoney } from "@/lib/money";
-import { canRelease, canReportNoFit, stepFor } from "@/lib/order-steps";
+import { canRelease, canReportNoFit, isOpen, stepFor } from "@/lib/order-steps";
+import { usePrefs } from "@/lib/prefs";
 import { parseItems, type CourierMe, type CourierOrderDetail, type OrderEvidence, type OrderIssue } from "@/lib/types";
 import { useAuthGuard } from "@/lib/use-auth-guard";
 import { useEvidenceQueue } from "@/lib/use-evidence-queue";
 import { usePolling } from "@/lib/use-polling";
+import { useWakeLock } from "@/lib/use-wake-lock";
 import { ConnectionBanner } from "./connection-banner";
 import { DeliverPanel } from "./deliver-panel";
 import { EvidenceList } from "./evidence-list";
@@ -82,6 +84,9 @@ export function OrderView({ id }: { id: string }) {
 
   usePolling(load, POLL_MS);
   const queue = useEvidenceQueue(me?.id ?? null, load);
+  // Preferencias de este teléfono: la app de mapas de «Cómo llegar» y la pantalla encendida mientras el pedido sigue abierto.
+  const prefs = usePrefs();
+  useWakeLock(prefs.awake && isOpen(order?.status));
 
   const mine = queue.pending.filter((item) => item.orderId === id);
   const uploadedAt = (kind: string) => evidence.find((item) => item.kind === kind)?.taken_at ?? null;
@@ -198,7 +203,7 @@ export function OrderView({ id }: { id: string }) {
             <span>{order.store_address ?? "La tienda no tiene dirección cargada. Llama para confirmarla."}</span>
           </p>
           <div className="flex gap-2">
-            <ActionLink href={mapsUrl({ latitude: order.store_latitude, longitude: order.store_longitude, address: order.store_address })} icon={<Navigation className="size-4" />}>
+            <ActionLink href={mapsUrl({ latitude: order.store_latitude, longitude: order.store_longitude, address: order.store_address }, prefs.maps)} icon={<Navigation className="size-4" />}>
               Cómo llegar
             </ActionLink>
             <ActionLink href={telHref(order.store_phone)} icon={<Phone className="size-4" />}>
@@ -216,7 +221,7 @@ export function OrderView({ id }: { id: string }) {
             </p>
             {order.delivery_notes ? <p className="rounded-campo bg-calido px-3 py-2 text-[13px] text-tinta">«{order.delivery_notes}»</p> : null}
             <div className="flex gap-2">
-              <ActionLink href={mapsUrl({ latitude: order.dest_latitude, longitude: order.dest_longitude, address: order.delivery_address })} icon={<Navigation className="size-4" />}>
+              <ActionLink href={mapsUrl({ latitude: order.dest_latitude, longitude: order.dest_longitude, address: order.delivery_address }, prefs.maps)} icon={<Navigation className="size-4" />}>
                 Cómo llegar
               </ActionLink>
               <ActionLink href={telHref(order.delivery_phone)} icon={<Phone className="size-4" />}>

@@ -21,7 +21,7 @@ export function RouteSteps({ step }: { step: StepKey }) {
               aria-hidden="true"
               className={cn(
                 "relative flex size-7 items-center justify-center rounded-full text-xs font-extrabold transition-[background-color,box-shadow] duration-700 ease-fluido",
-                done ? "bg-hoja text-white ring-4 ring-papel" : active ? "bg-hoja text-white ring-4 ring-menta" : "bg-menta text-tinta-suave ring-4 ring-papel",
+                done ? "bg-hoja text-sobre-acento ring-4 ring-papel" : active ? "bg-hoja text-sobre-acento ring-4 ring-menta" : "bg-menta text-tinta-suave ring-4 ring-papel",
               )}
             >
               {done ? <Check className="size-4" strokeWidth={2.5} /> : index + 1}

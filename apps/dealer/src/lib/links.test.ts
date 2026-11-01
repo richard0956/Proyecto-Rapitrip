@@ -8,6 +8,12 @@ describe("mapsUrl", () => {
   it("sin punto usa la dirección escrita y la codifica", () => {
     expect(mapsUrl({ address: "Km 5, local 3" })).toBe("https://www.google.com/maps/search/?api=1&query=Km%205%2C%20local%203");
   });
+  it("abre la app de mapas elegida en Preferencias", () => {
+    expect(mapsUrl({ latitude: 12.14, longitude: -86.25 }, "waze")).toBe("https://waze.com/ul?ll=12.14,-86.25&navigate=yes");
+    expect(mapsUrl({ address: "Km 5" }, "waze")).toBe("https://waze.com/ul?q=Km%205&navigate=yes");
+    expect(mapsUrl({ latitude: 12.14, longitude: -86.25 }, "apple")).toBe("https://maps.apple.com/?daddr=12.14,-86.25");
+    expect(mapsUrl({ address: "Km 5" }, "apple")).toBe("https://maps.apple.com/?daddr=Km%205");
+  });
   it("sin nada devuelve nulo", () => {
     expect(mapsUrl({})).toBeNull();
     expect(mapsUrl({ address: "  " })).toBeNull();

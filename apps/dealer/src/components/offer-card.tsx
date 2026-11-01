@@ -55,7 +55,7 @@ export function OfferCard({ offer, busy, onAccept, onReject }: Props) {
       </div>
 
       {/* Bloque oscuro como el héroe del inicio: cuánto paga y cuánto tiempo queda para decidir. */}
-      <div className="relative isolate overflow-clip rounded-[1.5rem] bg-[linear-gradient(160deg,var(--panel)_0%,#0d5644_100%)] p-4 text-white">
+      <div className="relative isolate overflow-clip rounded-[1.5rem] bg-[linear-gradient(160deg,var(--panel)_0%,#0d5644_100%)] dark:bg-[linear-gradient(160deg,#0b1a2e_0%,#0d2a38_100%)] dark:ring-1 dark:ring-white/10 p-4 text-white">
         <div aria-hidden="true" className="absolute -right-16 -top-20 -z-10 size-48 rounded-full bg-esmeralda/25 blur-3xl" />
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">

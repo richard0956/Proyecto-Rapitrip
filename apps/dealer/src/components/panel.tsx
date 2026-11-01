@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
  */
 export function GreenPanel({ labelledBy, className, children }: { labelledBy: string; className?: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={labelledBy} className={cn("relative isolate overflow-clip rounded-[2rem] bg-[linear-gradient(180deg,var(--panel)_0%,#0d5644_58%,#14705a_100%)] px-5 pb-5 pt-6 text-white shadow-flota", className)}>
+    <section aria-labelledby={labelledBy} className={cn("relative isolate overflow-clip rounded-[2rem] bg-[linear-gradient(180deg,var(--panel)_0%,#0d5644_58%,#14705a_100%)] dark:bg-[linear-gradient(180deg,#0b1a2e_0%,#0b2034_55%,#0d2a38_100%)] px-5 pb-5 pt-6 text-white shadow-flota", className)}>
       <div aria-hidden="true" className="absolute -right-24 -top-24 -z-10 size-72 rounded-full bg-esmeralda/20 blur-3xl" />
       <div aria-hidden="true" className="absolute -bottom-28 -left-20 -z-10 size-72 rounded-full bg-marino/50 blur-3xl" />
       <Sparkle aria-hidden="true" className="absolute right-[12%] top-[14%] size-6 fill-esmeralda text-esmeralda" />
