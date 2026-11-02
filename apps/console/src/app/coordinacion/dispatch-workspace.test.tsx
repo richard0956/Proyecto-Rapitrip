@@ -2,12 +2,13 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, replace: vi.fn() }) }));
+const { refresh, push, replace } = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push, replace }) }));
 // El mapa de la ruta no se prueba aquí.
 vi.mock("@/components/order-route", () => ({ OrderRoute: () => null }));
 
 import { DispatchWorkspace, type CourierAppActions, type Courier, type DispatchOrder } from "./dispatch-workspace";
+import { DispatchDetail } from "./pedidos/[numero]/dispatch-detail";
 
 const couriers: Courier[] = [
   { id: "c-moto", name: "Moto Managua", vehicle: "moto", phone: "1", vehicleClass: "moto", department: "managua" },
@@ -54,17 +55,37 @@ beforeEach(() => {
   setStatus.mockResolvedValue({ ok: true });
 });
 
+// La ficha de despacho de un pedido (antes era un panel al lado de la lista).
 async function open(row: DispatchOrder) {
-  render(<DispatchWorkspace rows={[row]} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} />);
-  const user = userEvent.setup();
-  await user.click(screen.getByRole("tab", { name: /En preparación/ }));
-  await user.click(screen.getByRole("button", { name: /Pedido 7/ }));
-  return user;
+  render(<DispatchDetail row={row} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} />);
+  return userEvent.setup();
 }
 
 const options = () => within(screen.getByLabelText("Repartidor")).getAllByRole("option").map((o) => o.textContent ?? "");
 
-describe("DispatchWorkspace", () => {
+describe("DispatchWorkspace · lista", () => {
+  const rows = [order({ id: "a", number: 7, status: "listo" }), order({ id: "b", number: 8, status: "preparando" }), order({ id: "c", number: 9, status: "entregado" })];
+
+  it("muestra la pestaña elegida y cuenta los pedidos de cada etapa", async () => {
+    const user = userEvent.setup();
+    render(<DispatchWorkspace rows={rows} couriers={couriers} />);
+    expect(screen.getByRole("tab", { name: /Para despachar\s*1/, selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Pedido 7/ })).toHaveAttribute("href", "/coordinacion/pedidos/7");
+    await user.click(screen.getByRole("tab", { name: /En preparación/ }));
+    expect(screen.getByRole("link", { name: /Pedido 8/ })).toBeInTheDocument();
+    expect(replace).toHaveBeenCalledWith("/coordinacion?vista=preparacion", { scroll: false });
+  });
+
+  it("abre la pestaña que venía en la dirección y la fila lleva a la ficha", async () => {
+    const user = userEvent.setup();
+    render(<DispatchWorkspace rows={rows} couriers={couriers} initialTab="terminados" />);
+    expect(screen.getByRole("tab", { name: /Terminados/, selected: true })).toBeInTheDocument();
+    await user.click(screen.getByText("Entregado"));
+    expect(push).toHaveBeenCalledWith("/coordinacion/pedidos/9");
+  });
+});
+
+describe("DispatchDetail", () => {
   it("a un pedido express le ofrece a todos los repartidores", async () => {
     await open(order({}));
     expect(options().filter((text) => !text.startsWith("Elige"))).toHaveLength(4);
@@ -106,7 +127,7 @@ describe("DispatchWorkspace", () => {
 });
 
 
-describe("DispatchWorkspace con la aplicación del repartidor", () => {
+describe("DispatchDetail con la aplicación del repartidor", () => {
   const future = new Date(Date.now() + 120_000).toISOString();
   const app = (): CourierAppActions => ({
     loadOfferable: vi.fn().mockResolvedValue({ ok: true, couriers: [{ id: "c-moto", name: "Moto Managua", vehicleClass: "moto", department: "managua", activeOrders: 1 }] }),
@@ -117,12 +138,9 @@ describe("DispatchWorkspace con la aplicación del repartidor", () => {
     loadTrace: vi.fn().mockResolvedValue({ ok: true, entries: [], photos: [], cash: null }),
   });
 
-  async function openWithApp(row: DispatchOrder, tabName: RegExp, actions: CourierAppActions) {
-    render(<DispatchWorkspace rows={[row]} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} courierApp={actions} />);
-    const user = userEvent.setup();
-    await user.click(screen.getByRole("tab", { name: tabName }));
-    await user.click(screen.getByRole("button", { name: /Pedido 7/ }));
-    return user;
+  async function openWithApp(row: DispatchOrder, _tabName: RegExp, actions: CourierAppActions) {
+    render(<DispatchDetail row={row} couriers={couriers} setStatus={setStatus} assign={assign} reclassify={reclassify} loadRoute={loadRoute} courierApp={actions} />);
+    return userEvent.setup();
   }
 
   it("propone el pedido a un repartidor disponible", async () => {

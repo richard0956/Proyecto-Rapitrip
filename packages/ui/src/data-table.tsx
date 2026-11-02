@@ -11,9 +11,16 @@ export type DataTableProps<T> = {
   rowKey: (row: T) => Key;
   emptyTitle: string;
   emptyHint?: string;
+  /**
+   * Toda la fila abre el detalle con un clic (solo desde componentes de cliente). Es un atajo para el ratón: la fila debe seguir
+   * teniendo un enlace o botón propio para el teclado y los lectores de pantalla, y un clic sobre ese control no se repite aquí.
+   */
+  onRowClick?: (row: T) => void;
 };
 
-export function DataTable<T>({ caption, columns, rows, rowKey, emptyTitle, emptyHint }: DataTableProps<T>) {
+const interactive = "a, button, input, select, textarea, label, [role='button']";
+
+export function DataTable<T>({ caption, columns, rows, rowKey, emptyTitle, emptyHint, onRowClick }: DataTableProps<T>) {
   if (rows.length === 0) return <EmptyState title={emptyTitle}>{emptyHint}</EmptyState>;
   return (
     <Table caption={caption}>
@@ -28,7 +35,11 @@ export function DataTable<T>({ caption, columns, rows, rowKey, emptyTitle, empty
       </THead>
       <tbody>
         {rows.map((row) => (
-          <Tr key={rowKey(row)}>
+          <Tr
+            key={rowKey(row)}
+            className={onRowClick ? "cursor-pointer transition-colors duration-200 hover:bg-calido/60" : undefined}
+            onClick={onRowClick ? (event) => { if (!(event.target as HTMLElement).closest(interactive)) onRowClick(row); } : undefined}
+          >
             {columns.map((column) => (
               <Td key={column.header} className={column.className}>
                 {column.cell(row)}

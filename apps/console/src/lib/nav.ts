@@ -59,8 +59,11 @@ export const adminNav: NavSection[] = [
   },
 ];
 
-export const cajaNav: NavSection[] = [{ items: [{ href: "/caja/resumen", label: "Resumen", icon: "home" }, { href: "/caja", label: "Caja y venta", icon: "cash", exact: true }] }];
-export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion/resumen", label: "Resumen", icon: "home" }, { href: "/coordinacion", label: "Pedidos", icon: "orders", exact: true }, { href: "/coordinacion/repartidores", label: "Repartidores", icon: "truck" }, { href: "/coordinacion/efectivo", label: "Efectivo de repartidores", icon: "cash" }] }];
+// Caja, coordinación y comercio reportan sus incidentes de TI a la administración desde su propio menú.
+const support = (area: string): NavSection => ({ label: "Soporte", items: [{ href: `/${area}/incidentes`, label: "Reportar incidente", icon: "shield" }] });
+
+export const cajaNav: NavSection[] = [{ items: [{ href: "/caja/resumen", label: "Resumen", icon: "home" }, { href: "/caja", label: "Caja y venta", icon: "cash", exact: true }] }, support("caja")];
+export const coordinacionNav: NavSection[] = [{ items: [{ href: "/coordinacion/resumen", label: "Resumen", icon: "home" }, { href: "/coordinacion", label: "Pedidos", icon: "orders", exact: true, also: ["/coordinacion/pedidos"] }, { href: "/coordinacion/repartidores", label: "Repartidores", icon: "truck" }, { href: "/coordinacion/efectivo", label: "Efectivo de repartidores", icon: "cash" }] }, support("coordinacion")];
 export const comercioNav: NavSection[] = [
   {
     items: [
@@ -71,6 +74,7 @@ export const comercioNav: NavSection[] = [
       { href: "/comercio/inventario", label: "Inventario", icon: "orders" },
     ],
   },
+  support("comercio"),
 ];
 
 /** Los enlaces de cuenta van al pie de la barra, separados del resto. */

@@ -1,15 +1,12 @@
 import { defaultExpressLimits } from "@rapitrip/validation";
-import { Alert, buttonStyles } from "@rapitrip/ui";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Alert } from "@rapitrip/ui";
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { PageHeader } from "@/components/shell";
 import { requireConsoleAccess } from "@/lib/guard";
 import { productImageUrl } from "@/lib/money";
 import { serverSupabase } from "@/lib/supabase";
 import { addProductImage, createVariant, removeProductImage, removeVariantDiscount, setProductDelivery, setProductStatus, setVariantStatus, updateProduct, updateVariant } from "../actions";
-import { ProductEditor } from "./product-editor";
+import { BackToCatalog, ProductEditor } from "./product-editor";
 
 export default async function ProductoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -38,16 +35,7 @@ export default async function ProductoPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <PageHeader
-        title={product.data.name}
-        description={`Tienda: ${product.data.store_name ?? "—"}`}
-        actions={
-          <Link href={`/comercio/catalogo?tienda=${product.data.store_id}`} className={buttonStyles({ variant: "ghost" })}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            Catálogo
-          </Link>
-        }
-      />
+      <BackToCatalog storeId={product.data.store_id} />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo el producto. Recarga la página antes de editar.</Alert> : null}
       <ProductEditor
         limits={limits}
@@ -65,6 +53,7 @@ export default async function ProductoPage({ params }: { params: Promise<{ id: s
         product={{
           id: product.data.id,
           storeId: product.data.store_id,
+          storeName: product.data.store_name,
           name: product.data.name,
           description: product.data.description,
           categoryId: product.data.category_id,

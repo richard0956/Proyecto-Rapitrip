@@ -60,7 +60,7 @@ Ese conjunto (todos los flujos de operación con backend real, sin Stripe) es lo
 
 ### Administración de pedidos y caja (Fase 3)
 
-`tests/admin-operaciones.spec.ts` (etiqueta `@backend`): prepara por API un pedido listo, otro por confirmar y un turno de caja cerrado con diferencia (el cajero acepta su invitación con `accept-invitation`), y el director recorre `/admin/pedidos` (filtros, detalle, cancelar con motivo), `/admin/excepciones` (el pedido listo sin repartidor aparece y enlaza al detalle) y `/admin/caja` (turno con diferencia, nota y ventas). Necesita las Edge Functions sirviéndose.
+`tests/admin-operaciones.spec.ts` (etiqueta `@backend`): prepara por API un pedido listo, otro por confirmar y un turno de caja cerrado con diferencia (el cajero acepta su invitación con `accept-invitation`), y el director recorre `/admin/pedidos` (filtros y la ficha `/admin/pedidos/[número]`, cancelar con motivo), `/admin/excepciones` (el pedido listo sin repartidor aparece y enlaza al detalle) y `/admin/caja` (turno con diferencia, nota y ventas). Necesita las Edge Functions sirviéndose.
 
 ### Pagos con tarjeta (Stripe, Fase 3)
 

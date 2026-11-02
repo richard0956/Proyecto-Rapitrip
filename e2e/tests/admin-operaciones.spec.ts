@@ -52,22 +52,25 @@ test.describe("@backend administración · pedidos, excepciones y caja", () => {
     await page.goto(`${CONSOLE_URL}/admin/pedidos`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos", { timeout: 30_000 });
     await page.getByLabel("Buscar").fill(`Tienda ${unique}`);
-    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toBeVisible();
-    await expect(page.getByRole("button", { name: new RegExp(`Venta ${saleRow!.number}(?!\\d)`) })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(`Venta ${saleRow!.number}(?!\\d)`) })).toBeVisible();
     await page.getByLabel("Estado").selectOption("listo");
-    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toBeVisible();
-    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${n2}(?!\\d)`) })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(`Pedido ${n2}(?!\\d)`) })).toHaveCount(0);
     await page.getByLabel("Estado").selectOption("");
     await page.getByLabel("Canal").selectOption("mostrador");
-    await expect(page.getByRole("button", { name: new RegExp(`Venta ${saleRow!.number}(?!\\d)`) })).toBeVisible();
-    await expect(page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: new RegExp(`Venta ${saleRow!.number}(?!\\d)`) })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(`Pedido ${n1}(?!\\d)`) })).toHaveCount(0);
     await page.getByLabel("Canal").selectOption("");
     await expectNoViolations(page);
 
-    await page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) }).click();
+    // Cada pedido abre su propia ficha.
+    await page.getByRole("link", { name: new RegExp(`Pedido ${n1}(?!\\d)`) }).click();
+    await expect(page).toHaveURL(new RegExp(`/admin/pedidos/${n1}$`));
     await expect(page.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
     await expect(page.getByText("Sin asignar")).toBeVisible();
-    await page.getByRole("button", { name: new RegExp(`Pedido ${n2}(?!\\d)`) }).click();
+    await expectNoViolations(page);
+    await page.goto(`${CONSOLE_URL}/admin/pedidos/${n2}`);
     await page.getByRole("button", { name: "Cancelar pedido", exact: true }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("button", { name: "Cancelar pedido" })).toBeDisabled();
@@ -81,8 +84,8 @@ test.describe("@backend administración · pedidos, excepciones y caja", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Excepciones", { timeout: 30_000 });
     await expect(page.getByText("Listos sin repartidor")).toBeVisible();
     await expectNoViolations(page);
-    await page.locator(`a[href="/admin/pedidos?pedido=${n1}"]`).click();
-    await expect(page).toHaveURL(new RegExp(`/admin/pedidos\\?pedido=${n1}$`));
+    await page.locator(`a[href="/admin/pedidos/${n1}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`/admin/pedidos/${n1}$`));
     await expect(page.getByRole("heading", { name: `Pedido ${n1}` })).toBeVisible({ timeout: 30_000 });
 
     // Caja: el turno con diferencia

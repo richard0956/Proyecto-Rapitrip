@@ -14,9 +14,10 @@ const icons: Record<NavIcon, LucideIcon> = {
 
 const itemBase = "flex min-h-9 items-center gap-2.5 rounded-campo px-2.5 py-2 text-[13.5px] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-menta-borde";
 
+// `exact` solo limita la ruta propia del ítem; las de `also` marcan el ítem también en sus subrutas (por ejemplo, la ficha de un pedido).
 function isActive(pathname: string, item: NavItem) {
-  const paths = [item.href, ...(item.also ?? [])];
-  return paths.some((path) => pathname === path || (!item.exact && path !== "/admin" && pathname.startsWith(`${path}/`)));
+  const own = pathname === item.href || (!item.exact && item.href !== "/admin" && pathname.startsWith(`${item.href}/`));
+  return own || (item.also ?? []).some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
 
 function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {

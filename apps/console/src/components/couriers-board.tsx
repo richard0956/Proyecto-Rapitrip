@@ -3,6 +3,7 @@
 import { Alert, Avatar, Badge, Button, Card, ColumnList, DataTable, DonutChart, EmptyState, Field, HBarList, KpiCard, pillStyles, type Column } from "@rapitrip/ui";
 import { Banknote, Bike, CheckCheck, Plus, Route, Search, Truck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import type { ActionResult } from "@/lib/action-error";
 import { courierCounts, courierTotals, filterCouriers, formatKm, formatMinutes, rankCouriers, type CourierFilters, type CourierStat } from "@/lib/couriers";
@@ -26,6 +27,7 @@ const statusChips: { key: CourierFilters["status"]; label: string; count: "todos
 
 /** Flota de repartidores: cifras del periodo, los mejores en cada métrica y una tabla con búsqueda y filtro de estado. */
 export function CouriersBoard({ rows, basePath, periodLabel, create }: Props) {
+  const router = useRouter();
   const [filters, setFilters] = useState<CourierFilters>({ query: "", status: "todos" });
   const [creating, setCreating] = useState(false);
   const totals = useMemo(() => courierTotals(rows), [rows]);
@@ -120,7 +122,7 @@ export function CouriersBoard({ rows, basePath, periodLabel, create }: Props) {
                 </Button>
               </EmptyState>
             ) : (
-              <DataTable caption="Repartidores" columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" />
+              <DataTable caption="Repartidores" columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" onRowClick={(row) => router.push(`${basePath}/${row.id}`)} />
             )}
           </>
         )}

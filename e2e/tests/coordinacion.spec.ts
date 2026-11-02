@@ -51,8 +51,10 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await expect(page.getByRole("tab", { name: /Para despachar\s*\d+/ })).toBeVisible();
     await expectNoViolations(page);
 
-    // Asignar repartidor → despachar → entregar
-    await page.getByRole("button", { name: new RegExp(`Pedido ${n1}(?!\\d)`) }).click();
+    // Asignar repartidor → despachar → entregar, en la ficha del pedido
+    await page.getByRole("link", { name: new RegExp(`Pedido ${n1}(?!\\d)`) }).click();
+    await expect(page).toHaveURL(new RegExp(`/coordinacion/pedidos/${n1}$`));
+    await expect(page.getByRole("heading", { level: 1, name: `Pedido ${n1}` })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
     await expect(page.getByText("88881111", { exact: true })).toBeVisible();
     await expect(page.getByText(/El repartidor cobra.*en efectivo/)).toBeVisible();
@@ -65,14 +67,16 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await expectNoViolations(page);
     await page.getByRole("button", { name: "Despachar", exact: true }).click();
     await expect(page.getByText(`Pedido ${n1}: en camino.`)).toBeVisible();
-    await expect(page.getByRole("tab", { name: /En camino/, selected: true })).toBeVisible();
     await page.getByRole("button", { name: "Marcar como entregado" }).click();
     await expect(page.getByText(`Pedido ${n1}: entregado.`)).toBeVisible();
     await expect.poll(() => orderState(client, first), { timeout: 15_000 }).toBe("entregado/pagado");
+    // Volver a la lista lleva a la pestaña del estado actual del pedido.
+    await page.getByRole("main").getByRole("link", { name: "Pedidos", exact: true }).click();
+    await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
 
     // Cancelar el segundo (en preparación) exige motivo y devuelve el stock
     await page.getByRole("tab", { name: /En preparación/ }).click();
-    await page.getByRole("button", { name: new RegExp(`Pedido ${n2}(?!\\d)`) }).click();
+    await page.getByRole("link", { name: new RegExp(`Pedido ${n2}(?!\\d)`) }).click();
     await page.getByRole("button", { name: "Cancelar pedido" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("button", { name: "Cancelar pedido" })).toBeDisabled();
@@ -80,7 +84,6 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await dialog.getByRole("button", { name: "Cancelar pedido" }).click();
     await expect.poll(() => orderState(client, second), { timeout: 15_000 }).toBe("cancelado/pendiente");
     expect(await stockOf(shop.owner, shop.variantId)).toBe(9);
-    await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
     await expect(page.getByText("Motivo: el cliente no responde")).toBeVisible();
   });
 });

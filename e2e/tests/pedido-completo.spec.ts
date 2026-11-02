@@ -58,8 +58,7 @@ test.describe("@backend pedido de punta a punta", () => {
     const coordination = await (await browser.newContext()).newPage();
     await signInAndEnroll(coordination, coordEmail, PASSWORD);
     await expect(coordination).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
-    await coordination.goto(`${CONSOLE_URL}/coordinacion`);
-    await coordination.getByRole("button", { name: order }).click();
+    await coordination.goto(`${CONSOLE_URL}/coordinacion/pedidos/${number}`);
     await expect(coordination.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
     await coordination.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto` });
     await coordination.getByRole("button", { name: "Asignar repartidor" }).click();
@@ -75,9 +74,11 @@ test.describe("@backend pedido de punta a punta", () => {
     const admin = await (await browser.newContext()).newPage();
     await signInAndEnroll(admin, director.email, director.password);
     await expect(admin).toHaveURL(/\/admin$/, { timeout: 30_000 });
+    // El enlace de antes (?pedido=N) lleva a la ficha del pedido.
     await admin.goto(`${CONSOLE_URL}/admin/pedidos?pedido=${number}`);
-    await expect(admin.getByRole("heading", { name: `Pedido ${number}` })).toBeVisible({ timeout: 30_000 });
-    await expect(admin.getByRole("button", { name: new RegExp(`Pedido ${number}(?!\\d).*Entregado`) })).toBeVisible();
+    await expect(admin).toHaveURL(new RegExp(`/admin/pedidos/${number}$`), { timeout: 30_000 });
+    await expect(admin.getByRole("heading", { level: 1, name: `Pedido ${number}` })).toBeVisible({ timeout: 30_000 });
+    await expect(admin.getByText("Entregado", { exact: true }).first()).toBeVisible();
     await expect(admin.getByText("Efectivo · cobrado")).toBeVisible();
     await expect(admin.getByText(courierName)).toBeVisible();
     await expectNoViolations(admin);

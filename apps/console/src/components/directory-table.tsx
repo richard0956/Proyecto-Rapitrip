@@ -3,6 +3,7 @@
 import { Avatar, Badge, Button, Card, DataTable, EmptyState, Field, pillStyles, type Column } from "@rapitrip/ui";
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { filterDirectory, statusCounts, type DirectoryRow, type StatusFilter } from "@/lib/directory";
 
@@ -23,6 +24,7 @@ type Props = {
 
 /** Directorio con barra de filtros: búsqueda instantánea (sin acentos, por nombre o RUC) y filtro por estado. */
 export function DirectoryTable({ rows, kind, noun, detailBase }: Props) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("todos");
   const counts = useMemo(() => statusCounts(rows), [rows]);
@@ -79,7 +81,7 @@ export function DirectoryTable({ rows, kind, noun, detailBase }: Props) {
               </Button>
             </EmptyState>
           ) : (
-            <DataTable caption={kind === "empresa" ? "Comercios" : "Vendedores"} columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" />
+            <DataTable caption={kind === "empresa" ? "Comercios" : "Vendedores"} columns={columns} rows={visible} rowKey={(row) => row.id} emptyTitle="" onRowClick={(row) => router.push(`${detailBase}/${row.id}`)} />
           )}
         </>
       )}

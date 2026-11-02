@@ -82,7 +82,7 @@ export default async function ExcepcionesPage() {
               <ul className="flex flex-col divide-y divide-borde">
                 {found[section.kind].map((order) => (
                   <li key={order.number}>
-                    <Link href={`/admin/pedidos?pedido=${order.number}`} className="flex items-center justify-between gap-3 rounded-campo py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+                    <Link href={`/admin/pedidos/${order.number}`} className="flex items-center justify-between gap-3 rounded-campo py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
                       <span className="min-w-0">
                         <span className="block font-bold text-tinta">Pedido {order.number}</span>
                         <span className="block truncate text-xs text-tinta-suave">{stores.get(order.number)}</span>
@@ -105,7 +105,7 @@ export default async function ExcepcionesPage() {
               <ul className="flex flex-col divide-y divide-borde">
                 {section.rows.map((row, index) => (
                   <li key={`${row.number}-${index}`}>
-                    <Link href={`/admin/pedidos?pedido=${row.number}`} className="flex items-center justify-between gap-3 rounded-campo py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+                    <Link href={`/admin/pedidos/${row.number}`} className="flex items-center justify-between gap-3 rounded-campo py-2.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
                       <span className="min-w-0">
                         <span className="block font-bold text-tinta">Pedido {row.number}</span>
                         <span className="block text-xs text-tinta-suave">{row.detail}</span>

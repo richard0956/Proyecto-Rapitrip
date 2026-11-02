@@ -1,5 +1,6 @@
 "use client";
 
+import { genericLoginError as genericError } from "@rapitrip/supabase";
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
 import { Alert, Button, Field } from "@rapitrip/ui";
 import { emailSchema } from "@rapitrip/validation";
@@ -8,8 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, type FormEvent } from "react";
 import { Turnstile } from "@/components/turnstile";
-
-const genericError = "No pudimos iniciar sesión. Revisa tus datos e inténtalo de nuevo.";
+import { signInWithPasswordAction } from "./actions";
 
 export function LoginForm({ next }: { next: string }) {
   const router = useRouter();
@@ -33,9 +33,12 @@ export function LoginForm({ next }: { next: string }) {
 
     setBusy(true);
     const supabase = createBrowserSupabase();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email: parsed.data, password, options: token ? { captchaToken: token } : undefined });
-    if (signInError) {
-      setError(signInError.code === "email_not_confirmed" ? "Confirma tu correo con el enlace que te enviamos antes de ingresar." : genericError);
+    const result = await signInWithPasswordAction(parsed.data, password, token).catch(() => null);
+    // El servidor abrió la sesión; el navegador la guarda en su cookie como si hubiera ingresado él.
+    const sessionError = result?.ok ? (await supabase.auth.setSession(result.session)).error : null;
+    if (!result?.ok || sessionError) {
+      const failed = result && !result.ok ? result : null;
+      setError(failed?.reason === "email_not_confirmed" ? "Confirma tu correo con el enlace que te enviamos antes de ingresar." : (failed?.message ?? genericError));
       setToken(null);
       setResetKey((n) => n + 1);
       setBusy(false);

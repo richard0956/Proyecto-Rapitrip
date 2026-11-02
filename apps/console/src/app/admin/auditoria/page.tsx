@@ -62,7 +62,7 @@ export default async function AuditoriaPage({ searchParams }: { searchParams: Se
 
   return (
     <>
-      <PageHeader title="Auditoría y accesos" description="Registro inmutable de acciones e inicios de sesión. Consultarlo también queda registrado." />
+      <PageHeader title="Auditoría y accesos" description="Registro inmutable de acciones e inicios de sesión de los últimos 30 días; lo más antiguo se borra solo cada madrugada. Consultarlo también queda registrado." />
       <AuditTabs active="/admin/auditoria" />
       <Card outerClassName="mb-5">
         <form method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

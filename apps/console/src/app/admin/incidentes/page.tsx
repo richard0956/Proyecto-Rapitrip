@@ -2,6 +2,7 @@ import { Alert, Badge, DataTable } from "@rapitrip/ui";
 import { PageHeader } from "@/components/shell";
 import { formatDateTime } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
+import { sourceLabel } from "@/lib/incidents";
 import { serverSupabase } from "@/lib/supabase";
 import { reportIncident, setIncidentStatus } from "./actions";
 import { IncidentActions, ReportIncident } from "./incident-controls";
@@ -30,12 +31,14 @@ export default async function IncidentesPage() {
           { header: "Tipo", cell: (row) => (row.type === "seguridad" ? "Seguridad" : "Interrupción") },
           {
             header: "Origen",
-            // Los que manda el repartidor desde su app (Ayuda) dicen de qué pantalla vienen.
+            // Los que mandan el repartidor (Ayuda) o caja, coordinación y comercio («Reportar incidente») dicen quién y desde qué pantalla.
             cell: (row) =>
-              row.source === "repartidor" ? (
+              row.source && sourceLabel[row.source] ? (
                 <span className="flex flex-col">
-                  <span>Repartidor</span>
-                  {row.reported_from ? <span className="text-xs text-tinta-suave">{row.reported_from}</span> : null}
+                  <span className="font-semibold">{sourceLabel[row.source]}</span>
+                  {row.reporter_name || row.reported_from ? (
+                    <span className="text-xs text-tinta-suave">{[row.reporter_name, row.reported_from].filter(Boolean).join(" · ")}</span>
+                  ) : null}
                 </span>
               ) : row.origin === "automatico" ? (
                 "Automático"

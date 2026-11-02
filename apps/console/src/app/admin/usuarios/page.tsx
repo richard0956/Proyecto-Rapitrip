@@ -1,18 +1,25 @@
 import { canManageRole, invitableRoles } from "@rapitrip/supabase";
 import { appRoleSchema } from "@rapitrip/validation";
-import { Alert } from "@rapitrip/ui";
+import { Alert, cn } from "@rapitrip/ui";
+import { MailPlus, Users } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/shell";
+import { first, type SearchParams } from "@/lib/filters";
 import { formatDate, roleLabel } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
+import { personalRoles, platformScope } from "@/lib/staff";
 import { serverSupabase } from "@/lib/supabase";
-import { cancelInvitation, changeRoleStatus, inviteStaff, resetMfa } from "./actions";
-import { UsersWorkspace, type InvitationRow, type StaffRow } from "./users-workspace";
+import { cancelInvitation, inviteStaff } from "./actions";
+import { InviteButton } from "./invite-button";
+import { InvitationsList, type InvitationRow } from "./invitations-list";
+import { UsersWorkspace, type StaffRow } from "./users-workspace";
 
-const personalRoles = new Set(["superadmin", "admin", "cajero", "coordinador"]);
-const platformScope: Record<string, string> = { superadmin: "Plataforma", admin: "Plataforma", cajero: "Operaciones", coordinador: "Operaciones" };
+const DAY_MS = 86_400_000;
 
-export default async function UsuariosPage() {
+/** Usuarios y roles: las cuentas con rol a todo el ancho y, en su propia pestaña, las invitaciones pendientes. Cada cuenta abre su ficha. */
+export default async function UsuariosPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await requireConsoleAccess("admin");
+  const view = first((await searchParams).vista) === "invitaciones" ? "invitaciones" : "cuentas";
   const supabase = await serverSupabase();
   const [accounts, invitations, commerces] = await Promise.all([
     supabase.from("accounts_staff").select("*").order("granted_at", { ascending: false }),
@@ -26,7 +33,6 @@ export default async function UsuariosPage() {
   const rows: StaffRow[] = (accounts.data ?? []).flatMap((row) => {
     const role = appRoleSchema.safeParse(row.role);
     if (!role.success || !row.user_id || !row.role_status) return [];
-    const manageable = !(row.user_id === session.userId) && role.data !== "superadmin" && canManageRole(session.role, role.data);
     return [
       {
         key: `${row.user_id}-${row.role}-${row.commerce_id ?? ""}`,
@@ -38,30 +44,56 @@ export default async function UsuariosPage() {
         scope: row.commerce_id ? (commerceNames.get(row.commerce_id) ?? "Comercio") : (platformScope[role.data] ?? "—"),
         status: row.role_status,
         isPersonal: personalRoles.has(role.data),
-        canManage: manageable,
-        canResetMfa: manageable && row.role_status === "activo",
+        since: formatDate(row.granted_at),
+        isMe: row.user_id === session.userId,
       },
     ];
   });
 
+  const now = Date.now();
   const invitationRows: InvitationRow[] = (invitations.data ?? []).flatMap((row) => {
     if (!row.id || !row.email) return [];
-    return [{ id: row.id, email: row.email, roleLabel: roleLabel[row.role ?? ""] ?? row.role ?? "—", expires: formatDate(row.expires_at), canCancel: canManageRole(session.role, appRoleSchema.catch("cliente").parse(row.role)) }];
+    const daysLeft = row.expires_at ? Math.max(0, Math.ceil((new Date(row.expires_at).getTime() - now) / DAY_MS)) : null;
+    return [{ id: row.id, email: row.email, roleLabel: roleLabel[row.role ?? ""] ?? row.role ?? "—", sent: formatDate(row.created_at), expires: formatDate(row.expires_at), daysLeft, canCancel: canManageRole(session.role, appRoleSchema.catch("cliente").parse(row.role)) }];
   });
+  const inviteRoles = invitableRoles(session.role).map((value) => ({ value, label: roleLabel[value] ?? value }));
+
+  const tabs = [
+    { key: "cuentas", label: "Cuentas", count: rows.length, icon: <Users className="size-4" aria-hidden="true" />, href: "/admin/usuarios" },
+    { key: "invitaciones", label: "Invitaciones pendientes", count: invitationRows.length, icon: <MailPlus className="size-4" aria-hidden="true" />, href: "/admin/usuarios?vista=invitaciones" },
+  ] as const;
 
   return (
     <>
-      <PageHeader title="Usuarios y roles" description="Alta por invitación, suspensión, reactivación y revocación de roles. Cada cambio queda auditado con su motivo." />
-      {loadFailed ? <Alert tone="error" className="mb-5">No pudimos cargar la información. Recarga la página.</Alert> : null}
-      <UsersWorkspace
-        rows={rows}
-        invitations={invitationRows}
-        inviteRoles={invitableRoles(session.role).map((value) => ({ value, label: roleLabel[value] ?? value }))}
-        change={changeRoleStatus}
-        reset={resetMfa}
-        invite={inviteStaff}
-        cancel={cancelInvitation}
+      <PageHeader
+        title="Usuarios y roles"
+        description="Alta por invitación, suspensión, reactivación y revocación de roles. Cada cambio queda auditado con su motivo."
+        actions={inviteRoles.length > 0 ? <InviteButton roles={inviteRoles} invite={inviteStaff} /> : null}
       />
+      {loadFailed ? <Alert tone="error" className="mb-5">No pudimos cargar la información. Recarga la página.</Alert> : null}
+
+      <nav aria-label="Secciones de usuarios" className="mb-5 flex flex-wrap gap-2">
+        {tabs.map((tab) => {
+          const active = view === tab.key;
+          return (
+            <Link
+              key={tab.key}
+              href={tab.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-[13.5px] font-bold transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja",
+                active ? "bg-hoja text-sobre-acento shadow-pulsa" : "bg-papel text-tinta ring-1 ring-borde hover:bg-menta/60",
+              )}
+            >
+              {tab.icon}
+              {tab.label}
+              <span className={cn("rounded-full px-2 py-0.5 text-[11.5px] tabular-nums", active ? "bg-white/20" : tab.key === "invitaciones" && tab.count > 0 ? "bg-durazno text-durazno-texto" : "bg-crema text-tinta-suave")}>{tab.count}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {view === "cuentas" ? <UsersWorkspace rows={rows} /> : <InvitationsList invitations={invitationRows} cancel={cancelInvitation} invite={inviteRoles.length > 0 ? <InviteButton roles={inviteRoles} invite={inviteStaff} /> : null} />}
     </>
   );
 }

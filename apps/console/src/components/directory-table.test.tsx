@@ -1,8 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DirectoryRow } from "@/lib/directory";
+
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+
 import { DirectoryTable } from "./directory-table";
+
+beforeEach(() => push.mockClear());
 
 const rows: DirectoryRow[] = [
   { id: "a", name: "Panadería La Esperanza", ruc: "J0310000123456", status: "activo", stores: 2, accounts: 1, createdAt: "1 oct 2026" },
@@ -27,6 +33,20 @@ describe("DirectoryTable", () => {
     expect(bodyRows()).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Ferretería Núñez" })).toHaveAttribute("href", "/admin/comercios/b");
     expect(screen.getByRole("status")).toHaveTextContent("1 de 3 comercios");
+  });
+
+  it("un clic en cualquier parte de la fila abre la ficha", async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(within(bodyRows()[1]!).getByText("J0310000999999"));
+    expect(push).toHaveBeenCalledWith("/admin/comercios/b");
+  });
+
+  it("el enlace del nombre no navega dos veces", async () => {
+    const user = userEvent.setup();
+    setup();
+    await user.click(screen.getByRole("link", { name: "Café Aroma" }));
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("los filtros de estado muestran su conteo y filtran", async () => {

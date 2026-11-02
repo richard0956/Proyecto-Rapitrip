@@ -41,7 +41,7 @@ describe("ProductDeliveryCard", () => {
     await user.type(weight, "8");
     expect(screen.getByText(/pesa hasta 5 kg/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Guardar tipo de entrega" })).toBeDisabled();
-    await user.selectOptions(screen.getByLabelText("Tipo de entrega"), "programado");
+    await user.click(screen.getByRole("radio", { name: /^Programado/ }));
     expect(screen.queryByText(/pesa hasta 5 kg/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Guardar tipo de entrega" })).toBeEnabled();
   });
@@ -63,8 +63,8 @@ describe("ProductDeliveryCard", () => {
   it("en una categoría solo programado no se puede elegir express", () => {
     render(<ProductDeliveryCard product={{ ...small, expressOk: false, categoryOnly: true }} limits={defaultExpressLimits} locked={false} save={save} />);
     expect(screen.getByText(/solo se entrega de forma programada/)).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Express/ })).toBeDisabled();
-    expect(screen.getByLabelText("Tipo de entrega")).toHaveValue("programado");
+    expect(screen.getByRole("radio", { name: /^Express/ })).toBeDisabled();
+    expect(screen.getByRole("radio", { name: /^Programado/ })).toBeChecked();
   });
 
   it("muestra el motivo si la base de datos rechaza el cambio", async () => {

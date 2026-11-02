@@ -1,6 +1,6 @@
 "use client";
 
-import { getSessionInfo, homePathForRole, requiresMfa } from "@rapitrip/supabase";
+import { genericLoginError as genericError, getSessionInfo, homePathForRole, requiresMfa } from "@rapitrip/supabase";
 import { createBrowserSupabase } from "@rapitrip/supabase/browser";
 import { emailSchema } from "@rapitrip/validation";
 import { Alert, Button, Field } from "@rapitrip/ui";
@@ -8,8 +8,7 @@ import { Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, type FormEvent } from "react";
 import { Turnstile } from "@/components/turnstile";
-
-const genericError = "No pudimos iniciar sesión. Revisa tus datos e inténtalo de nuevo.";
+import { signInWithPasswordAction } from "./actions";
 
 export function LoginForm() {
   const router = useRouter();
@@ -33,13 +32,11 @@ export function LoginForm() {
 
     setBusy(true);
     const supabase = createBrowserSupabase();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: parsed.data,
-      password,
-      options: token ? { captchaToken: token } : undefined,
-    });
-    if (signInError) {
-      setError(genericError);
+    const result = await signInWithPasswordAction(parsed.data, password, token).catch(() => null);
+    // El servidor abrió la sesión; el navegador la guarda en su cookie como si hubiera ingresado él.
+    const sessionError = result?.ok ? (await supabase.auth.setSession(result.session)).error : null;
+    if (!result?.ok || sessionError) {
+      setError(result && !result.ok && result.message ? result.message : genericError);
       setToken(null);
       setResetKey((n) => n + 1);
       setBusy(false);

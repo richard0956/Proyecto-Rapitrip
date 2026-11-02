@@ -57,7 +57,7 @@ export default async function AccesosPage({ searchParams }: { searchParams: Sear
 
   return (
     <>
-      <PageHeader title="Auditoría y accesos" description="Intentos de ingreso exitosos y fallidos. Incluyen la dirección IP, por eso cada consulta queda registrada." />
+      <PageHeader title="Auditoría y accesos" description="Intentos de ingreso exitosos y fallidos de los últimos 30 días; lo más antiguo se borra solo cada madrugada. Incluyen la dirección IP, por eso cada consulta queda registrada." />
       <AuditTabs active="/admin/accesos" />
       <Card outerClassName="mb-5">
         <form method="get" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

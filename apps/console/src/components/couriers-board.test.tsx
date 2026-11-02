@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { CourierStat } from "@/lib/couriers";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn(), push }) }));
 
 import { CouriersBoard } from "./couriers-board";
 
@@ -39,6 +40,16 @@ describe("CouriersBoard", () => {
     expect(screen.getAllByRole("link", { name: /Carlos Núñez/ })[0]).toHaveAttribute("href", "/coordinacion/repartidores/1");
     await user.type(screen.getByRole("searchbox", { name: "Buscar repartidor" }), "nunez");
     expect(bodyRows()).toHaveLength(1);
+  });
+
+  it("un clic en cualquier parte de la fila abre la ficha del repartidor", async () => {
+    const user = userEvent.setup();
+    push.mockClear();
+    render(<CouriersBoard rows={rows} basePath="/admin/repartidores" periodLabel="este mes" />);
+    // Un clic en la última celda (efectivo por rendir), lejos del enlace del nombre.
+    const row = bodyRows().find((tr) => tr.textContent?.includes("Carlos Núñez"))!;
+    await user.click(within(row).getAllByRole("cell").at(-1)!);
+    expect(push).toHaveBeenCalledWith("/admin/repartidores/1");
   });
 
   it("filtra por estado y sin coincidencias lo explica", async () => {

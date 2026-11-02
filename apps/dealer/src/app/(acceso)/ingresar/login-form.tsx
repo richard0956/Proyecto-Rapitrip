@@ -1,5 +1,6 @@
 "use client";
 
+import { genericLoginError as genericError } from "@rapitrip/supabase";
 import { Alert, Button, Field } from "@rapitrip/ui";
 import { emailSchema } from "@rapitrip/validation";
 import { Lock, Mail } from "lucide-react";
@@ -8,8 +9,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { claimsHaveCourierRole } from "@/lib/claims";
 import { getSupabase } from "@/lib/client";
 import { useKeyboardFit } from "@/lib/use-keyboard-fit";
-
-const genericError = "No pudimos iniciar sesión. Revisa tus datos e inténtalo de nuevo.";
+import { signInWithPasswordAction } from "./actions";
 
 export function LoginForm() {
   const router = useRouter();
@@ -30,9 +30,12 @@ export function LoginForm() {
 
     setBusy(true);
     const supabase = getSupabase();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email: parsed.data, password });
-    if (signInError) {
-      setError(!signInError.code && /fetch|network/i.test(signInError.message) ? "Sin conexión. Revisa tu señal e inténtalo de nuevo." : genericError);
+    // Si la llamada al servidor no sale, el teléfono no tiene señal.
+    const result = await signInWithPasswordAction(parsed.data, password, null).catch(() => "offline" as const);
+    // El servidor abrió la sesión; el teléfono la guarda en su cookie como si hubiera ingresado él.
+    const sessionError = result !== "offline" && result.ok ? (await supabase.auth.setSession(result.session)).error : null;
+    if (result === "offline" || !result.ok || sessionError) {
+      setError(result === "offline" ? "Sin conexión. Revisa tu señal e inténtalo de nuevo." : !result.ok && result.message ? result.message : genericError);
       setBusy(false);
       return;
     }
