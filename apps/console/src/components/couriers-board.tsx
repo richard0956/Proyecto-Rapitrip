@@ -1,9 +1,9 @@
 "use client";
 
-import { Alert, Avatar, Badge, Button, Card, DataTable, EmptyState, Field, HBarList, KpiCard, pillStyles, type Column } from "@rapitrip/ui";
+import { Alert, Avatar, Badge, Button, Card, ColumnList, DataTable, DonutChart, EmptyState, Field, HBarList, KpiCard, pillStyles, type Column } from "@rapitrip/ui";
 import { Banknote, Bike, CheckCheck, Plus, Route, Search, Truck } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { ActionResult } from "@/lib/action-error";
 import { courierCounts, courierTotals, filterCouriers, formatKm, formatMinutes, rankCouriers, type CourierFilters, type CourierStat } from "@/lib/couriers";
 import { formatMoney } from "@/lib/money";
@@ -72,10 +72,22 @@ export function CouriersBoard({ rows, basePath, periodLabel, create }: Props) {
         <li><KpiCard icon={<Banknote className="size-[18px]" />} tone="durazno" label="Efectivo por rendir" value={formatMoney(totals.cashPending)} hint="Cobrado al entregar, sin recibir en caja" /></li>
       </ul>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <RankCard title="Más entregas" empty="Sin entregas en el periodo" items={rankCouriers(rows, "entregas", 5).map((row) => ({ label: row.name, value: row.deliveries }))} format={(n) => `${n}`} />
-        <RankCard title="Más kilómetros" empty="Sin kilómetros en el periodo" items={rankCouriers(rows, "km", 5).map((row) => ({ label: row.name, value: row.km }))} format={formatKm} />
-        <RankCard title="Más rápidos" empty="Sin tiempos medidos en el periodo" tone="marino" items={rankCouriers(rows, "rapidez", 5).map((row) => ({ label: row.name, value: row.avgMinutes ?? 0 }))} format={(n) => formatMinutes(n)} />
+      {/* Las columnas de kilómetros a todo el ancho (los nombres caben); debajo, entregas y rapidez lado a lado con la misma altura. */}
+      <RankCard title="Más kilómetros" empty="Sin kilómetros en el periodo" items={rankCouriers(rows, "km", 8).map((row) => ({ label: row.name, value: row.km }))}>
+        {(items) => <ColumnList items={items} ariaLabel={`Kilómetros por repartidor (${periodLabel})`} formatValue={formatKm} />}
+      </RankCard>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <RankCard title="Más entregas" empty="Sin entregas en el periodo" items={rankCouriers(rows, "entregas", 5).map((row) => ({ label: row.name, value: row.deliveries }))}>
+          {(items) => {
+            // Los cinco primeros y «Otros» con el resto, para que los porcentajes sean sobre todas las entregas del periodo.
+            const rest = totals.deliveries - items.reduce((sum, item) => sum + item.value, 0);
+            const slices = [...items.map((item, index) => ({ ...item, color: courierColors[index % courierColors.length]! })), ...(rest > 0 ? [{ label: "Otros", value: rest, color: "var(--tinta-suave)" }] : [])];
+            return <DonutChart items={slices} ariaLabel={`Entregas por repartidor (${periodLabel})`} totalLabel="entregas" />;
+          }}
+        </RankCard>
+        <RankCard title="Más rápidos" empty="Sin tiempos medidos en el periodo" items={rankCouriers(rows, "rapidez", 5).map((row) => ({ label: row.name, value: row.avgMinutes ?? 0 }))}>
+          {(items) => <HBarList items={items.map((item) => ({ ...item, tone: "marino" as const }))} formatValue={(n) => formatMinutes(n)} />}
+        </RankCard>
       </div>
 
       <Card className="p-5">
@@ -129,12 +141,18 @@ export function CouriersBoard({ rows, basePath, periodLabel, create }: Props) {
   );
 }
 
-function RankCard({ title, items, format, empty, tone = "hoja" }: { title: string; items: { label: string; value: number }[]; format: (n: number) => string; empty: string; tone?: "hoja" | "marino" }) {
+// Del primero al quinto: verdes y azules de la marca, del más intenso al más suave.
+const courierColors = ["var(--esmeralda)", "var(--hoja)", "var(--marino)", "var(--selva-panel)", "var(--bruma)"];
+
+type RankItem = { label: string; value: number };
+
+function RankCard({ title, items, empty, children }: { title: string; items: RankItem[]; empty: string; children: (items: RankItem[]) => ReactNode }) {
   return (
-    <section aria-label={title}>
-      <Card className="h-full p-5">
+    <section aria-label={title} className="flex">
+      {/* La bandeja exterior estira la tarjeta a la altura de la fila; el gráfico queda centrado en lo que sobra. */}
+      <Card outerClassName="flex-1" className="flex flex-col p-5">
         <h3 className="mb-3 text-base font-extrabold text-tinta">{title}</h3>
-        {items.length === 0 ? <p className="py-4 text-sm text-tinta-suave">{empty}</p> : <HBarList items={items.map((item) => ({ ...item, tone }))} formatValue={format} />}
+        <div className="flex flex-1 flex-col justify-center">{items.length === 0 ? <p className="py-4 text-sm text-tinta-suave">{empty}</p> : children(items)}</div>
       </Card>
     </section>
   );

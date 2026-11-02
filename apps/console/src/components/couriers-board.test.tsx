@@ -13,7 +13,8 @@ const rows: CourierStat[] = [
   { ...base, id: "2", name: "María López", phone: "8888-0002", vehicle: "Camioneta", deliveries: 20, km: 25, avgMinutes: 50, activeOrders: 0, cashPending: 400, cashPendingOrders: 2 },
   { ...base, id: "3", name: "Pedro Gómez", status: "inactivo", deliveries: 0, km: 0, avgMinutes: null, activeOrders: 0 },
 ];
-const bodyRows = () => within(screen.getAllByRole("rowgroup")[1]!).getAllByRole("row");
+// La tabla de repartidores; los gráficos traen su propia tabla oculta para lectores de pantalla.
+const bodyRows = () => within(within(screen.getByRole("table", { name: "Repartidores" })).getAllByRole("rowgroup")[1]!).getAllByRole("row");
 const create = vi.fn();
 
 describe("CouriersBoard", () => {

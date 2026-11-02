@@ -29,6 +29,20 @@ export const orderStatusTone: Record<OrderStatus, "neutral" | "warning" | "posit
   rechazado: "danger",
 };
 
+/** Color de cada estado en los gráficos (dona de pedidos): espera en ámbar, en curso en verdes y azul, terminados en verde oscuro; cancelados y rechazados en rojo y tinta. */
+export const orderStatusColor: Record<OrderStatus, string> = {
+  pendiente_pago: "var(--tinta-suave)",
+  por_confirmar: "var(--naranja)",
+  en_validacion: "var(--durazno-texto)",
+  confirmado: "var(--bruma)",
+  preparando: "var(--selva-panel)",
+  listo: "var(--esmeralda)",
+  en_camino: "var(--marino)",
+  entregado: "var(--hoja)",
+  cancelado: "var(--rojo)",
+  rechazado: "var(--tinta)",
+};
+
 export function orderGroup(status: OrderStatus): OrderGroup {
   if (status === "por_confirmar" || status === "en_validacion") return "confirmar";
   if (status === "entregado" || status === "cancelado" || status === "rechazado") return "terminados";

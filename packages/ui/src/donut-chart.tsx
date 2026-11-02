@@ -1,3 +1,4 @@
+import { cn } from "./cn";
 import { ChartTable, defaultFormat } from "./chart-table";
 
 export type DonutSlice = { label: string; value: number; color: string };
@@ -10,7 +11,7 @@ const C = 2 * Math.PI * R;
 const GAP = 3;
 
 /** Dona con el total al centro y leyenda con valor y porcentaje (pedidos por estado). `color` es un color CSS, por ejemplo `var(--hoja)`. */
-export function DonutChart({ items, ariaLabel, totalLabel = "Total", formatValue = defaultFormat }: { items: DonutSlice[]; ariaLabel: string; totalLabel?: string; formatValue?: (n: number) => string }) {
+export function DonutChart({ items, ariaLabel, totalLabel = "Total", formatValue = defaultFormat, stacked = false }: { items: DonutSlice[]; ariaLabel: string; totalLabel?: string; formatValue?: (n: number) => string; /** Leyenda siempre debajo, para tarjetas angostas (un tercio de la fila). */ stacked?: boolean }) {
   const slices = items.filter((item) => item.value > 0);
   const total = slices.reduce((sum, item) => sum + item.value, 0);
   if (total === 0) return <p className="py-6 text-center text-sm text-tinta-suave">Sin datos</p>;
@@ -23,9 +24,11 @@ export function DonutChart({ items, ariaLabel, totalLabel = "Total", formatValue
     return arc;
   });
   const percent = (value: number) => `${Math.round((value / total) * 100)} %`;
+  // Un monto («C$ 12,5 mil») no cabe en el hueco con la letra de una cifra corta.
+  const totalText = formatValue(total);
 
   return (
-    <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7">
+    <div className={cn("flex flex-col items-center gap-5", !stacked && "sm:flex-row sm:items-center sm:gap-7")}>
       <div className="relative shrink-0">
         <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={ariaLabel} className="block size-40">
           <g transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}>
@@ -47,7 +50,7 @@ export function DonutChart({ items, ariaLabel, totalLabel = "Total", formatValue
           </g>
         </svg>
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold tabular-nums text-tinta">{formatValue(total)}</span>
+          <span className={cn("max-w-[6.5rem] text-center font-bold leading-tight tabular-nums text-tinta", totalText.length > 7 ? "text-[15px]" : "text-2xl")}>{totalText}</span>
           <span className="text-micro font-bold uppercase text-tinta-suave">{totalLabel}</span>
         </div>
       </div>

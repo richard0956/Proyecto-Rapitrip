@@ -28,7 +28,7 @@ export function ColumnList({ items, ariaLabel, formatValue = defaultFormat }: { 
                   {formatValue(item.value)}
                 </span>
               </div>
-              <span className="line-clamp-2 h-8 w-full text-center text-[11.5px] font-semibold leading-4 text-tinta [overflow-wrap:anywhere]">{item.label}</span>
+              <span className="line-clamp-2 h-8 w-full text-center text-[11.5px] font-semibold leading-4 text-tinta hyphens-auto [overflow-wrap:anywhere]">{item.label}</span>
             </li>
           );
         })}

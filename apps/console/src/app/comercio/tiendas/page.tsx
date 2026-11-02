@@ -1,4 +1,4 @@
-import { Alert, Card, CardHeader, HBarList, KpiCard, LineChart } from "@rapitrip/ui";
+import { Alert, Card, CardHeader, ColumnList, KpiCard, LineChart } from "@rapitrip/ui";
 import { Banknote, ShoppingBag, Store, Trophy } from "lucide-react";
 import { FilterChips } from "@/components/filter-chips";
 import { PageHeader } from "@/components/shell";
@@ -108,7 +108,7 @@ export default async function TiendasPage({ searchParams }: { searchParams: Sear
             ) : (
               <>
                 <CardHeader title="Ventas por tienda" subtitle={`Comparación ${word}`} />
-                <HBarList items={[...rows].sort((a, b) => (b.metrics?.sales ?? 0) - (a.metrics?.sales ?? 0)).map((row) => ({ label: row.name, value: row.metrics?.sales ?? 0, tone: "hoja" as const }))} formatValue={formatMoney} />
+                <ColumnList ariaLabel={`Ventas por tienda, ${word}`} items={[...rows].sort((a, b) => (b.metrics?.sales ?? 0) - (a.metrics?.sales ?? 0)).slice(0, 8).map((row) => ({ label: row.name, value: row.metrics?.sales ?? 0 }))} formatValue={compactMoney} />
               </>
             )}
           </Card>

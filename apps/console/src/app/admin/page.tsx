@@ -10,7 +10,7 @@ import { first, optionalUuid, type SearchParams } from "@/lib/filters";
 import { timeAgo } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { formatMoney } from "@/lib/money";
-import { orderStatuses, orderStatusLabel, type OrderStatus } from "@/lib/orders";
+import { orderStatusColor, orderStatuses, orderStatusLabel } from "@/lib/orders";
 import { serverSupabase } from "@/lib/supabase";
 
 export const metadata = { title: "Inicio" };
@@ -23,21 +23,6 @@ async function count(query: PromiseLike<{ count: number | null; error: { message
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
-
-// Espera en ámbar, en curso en verdes y azul, terminados en verde oscuro; cancelados y rechazados en rojo y tinta.
-const statusColor: Record<OrderStatus, string> = {
-  pendiente_pago: "var(--tinta-suave)",
-  por_confirmar: "var(--naranja)",
-  en_validacion: "var(--durazno-texto)",
-  confirmado: "var(--bruma)",
-  preparando: "var(--selva-panel)",
-  listo: "var(--esmeralda)",
-  en_camino: "var(--marino)",
-  entregado: "var(--hoja)",
-  cancelado: "var(--rojo)",
-  rechazado: "var(--tinta)",
-};
-
 export default async function AdminHome({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   await requireConsoleAccess("admin");
@@ -91,7 +76,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
 
   const statusSlices = orderStatuses.flatMap((status) => {
     const found = statusRows.find((row) => row.status === status);
-    return found ? [{ label: orderStatusLabel[status], value: Number(found.orders), color: statusColor[status] }] : [];
+    return found ? [{ label: orderStatusLabel[status], value: Number(found.orders), color: orderStatusColor[status] }] : [];
   });
   const storeColumns = (byStore.data ?? []).slice(0, 6).map((row) => ({ label: row.store_name ?? "Tienda", value: Number(row.sales) }));
   const overdueCount = Number(overdue.data ?? 0);

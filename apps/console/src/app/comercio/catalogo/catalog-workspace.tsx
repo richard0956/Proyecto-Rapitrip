@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Badge, Button, Card, CardHeader, Dialog, EmptyState, Field, HBarList, KpiCard, LineChart, pillStyles } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, CardHeader, Dialog, EmptyState, ColumnList, Field, KpiCard, LineChart, pillStyles } from "@rapitrip/ui";
 import { Boxes, ImageIcon, PackageCheck, Plus, Search, Trophy, Banknote } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -97,7 +97,7 @@ export function CatalogWorkspace({ stores, rows, categories, selectedStore, crea
       {bestSellers.length > 0 ? (
         <Card className="p-5">
           <CardHeader title="Productos más vendidos" subtitle={`Unidades, ${periodLabel}`} />
-          <HBarList items={bestSellers.slice(0, 6).map((row) => ({ label: row.name, value: row.sold, tone: "hoja" as const }))} formatValue={(n) => `${n} u.`} />
+          <ColumnList ariaLabel={`Productos más vendidos, ${periodLabel}`} items={bestSellers.slice(0, 6).map((row) => ({ label: row.name, value: row.sold }))} formatValue={(n) => `${n} u.`} />
         </Card>
       ) : null}
 

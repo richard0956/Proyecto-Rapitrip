@@ -1,4 +1,4 @@
-import { Alert, Badge, Card, CardHeader, DataTable, EmptyState, HBarList, KpiCard, LineChart, buttonStyles, ButtonIsland } from "@rapitrip/ui";
+import { Alert, Badge, Card, CardHeader, ColumnList, DataTable, EmptyState, KpiCard, LineChart, buttonStyles, ButtonIsland } from "@rapitrip/ui";
 import { Banknote, BellRing, ChefHat, PackageCheck, PackageX, ShoppingBag, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { FilterChips } from "@/components/filter-chips";
@@ -84,7 +84,7 @@ export default async function ComercioHome({ searchParams }: { searchParams: Sea
   const comparable = firstDays(previousRows, period.prevFrom, currentSeries.length);
   const topRows = top.data ?? [];
   const soldByProduct = new Map(topRows.map((row) => [row.product_name ?? "", Number(row.units)]));
-  const topBars = topRows.slice(0, 5).map((row) => ({ label: row.product_name ?? "Producto", value: Number(row.units), tone: "hoja" as const }));
+  const topColumns = topRows.slice(0, 5).map((row) => ({ label: row.product_name ?? "Producto", value: Number(row.units) }));
   const deliveredTotals = delivered.data?.[0];
   const prepMinutes = prep.data === null || prep.data === undefined ? null : Number(prep.data);
   const waiting = (pending.data ?? []).flatMap((row) => (row.number === null ? [] : [{ number: Number(row.number), minutes: minutesUntil(row.expires_at) }]));
@@ -176,7 +176,7 @@ export default async function ComercioHome({ searchParams }: { searchParams: Sea
         </Card>
         <Card className="p-5">
           <CardHeader title="Más vendidos" subtitle="Unidades en el periodo" />
-          <HBarList items={topBars} />
+          <ColumnList ariaLabel={`Más vendidos, ${period.label}`} items={topColumns} formatValue={(n) => `${n} u.`} />
         </Card>
       </div>
 

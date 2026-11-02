@@ -1,14 +1,14 @@
-import { Alert, Badge, Card, CardHeader, DataTable, HBarList, KpiCard, buttonStyles } from "@rapitrip/ui";
+import { Alert, Badge, Card, CardHeader, DataTable, DonutChart, KpiCard, buttonStyles } from "@rapitrip/ui";
 import { AlertTriangle, Banknote, CheckCheck, Download, Truck } from "lucide-react";
 import Link from "next/link";
 import { FilterChips } from "@/components/filter-chips";
 import { PageHeader } from "@/components/shell";
 import { StoreFilter } from "@/components/store-filter";
-import { minutesUntil, parsePeriod } from "@/lib/dashboard";
+import { compactMoney, minutesUntil, parsePeriod } from "@/lib/dashboard";
 import { first, optionalUuid, type SearchParams } from "@/lib/filters";
 import { requireConsoleAccess } from "@/lib/guard";
 import { formatMoney } from "@/lib/money";
-import { orderStatuses, orderStatusLabel, orderStatusTone, paymentLabel, salesStatuses, type OrderStatus } from "@/lib/orders";
+import { orderStatusColor, orderStatuses, orderStatusLabel, orderStatusTone, paymentLabel, salesStatuses, type OrderStatus } from "@/lib/orders";
 import { serverSupabase } from "@/lib/supabase";
 
 export const metadata = { title: "Resumen" };
@@ -65,12 +65,12 @@ export default async function CoordinacionResumen({ searchParams }: { searchPara
   const notCancelled = all.filter((row) => row.status !== "cancelado" && row.status !== "rechazado");
   const byStage = orderStatuses.flatMap((status) => {
     const total = all.filter((row) => row.status === status).length;
-    return total > 0 ? [{ label: orderStatusLabel[status], value: total, tone: status === "cancelado" || status === "rechazado" ? ("marino" as const) : ("hoja" as const) }] : [];
+    return total > 0 ? [{ label: orderStatusLabel[status], value: total, color: orderStatusColor[status] }] : [];
   });
   const byMethod = [
-    { label: "Efectivo", value: all.filter((row) => isSale(row) && row.method === "efectivo").reduce((total, row) => total + row.total, 0), tone: "hoja" as const },
-    { label: "Tarjeta", value: all.filter((row) => isSale(row) && row.method === "tarjeta").reduce((total, row) => total + row.total, 0), tone: "marino" as const },
-  ].filter((item) => item.value > 0);
+    { label: "Efectivo", value: all.filter((row) => isSale(row) && row.method === "efectivo").reduce((total, row) => total + row.total, 0), color: "var(--esmeralda)" },
+    { label: "Tarjeta", value: all.filter((row) => isSale(row) && row.method === "tarjeta").reduce((total, row) => total + row.total, 0), color: "var(--marino)" },
+  ];
   const byFilter = filter === "excepcion" ? exceptions : filter === "entregados" ? delivered : active;
   const visible = courierFilter ? byFilter.filter((row) => row.courierId === courierFilter) : byFilter;
   const storeOptions = [...new Map((storeSource.data ?? []).flatMap((row) => (row.store_id && row.store_name ? [[row.store_id, row.store_name] as const] : []))).entries()].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
@@ -99,11 +99,11 @@ export default async function CoordinacionResumen({ searchParams }: { searchPara
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="p-5">
           <CardHeader title="Pedidos por etapa" />
-          <HBarList items={byStage} />
+          <DonutChart items={byStage} ariaLabel="Pedidos del día por etapa" totalLabel="pedidos" />
         </Card>
         <Card className="p-5">
           <CardHeader title="Ventas del día por medio de pago" />
-          <HBarList items={byMethod} formatValue={formatMoney} />
+          <DonutChart items={byMethod} ariaLabel="Ventas del día por medio de pago" totalLabel="vendido" formatValue={compactMoney} />
         </Card>
       </div>
 

@@ -1,4 +1,4 @@
-import { Alert, Badge, Card, CardHeader, DataTable, KpiCard, LineChart } from "@rapitrip/ui";
+import { Alert, Badge, Card, CardHeader, ColumnList, DataTable, DonutChart, KpiCard, LineChart } from "@rapitrip/ui";
 import { Banknote, HandCoins, Receipt, Scale } from "lucide-react";
 import Link from "next/link";
 import { FilterChips } from "@/components/filter-chips";
@@ -58,6 +58,13 @@ export default async function CajaResumen({ searchParams }: { searchParams: Sear
   const upTo = period.to < todayEnd ? period.to : todayEnd;
   const series = (method: string) => fillDays(paymentRows.filter((row) => row.method === method).map((row) => ({ day: row.day, value: Number(row.total) })), period.from, upTo).map((point) => point.value);
   const periodWord = period.key === "hoy" ? "hoy" : period.key === "quincena" ? "esta quincena" : "este mes";
+  const methodTotal = (method: string) => sum(paymentRows.filter((row) => row.method === method).map((row) => Number(row.total)));
+  const byMethod = [
+    { label: "Efectivo", value: methodTotal("efectivo"), color: "var(--esmeralda)" },
+    { label: "Tarjeta", value: methodTotal("tarjeta"), color: "var(--marino)" },
+  ];
+  // Los turnos llegan del más nuevo al más viejo: se muestran los seis últimos en orden de apertura.
+  const shiftColumns = allShifts.slice(0, 6).reverse().map((row) => ({ label: formatDateTime(row.openedAt), value: row.salesTotal, detail: `${row.salesCount} ${row.salesCount === 1 ? "venta" : "ventas"}` }));
 
   return (
     <>
@@ -91,6 +98,17 @@ export default async function CajaResumen({ searchParams }: { searchParams: Sear
           />
         ) : null}
       </Card>
+
+      <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Card className="p-5">
+          <CardHeader title="Cobros por medio de pago" subtitle={`Efectivo contra tarjeta, ${periodWord}`} />
+          <DonutChart items={byMethod} ariaLabel={`Cobros por medio de pago, ${period.label}`} totalLabel="cobrado" formatValue={compactMoney} />
+        </Card>
+        <Card className="p-5">
+          <CardHeader title="Ventas por turno" subtitle="Los últimos turnos abiertos en el periodo" />
+          <ColumnList items={shiftColumns} ariaLabel={`Ventas por turno, ${period.label}`} formatValue={compactMoney} />
+        </Card>
+      </div>
 
       <Card className="p-5">
         <CardHeader title="Turnos de caja" subtitle="Para abrir, vender o cerrar un turno, entra a Caja y venta" />
