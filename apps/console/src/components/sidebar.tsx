@@ -1,11 +1,12 @@
 "use client";
 
 import { Activity, Banknote, Clock, FileText, House, Layers, ClipboardList, Lock, LogOut, Menu, ReceiptText, ShieldCheck, SlidersHorizontal, Sparkle, Store, TriangleAlert, Truck, UserRound, Users, X, type LucideIcon } from "lucide-react";
-import { Avatar, cn, Logo } from "@rapitrip/ui";
+import { cn, Logo } from "@rapitrip/ui";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { accountItem, type NavIcon, type NavItem, type NavSection } from "@/lib/nav";
+import { ProfilePhoto } from "./profile-photo";
 
 const icons: Record<NavIcon, LucideIcon> = {
   home: House, users: Users, file: FileText, store: Store, layers: Layers, truck: Truck, settings: SlidersHorizontal, orders: ClipboardList,
@@ -47,13 +48,15 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
 type Props = {
   sections: NavSection[];
   name: string | null;
+  /** Enlace firmado de la foto de perfil; sin foto se ven las iniciales. */
+  photo?: string | null;
   roleLabel: string;
   sessionMinutes: number;
   signOut: () => Promise<void>;
 };
 
 /** Barra lateral de 264 px en escritorio; por debajo de 1024 px pasa a un cajón que se abre con un botón. */
-export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: Props) {
+export function Sidebar({ sections, name, photo = null, roleLabel, sessionMinutes, signOut }: Props) {
   const pathname = usePathname();
   // El cajón se abre para una ruta concreta: al navegar deja de coincidir y se cierra solo, sin efectos.
   const [openFor, setOpenFor] = useState<string | null>(null);
@@ -87,7 +90,7 @@ export function Sidebar({ sections, name, roleLabel, sessionMinutes, signOut }: 
         <Sparkle aria-hidden="true" className="absolute right-12 top-12 hidden size-2.5 fill-esmeralda/70 text-esmeralda/70 lg:block" />
         <Logo tone="dark" subtitle="Consola de operación" priority className="mb-4 hidden lg:flex" />
         <div className="flex items-center gap-2.5 rounded-panel bg-white/[0.07] px-3 py-2.5 ring-1 ring-white/10">
-          <Avatar name={name} tone="dark" size="sm" />
+          <ProfilePhoto name={name} src={photo} tone="dark" className="size-9 text-xs" />
           <div className="min-w-0 leading-[1.4]">
             <p className="truncate text-[13px] font-bold text-white">{name ?? "Mi cuenta"}</p>
             <p className="truncate text-[11px] text-bruma">{roleLabel}</p>

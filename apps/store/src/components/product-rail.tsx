@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@rapitrip/ui";
+import { cn, scrollBehavior } from "@rapitrip/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
@@ -33,7 +33,7 @@ export function ProductRail({ label, children }: { label: string; children: Reac
 
   function move(direction: 1 | -1) {
     const node = ref.current;
-    if (node) node.scrollBy({ left: direction * node.clientWidth * 0.85, behavior: "smooth" });
+    if (node) node.scrollBy({ left: direction * node.clientWidth * 0.85, behavior: scrollBehavior() });
   }
 
   const arrow = "absolute top-[38%] z-20 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full bg-superficie text-tinta shadow-flota ring-1 ring-selva/10 transition-[opacity,transform] duration-500 ease-fluido hover:scale-105 focus-visible:outline-2 focus-visible:outline-hoja disabled:pointer-events-none disabled:opacity-0 md:flex";

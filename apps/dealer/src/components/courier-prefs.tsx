@@ -1,7 +1,7 @@
 "use client";
 
-import { cn } from "@rapitrip/ui";
-import { BellRing, Check, MapPinned, Navigation, Route, Smartphone, Volume2 } from "lucide-react";
+import { cn, setMotionReduced, useMotionReduced } from "@rapitrip/ui";
+import { BellRing, Check, MapPinned, Navigation, Route, Smartphone, Volume2, Zap } from "lucide-react";
 import { createElement, useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import { playOfferAlert } from "@/lib/offer-alert";
 import { setPref, usePrefs, type MapsApp } from "@/lib/prefs";
@@ -130,6 +130,19 @@ export function ScreenPrefs() {
           onChange={(next) => setPref("awake", next)}
         />
         {!supported ? <p className="px-1 text-[12.5px] text-tinta-suave">Este navegador no lo permite. En iPhone hace falta iOS 16.4 o más nuevo.</p> : null}
+      </div>
+    </SettingsSection>
+  );
+}
+
+/** «Reducir animaciones»: la app responde al instante, sin transiciones. Se guarda en este teléfono. */
+export function MotionPrefs() {
+  const reduced = useMotionReduced();
+  return (
+    <SettingsSection id="animaciones" icon={<Zap className="size-5" />} title="Animaciones" text="Para que la app vaya más ágil en la calle.">
+      <div className="flex flex-col gap-3">
+        <Switch icon={<Zap className="size-5" />} title="Reducir animaciones" text="Sin transiciones: las pantallas y los botones responden al instante. Útil en teléfonos lentos." checked={reduced} onChange={setMotionReduced} />
+        <p className="px-1 text-[12.5px] text-tinta-suave">Si tu teléfono ya pide reducir el movimiento, la app lo respeta aunque esto esté apagado.</p>
       </div>
     </SettingsSection>
   );

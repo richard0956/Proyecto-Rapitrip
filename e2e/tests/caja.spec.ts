@@ -38,9 +38,11 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     await page.getByRole("button", { name: "Abrir caja" }).click();
     await expect(page.getByText("Turno abierto", { exact: true })).toBeVisible({ timeout: 30_000 });
 
-    // Con varias tiendas en la base local, se elige la de esta prueba.
-    const storeTab = page.getByRole("tab", { name: `Tienda ${unique}` });
-    if (await storeTab.count()) await storeTab.click();
+    // «Nueva venta» se despliega desde la barra del turno; la tienda se elige con el buscador del selector.
+    await page.getByRole("button", { name: "Nueva venta" }).first().click();
+    await page.getByRole("button", { name: /^Tienda:/ }).click();
+    await page.getByRole("searchbox", { name: "Buscar tienda" }).fill(`Tienda ${unique}`);
+    await page.getByRole("option", { name: new RegExp(`Tienda ${unique}`) }).click();
 
     // Venta en efectivo: 2 cafés (300.00) con vuelto
     await page.getByLabel("Buscar producto").fill(product);
@@ -67,7 +69,7 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     await expect(dialog.getByRole("button", { name: "Anular venta" })).toBeDisabled();
     await dialog.getByLabel("Motivo").fill("el cliente se arrepintió");
     await dialog.getByRole("button", { name: "Anular venta" }).click();
-    await expect(page.getByText("Anulada")).toBeVisible();
+    await expect(page.getByText("Anulada", { exact: true })).toBeVisible();
     await expect(page.getByText(/Ventas \(1\)/)).toBeVisible();
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
 

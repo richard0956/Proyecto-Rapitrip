@@ -30,7 +30,7 @@ export function ProfileForm({ fullName: initialName, phone: initialPhone, save }
       <Field label="Nombre completo" icon={<UserRound className="size-4" />} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
       <Field label="Teléfono" icon={<Smartphone className="size-4" />} type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
       {result ? <Alert tone={result.ok ? "info" : "error"}>{result.ok ? (result.message ?? "Listo.") : result.error}</Alert> : null}
-      <Button variant="primary" type="submit" disabled={pending} className="self-start">
+      <Button variant="primary" type="submit" disabled={pending} className="self-end">
         {pending ? "Guardando…" : "Guardar cambios"}
       </Button>
     </form>

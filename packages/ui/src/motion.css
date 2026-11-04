@@ -220,3 +220,39 @@ html[data-intro="playing"] .intro-root {
     animation-delay: 0s !important;
   }
 }
+
+/* ───────── «Reducir animaciones» elegido en Preferencias ─────────
+ * Lo mismo que pide el sistema con «reducir movimiento», pero elegido dentro de la app (lo marca `motionScript` en <html>).
+ * Lo que aparece al hacer scroll se muestra de una vez y nada se anima. */
+html[data-motion="reducido"] {
+  scroll-behavior: auto;
+}
+
+html[data-motion="reducido"] .page-enter {
+  animation: none;
+}
+
+html[data-motion="reducido"] .intro-root {
+  display: none !important;
+}
+
+html[data-motion="reducido"] .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html[data-motion="reducido"] *,
+html[data-motion="reducido"] *::before,
+html[data-motion="reducido"] *::after {
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+}
+
+html[data-motion="reducido"]::view-transition-old(root),
+html[data-motion="reducido"]::view-transition-new(root) {
+  animation: none !important;
+}

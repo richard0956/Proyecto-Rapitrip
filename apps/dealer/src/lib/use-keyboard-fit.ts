@@ -1,5 +1,6 @@
 "use client";
 
+import { scrollBehavior } from "@rapitrip/ui";
 import { useEffect, type RefObject } from "react";
 
 const MARGIN = 16;
@@ -28,7 +29,7 @@ export function useKeyboardFit(formRef: RefObject<HTMLFormElement | null>) {
       // Nunca más de lo que deja el campo enfocado a la vista.
       const room = focused.getBoundingClientRect().top - visibleTop - MARGIN;
       const by = Math.min(overflow, Math.max(0, room));
-      if (by > 0) window.scrollBy({ top: by, behavior: "smooth" });
+      if (by > 0) window.scrollBy({ top: by, behavior: scrollBehavior() });
     };
     // El teclado tarda en abrir: se espera a que termine de cambiar el área visible.
     const later = () => {

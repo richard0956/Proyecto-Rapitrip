@@ -13,7 +13,7 @@ const sections: Section[] = [
   { href: "/ajustes", label: "Perfil", text: "Foto, nombre y correo", icon: UserRound, account: true },
   { href: "/ajustes/direcciones", label: "Direcciones", text: "Lugares de entrega", icon: MapPin, account: true },
   { href: "/ajustes/seguridad", label: "Seguridad", text: "Contraseña y sesiones", icon: ShieldCheck, account: true },
-  { href: "/ajustes/preferencias", label: "Preferencias", text: "Tema y notificaciones", icon: Palette },
+  { href: "/ajustes/preferencias", label: "Preferencias", text: "Tema, animaciones y avisos", icon: Palette },
   { href: "/ajustes/datos", label: "Mis datos", text: "Descargar o eliminar", icon: Database, account: true },
   { href: "/ajustes/ayuda", label: "Ayuda", text: "Preguntas y comentarios", icon: CircleHelp },
 ];

@@ -1,5 +1,5 @@
 import { Palette } from "lucide-react";
-import { AlertPrefs, MapsPrefs, ScreenPrefs } from "@/components/courier-prefs";
+import { AlertPrefs, MapsPrefs, MotionPrefs, ScreenPrefs } from "@/components/courier-prefs";
 import { PushCard } from "@/components/push-card";
 import { SettingsHeader, SettingsSection } from "@/components/settings-header";
 import { ThemePicker } from "@/components/theme-picker";
@@ -19,6 +19,7 @@ export default function PreferenciasPage() {
       <AlertPrefs />
       <MapsPrefs />
       <ScreenPrefs />
+      <MotionPrefs />
 
       <SettingsSection id="tema" icon={<Palette className="size-5" />} title="Tema" text="Se guarda en este teléfono.">
         <ThemePicker />

@@ -1,3 +1,5 @@
+import { prefersLessMotion } from "@rapitrip/ui";
+
 /** Tema claro u oscuro de la tienda. La elección del cliente se guarda en el navegador; sin elección, sigue al sistema. */
 export type Theme = "light" | "dark";
 /** Lo que elige el cliente en Preferencias: un tema fijo o seguir al sistema. */
@@ -63,7 +65,7 @@ function fadeColors(change: () => void) {
  * API de transiciones de vista. Sin esa API, los colores se funden; con «reducir movimiento», el cambio es inmediato.
  */
 export function switchTheme(choice: ThemeChoice, origin?: { x: number; y: number }) {
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduce = prefersLessMotion();
   const theme = choice === "system" ? systemTheme() : choice;
   const change = () => {
     if (choice === "system") {

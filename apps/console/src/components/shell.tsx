@@ -1,11 +1,12 @@
 import type { AppRole } from "@rapitrip/validation";
-import { Avatar } from "@rapitrip/ui";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { signOut } from "@/lib/actions";
 import { roleLabel } from "@/lib/format";
 import type { NavSection } from "@/lib/nav";
+import { myPhotoUrl } from "@/lib/profile";
 import { SESSION_INACTIVITY_MINUTES } from "@/lib/session-config";
+import { ProfilePhoto } from "./profile-photo";
 import { SessionActivity } from "./session-activity";
 import { Sidebar } from "./sidebar";
 
@@ -13,13 +14,14 @@ export async function Shell({ nav, name, role, children }: { nav: NavSection[]; 
   const sections = nav
     .map((section) => ({ ...section, items: section.items.filter((item) => !item.roles || (role !== null && item.roles.includes(role))) }))
     .filter((section) => section.items.length > 0);
+  const photo = await myPhotoUrl();
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <SessionActivity />
-      <Sidebar sections={sections} name={name} roleLabel={role ? (roleLabel[role] ?? role) : ""} sessionMinutes={SESSION_INACTIVITY_MINUTES} signOut={signOut} />
+      <Sidebar sections={sections} name={name} photo={photo} roleLabel={role ? (roleLabel[role] ?? role) : ""} sessionMinutes={SESSION_INACTIVITY_MINUTES} signOut={signOut} />
       <div className="relative">
         <Link href="/cuenta" className="absolute right-4 top-6 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja sm:right-8 lg:top-7">
-          <Avatar name={name} />
+          <ProfilePhoto name={name} src={photo} className="size-10 text-sm" />
           <span className="sr-only">Ir a mi cuenta</span>
         </Link>
         <main className="mx-auto w-full max-w-[1176px] px-4 pb-10 pt-6 sm:px-8 lg:pt-7">{children}</main>

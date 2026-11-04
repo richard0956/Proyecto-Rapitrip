@@ -1,4 +1,4 @@
-import { IntroSplash, introScript } from "@rapitrip/ui";
+import { IntroSplash, introScript, motionScript } from "@rapitrip/ui";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import type { ReactNode } from "react";
@@ -31,6 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="es" className={`${texto.variable} ${titulo.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: motionScript }} />
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body className="flex min-h-dvh flex-col">

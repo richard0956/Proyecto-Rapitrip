@@ -1,15 +1,16 @@
 import { getSessionInfo } from "@rapitrip/supabase";
-import { Bell, LogIn, Palette } from "lucide-react";
+import { Bell, LogIn, Palette, Zap } from "lucide-react";
 import Link from "next/link";
 import { ThemePicker } from "@/components/theme-picker";
 import { serverSupabase } from "@/lib/supabase";
 import { SectionCard } from "../section-card";
 import { setOrderEmails } from "./actions";
+import { MotionSwitch } from "./motion-switch";
 import { NotificationSwitch } from "./notification-switch";
 
 export const metadata = { title: "Preferencias" };
 
-/** Preferencias: el tema (para todos, en este navegador) y las notificaciones (con sesión, guardadas en la cuenta). */
+/** Preferencias: el tema y las animaciones (para todos, en este navegador) y las notificaciones (con sesión, guardadas en la cuenta). */
 export default async function PreferenciasPage() {
   const supabase = await serverSupabase();
   const session = await getSessionInfo(supabase);
@@ -20,6 +21,11 @@ export default async function PreferenciasPage() {
       <SectionCard icon={<Palette className="size-5" />} title="Tema" text="Cómo se ve Rapitrip en este dispositivo." id="tema">
         <ThemePicker />
         <p className="mt-4 text-[12.5px] text-tinta-suave">La elección se guarda en este navegador. En otro dispositivo puedes elegir otra.</p>
+      </SectionCard>
+
+      <SectionCard icon={<Zap className="size-5" />} title="Animaciones" text="Más rápido y sin movimiento, si lo prefieres." id="animaciones">
+        <MotionSwitch />
+        <p className="mt-4 text-[12.5px] text-tinta-suave">Se guarda en este navegador. Si tu dispositivo ya pide reducir el movimiento, la tienda lo respeta aunque esto esté apagado.</p>
       </SectionCard>
 
       <SectionCard icon={<Bell className="size-5" />} title="Notificaciones" text="Qué avisos te enviamos sobre tus compras." id="notificaciones">

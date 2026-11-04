@@ -1,4 +1,4 @@
-import { IntroSplash, introScript } from "@rapitrip/ui";
+import { IntroSplash, introScript, motionScript } from "@rapitrip/ui";
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -14,6 +14,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${texto.variable} ${titulo.variable}`} suppressHydrationWarning>
       <head>
+        {/* Primero la preferencia «Reducir animaciones»: si está, la introducción ya no se programa. */}
+        <script dangerouslySetInnerHTML={{ __html: motionScript }} />
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body>
