@@ -39,7 +39,7 @@ function NavEntry({ item, pathname }: { item: NavItem; pathname: string }) {
   }
   const active = isActive(pathname, item);
   return (
-    <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(itemBase, active ? "bg-esmeralda font-bold text-selva shadow-[0_8px_20px_-10px_rgb(36_192_142/0.7)]" : "font-medium text-nav-texto hover:bg-white/10")}>
+    <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(itemBase, active ? "bg-esmeralda font-bold text-panel shadow-[0_8px_20px_-10px_rgb(36_192_142/0.7)]" : "font-medium text-nav-texto hover:bg-white/10")}>
       {content}
     </Link>
   );
@@ -64,7 +64,7 @@ export function Sidebar({ sections, name, photo = null, roleLabel, sessionMinute
 
   return (
     <>
-      <header className="flex items-center justify-between bg-selva px-4 py-3 lg:hidden">
+      <header className="flex items-center justify-between bg-panel px-4 py-3 lg:hidden">
         <Logo tone="dark" subtitle="Consola de operación" priority />
         <button
           type="button"
@@ -82,7 +82,7 @@ export function Sidebar({ sections, name, photo = null, roleLabel, sessionMinute
         className={cn(
           // El mismo panel verde de la tienda y del repartidor: se aclara hacia abajo, con un brillo esmeralda arriba y uno marino abajo.
           // Los brillos van en el fondo y no como elementos, para no agrandar el área con desplazamiento.
-          "relative flex-col gap-[3px] overflow-y-auto bg-[radial-gradient(18rem_18rem_at_115%_-4%,rgb(36_192_142/0.22),transparent_70%),radial-gradient(20rem_20rem_at_-20%_104%,rgb(12_78_103/0.55),transparent_70%),linear-gradient(180deg,var(--panel)_0%,#0d5644_58%,#14705a_100%)] px-4 py-6 lg:sticky lg:top-0 lg:flex lg:h-dvh",
+          "relative flex-col gap-[3px] overflow-y-auto bg-[radial-gradient(18rem_18rem_at_115%_-4%,rgb(36_192_142/0.22),transparent_70%),radial-gradient(20rem_20rem_at_-20%_104%,rgb(12_78_103/0.55),transparent_70%),linear-gradient(180deg,var(--panel)_0%,#0d5644_58%,#14705a_100%)] dark:bg-[radial-gradient(18rem_18rem_at_115%_-4%,rgb(62_224_164/0.12),transparent_70%),radial-gradient(20rem_20rem_at_-20%_104%,rgb(124_192_232/0.1),transparent_70%),linear-gradient(180deg,#0b1a2e_0%,#0b2034_55%,#0d2a38_100%)] dark:ring-1 dark:ring-borde px-4 py-6 lg:sticky lg:top-0 lg:flex lg:h-dvh",
           open ? "fixed inset-x-0 bottom-0 top-[68px] z-40 flex" : "hidden",
         )}
       >
@@ -93,12 +93,12 @@ export function Sidebar({ sections, name, photo = null, roleLabel, sessionMinute
           <ProfilePhoto name={name} src={photo} tone="dark" className="size-9 text-xs" />
           <div className="min-w-0 leading-[1.4]">
             <p className="truncate text-[13px] font-bold text-white">{name ?? "Mi cuenta"}</p>
-            <p className="truncate text-[11px] text-bruma">{roleLabel}</p>
+            <p className="truncate text-[11px] text-bruma dark:text-tinta-suave">{roleLabel}</p>
           </div>
         </div>
         {sections.map((section, index) => (
           <nav key={section.label ?? index} aria-label={section.label ?? "Principal"} className="flex flex-col gap-[3px]">
-            {section.label ? <p className="px-2.5 pb-1 pt-3.5 text-micro font-bold uppercase tracking-[0.08em] text-bruma">{section.label}</p> : <div className="h-3" />}
+            {section.label ? <p className="px-2.5 pb-1 pt-3.5 text-micro font-bold uppercase tracking-[0.08em] text-bruma dark:text-tinta-suave">{section.label}</p> : <div className="h-3" />}
             {section.items.map((item) => (
               <NavEntry key={item.href} item={item} pathname={pathname} />
             ))}

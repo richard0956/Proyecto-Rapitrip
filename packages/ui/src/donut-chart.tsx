@@ -30,7 +30,7 @@ export function DonutChart({ items, ariaLabel, totalLabel = "Total", formatValue
   return (
     <div className={cn("flex flex-col items-center gap-5", !stacked && "sm:flex-row sm:items-center sm:gap-7")}>
       <div className="relative shrink-0">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={ariaLabel} className="block size-40">
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={ariaLabel} data-donut="" className="block size-40">
           <g transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}>
             {arcs.map((arc, index) => (
               <circle

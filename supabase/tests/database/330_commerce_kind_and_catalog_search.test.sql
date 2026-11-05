@@ -11,35 +11,37 @@ select tests.grant_role((select id from tu where k = 'adm'), 'admin');
 
 -- Solicitud de empresa: tipo y RUC
 select tests.authenticate_as((select id from tu where k = 'emp'), 'aal1');
-select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"empresa","ruc":"123"}')$$, '22023', null::text, 'una empresa con RUC demasiado corto se rechaza');
-select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"empresa"}')$$, '22023', null::text, 'una empresa sin RUC se rechaza');
-select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"raro"}')$$, '22023', null::text, 'un tipo desconocido se rechaza');
-select lives_ok($$select set_config('t.req', public.submit_commerce_request('Distribuidora Norte S.A.', '{"business_kind":"empresa","ruc":"j-0310 0000 12345"}')::text, true)$$, 'una empresa con RUC válido envía su solicitud');
+select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"empresa","ruc":"123","console_email":"empresax@t.test"}')$$, '22023', null::text, 'una empresa con RUC demasiado corto se rechaza');
+select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"empresa","console_email":"empresax@t.test"}')$$, '22023', null::text, 'una empresa sin RUC se rechaza');
+select throws_ok($$select public.submit_commerce_request('Empresa X', '{"business_kind":"raro","console_email":"empresax@t.test"}')$$, '22023', null::text, 'un tipo desconocido se rechaza');
+select lives_ok($$select set_config('t.req', public.submit_commerce_request('Distribuidora Norte S.A.', '{"business_kind":"empresa","ruc":"j-0310 0000 12345","console_email":"distribuidor@t.test"}')::text, true)$$, 'una empresa con RUC válido envía su solicitud');
 reset role;
 select is((select details ->> 'ruc' from identity.commerce_requests where id = current_setting('t.req')::uuid), 'J0310000012345', 'el RUC se guarda sin espacios ni guiones y en mayúsculas');
 
 select tests.authenticate_as((select id from tu where k = 'otro'), 'aal1');
-select throws_ok($$select public.submit_commerce_request('Otra empresa', '{"business_kind":"empresa","ruc":"J0310000012345"}')$$, '23505', null::text, 'el mismo RUC no se solicita dos veces');
+select throws_ok($$select public.submit_commerce_request('Otra empresa', '{"business_kind":"empresa","ruc":"J0310000012345","console_email":"otraempresa@t.test"}')$$, '23505', null::text, 'el mismo RUC no se solicita dos veces');
 reset role;
 
 -- Vendedor propio: no guarda RUC aunque lo envíe
 select tests.authenticate_as((select id from tu where k = 'inf'), 'aal1');
-select lives_ok($$select set_config('t.req2', public.submit_commerce_request('Puesto de Lola', '{"ruc":"XXXXXXXXXXXX"}')::text, true)$$, 'sin tipo se toma como vendedor propio');
+select lives_ok($$select set_config('t.req2', public.submit_commerce_request('Puesto de Lola', '{"ruc":"XXXXXXXXXXXX","console_email":"puestodelola@t.test"}')::text, true)$$, 'sin tipo se toma como vendedor propio');
 reset role;
 select is((select details ->> 'business_kind' from identity.commerce_requests where id = current_setting('t.req2')::uuid), 'informal', 'queda como informal');
 select ok(not (select details ? 'ruc' from identity.commerce_requests where id = current_setting('t.req2')::uuid), 'y no conserva el RUC');
 
 -- Aprobación: el comercio nace con su tipo y RUC
 select tests.authenticate_as((select id from tu where k = 'adm'));
-select lives_ok(format($$select set_config('t.c1', public.approve_commerce_request(%L, true)::text, true)$$, current_setting('t.req')), 'se aprueba la empresa');
-select lives_ok(format($$select set_config('t.c2', public.approve_commerce_request(%L, true)::text, true)$$, current_setting('t.req2')), 'se aprueba el vendedor propio');
+select lives_ok(format($$select set_config('t.c1', (public.approve_commerce_request(%L, true, repeat('1', 64)) ->> 'commerce_id'), true)$$, current_setting('t.req')), 'se aprueba la empresa');
+select lives_ok(format($$select set_config('t.c2', (public.approve_commerce_request(%L, true, repeat('2', 64)) ->> 'commerce_id'), true)$$, current_setting('t.req2')), 'se aprueba el vendedor propio');
 select is((select kind || '/' || ruc from public.commerces_list where id = current_setting('t.c1')::uuid), 'empresa/J0310000012345', 'la empresa queda con su RUC');
 select is((select kind from public.commerces_list where id = current_setting('t.c2')::uuid), 'informal', 'el vendedor propio queda como informal');
 reset role;
 select throws_ok($$insert into identity.commerces (name, kind) values ('Mala', 'empresa')$$, '23514', null::text, 'la base de datos no admite una empresa sin RUC');
 
--- Catálogo con filtros
-select tests.authenticate_as((select id from tu where k = 'emp'));
+-- Catálogo con filtros: la empresa trabaja con su cuenta de consola (la de la invitación), no con la de la tienda.
+insert into tu select 'empc', tests.create_app_user('consola-emp@t.test', 'consola');
+select tests.grant_role((select id from tu where k = 'empc'), 'comercio', current_setting('t.c1')::uuid);
+select tests.authenticate_as((select id from tu where k = 'empc'));
 select set_config('t.store1', public.create_store(current_setting('t.c1')::uuid, 'Tienda Empresa')::text, true);
 select public.set_store_hours(current_setting('t.store1')::uuid, (select jsonb_agg(jsonb_build_object('weekday', d, 'opens', '00:00', 'closes', '23:59')) from generate_series(0, 6) d));
 select set_config('t.p1', public.create_product(current_setting('t.store1')::uuid, 'Arroz')::text, true);

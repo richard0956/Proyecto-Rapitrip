@@ -47,7 +47,8 @@ select throws_ok(format($$select public.create_courier_invitation(%L, 'x@rep.com
 reset role;
 
 -- Aceptar: crea el rol y vincula la ficha ---------------------------------------------------------------------------------
-insert into tu select 'ana', tests.create_user('ana@rep.com', 'Ana Repartidora');
+-- La Edge Function crea la cuenta de la invitación ya como cuenta del repartidor.
+insert into tu select 'ana', tests.create_app_user('ana@rep.com', 'repartidor', 'Ana Repartidora');
 select set_config('role', 'service_role', true);
 select is((public.begin_accept_invitation(repeat('b', 64)) ->> 'role'), 'repartidor', 'la invitación pendiente es de repartidor');
 select is(public.finish_accept_invitation(repeat('b', 64), (select id from tu where k = 'ana')), true, 'se completa la aceptación');

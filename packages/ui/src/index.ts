@@ -26,5 +26,6 @@ export { AuthLayout, type AuthLayoutProps } from "./auth-layout";
 export { Turnstile, type TurnstileProps } from "./turnstile";
 export { IntroSplash, introScript } from "./intro-splash";
 export { Reveal } from "./reveal";
+export { LegalDocument, type LegalSection } from "./legal-document";
 export { MOTION_KEY, motionReducedByChoice, motionScript, prefersLessMotion, scrollBehavior, setMotionReduced } from "./motion-preference";
 export { useMotionReduced } from "./use-motion-reduced";

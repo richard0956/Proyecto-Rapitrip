@@ -1,6 +1,7 @@
 // Usuarios de prueba, uno por rol, para el Supabase local. Es idempotente: se puede correr las veces que haga falta.
 //   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/dev/seed-demo-users.mjs
 // Los roles de consola (superadmin, admin, cajero, coordinador) piden activar el segundo factor en el primer ingreso.
+// Zero Trust: cada cuenta es de una sola app (tienda, consola o repartidor); la app la fija el servidor al crearla.
 import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 
@@ -28,7 +29,9 @@ const users = [
 const psql = (sql) =>
   execFileSync("docker", ["exec", "-i", DB_CONTAINER, "psql", "-U", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], { input: sql }).toString().trim();
 
-async function ensureUser({ email, name }) {
+const appOf = (role) => (role === "cliente" ? "tienda" : role === "repartidor" ? "repartidor" : "consola");
+
+async function ensureUser({ email, name, role }) {
   const { data: found } = await api.rpc("lookup_auth_user", { p_email: email });
   if (found?.id) {
     await api.auth.admin.updateUserById(found.id, { password: PASSWORD, email_confirm: true });
@@ -39,6 +42,7 @@ async function ensureUser({ email, name }) {
     password: PASSWORD,
     email_confirm: true,
     user_metadata: { full_name: name },
+    app_metadata: { rapitrip_app: appOf(role) },
   });
   if (error || !data.user) throw error ?? new Error(`No se pudo crear ${email}`);
   return data.user.id;

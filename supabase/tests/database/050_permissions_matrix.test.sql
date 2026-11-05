@@ -37,9 +37,10 @@ from (values
   ('caj','public.my_profile','aal2',1),  ('coo','public.my_profile','aal2',1),  ('adm','public.my_profile','aal2',1),
   ('sup','public.my_profile','aal2',1),
 
-  ('cli1','public.my_roles','aal2',1), ('cli2','public.my_roles','aal2',1), ('com','public.my_roles','aal2',2),
-  ('caj','public.my_roles','aal2',2),  ('coo','public.my_roles','aal2',2),  ('adm','public.my_roles','aal2',2),
-  ('sup','public.my_roles','aal2',2),
+  ('cli1','public.my_roles','aal2',1), ('cli2','public.my_roles','aal2',1), ('com','public.my_roles','aal2',1),
+  -- Zero Trust: las cuentas de consola solo tienen su rol de trabajo (ya no el de cliente).
+  ('caj','public.my_roles','aal2',1),  ('coo','public.my_roles','aal2',1),  ('adm','public.my_roles','aal2',1),
+  ('sup','public.my_roles','aal2',1),
 
   ('cli1','public.accounts_staff','aal2',0), ('cli2','public.accounts_staff','aal2',0),
   ('com','public.accounts_staff','aal2',1),  ('caj','public.accounts_staff','aal2',1),

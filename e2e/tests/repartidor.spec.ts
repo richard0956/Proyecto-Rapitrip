@@ -50,7 +50,7 @@ test.describe("@backend app del repartidor", () => {
     const token = randomBytes(32).toString("base64url");
     const tokenHash = createHash("sha256").update(token).digest("hex");
     expect((await api.rpc("create_courier_invitation", { p_courier: courierId, p_email: courierEmail, p_token_hash: tokenHash })).error).toBeNull();
-    const courierUser = await createUser(courierEmail, { fullName: `Repartidor ${unique}` });
+    const courierUser = await createUser(courierEmail, { fullName: `Repartidor ${unique}`, app: "repartidor" });
     expect((await admin().rpc("finish_accept_invitation", { p_token_hash: tokenHash, p_user: courierUser.id })).error).toBeNull();
 
     // El repartidor entra desde el teléfono (sin segundo factor) y se pone disponible.

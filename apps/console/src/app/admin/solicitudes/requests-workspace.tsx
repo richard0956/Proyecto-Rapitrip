@@ -1,7 +1,7 @@
 "use client";
 
-import { Alert, Badge, Button, Card, DataTable, TextareaField, type Column } from "@rapitrip/ui";
-import { Check, X } from "lucide-react";
+import { Alert, Badge, Button, Card, DataTable, Field, TextareaField, type Column } from "@rapitrip/ui";
+import { Check, Mail, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type { ActionResult } from "@/lib/action-error";
@@ -15,12 +15,12 @@ export type RequestRow = {
   receivedAt: string;
   decisionReason: string | null;
   reviewedAt: string | null;
-  details: { contactName: string; phone: string; address: string; category: string; kind: "informal" | "empresa"; ruc: string; cedula: string; email: string; description: string };
+  details: { contactName: string; phone: string; address: string; category: string; kind: "informal" | "empresa"; ruc: string; cedula: string; email: string; description: string; consoleEmail: string };
 };
 
 type Props = {
   rows: RequestRow[];
-  approve: (input: { id: string; convenio: boolean }) => Promise<ActionResult>;
+  approve: (input: { id: string; convenio: boolean; consoleEmail: string }) => Promise<ActionResult>;
   reject: (input: { id: string; reason: string }) => Promise<ActionResult>;
 };
 
@@ -39,7 +39,10 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [convenio, setConvenio] = useState(false);
   const [reason, setReason] = useState("");
+  // Correo de la cuenta de consola del comercio: el de la solicitud, que la administración puede corregir antes de aprobar.
+  const [consoleEmail, setConsoleEmail] = useState<{ id: string; value: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
   const [query, setQuery] = useState("");
@@ -53,11 +56,14 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
 
   function run(action: () => Promise<ActionResult>) {
     setError(null);
+    setNotice(null);
     start(async () => {
       const result = await action();
       if (!result.ok) return setError(result.error);
       setConvenio(false);
       setReason("");
+      setConsoleEmail(null);
+      setNotice(result.message ?? null);
       router.refresh();
     });
   }
@@ -87,6 +93,7 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
+      {notice ? <Alert tone="info">{notice}</Alert> : null}
       <Card className="p-5">
         <div className="mb-3.5 flex flex-wrap items-center gap-2">
           <input type="search" aria-label="Buscar negocio" placeholder="Buscar negocio…" value={query} onChange={(e) => setQuery(e.target.value)} className="min-h-10 w-full rounded-full border border-borde-campo bg-papel px-4 text-[13px] text-tinta sm:w-72" />
@@ -125,7 +132,7 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
               <Badge tone={statusTone[selected.status]}>{statusText[selected.status]}</Badge>
             </div>
 
-            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-panel border border-borde bg-white p-4 text-cuerpo sm:grid-cols-2">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 rounded-panel border border-borde bg-superficie p-4 text-cuerpo sm:grid-cols-2">
               {(
                 [
                   ["Tipo de vendedor", selected.details.kind === "empresa" ? "Empresa (con RUC)" : "Vendedor propio o informal"],
@@ -133,7 +140,7 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
                   ...(selected.details.kind !== "empresa" ? ([["Cédula", selected.details.cedula]] as const) : []),
                   [selected.details.kind === "empresa" ? "Representante" : "Nombre completo", selected.details.contactName],
                   ["Teléfono", selected.details.phone],
-                  ["Correo electrónico", selected.details.email],
+                  ["Correo de su cuenta de la tienda", selected.details.email],
                   ["Dirección del negocio", selected.details.address],
                   ["Categoría", selected.details.category],
                   ["Descripción y productos", selected.details.description],
@@ -148,6 +155,14 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
 
             {selected.status === "pendiente" ? (
               <>
+                <Field
+                  label="Correo para la cuenta de consola"
+                  type="email"
+                  icon={<Mail className="size-4" />}
+                  value={consoleEmail?.id === selected.id ? consoleEmail.value : selected.details.consoleEmail}
+                  onChange={(e) => setConsoleEmail({ id: selected.id, value: e.target.value })}
+                  hint="Le llega la invitación para crear el acceso del comercio. Debe ser un correo sin cuenta en Rapitrip, distinto del de su cuenta de la tienda."
+                />
                 <TextareaField label="Motivo (si rechazas)" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Escribe el motivo del rechazo (mínimo 10 caracteres)" />
                 <label className="flex items-start gap-3 text-[13px] font-bold text-tinta">
                   <input type="checkbox" checked={convenio} onChange={(e) => setConvenio(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-hoja" />
@@ -159,12 +174,18 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
                     <X className="size-4" aria-hidden="true" />
                     Rechazar con motivo
                   </Button>
-                  <Button variant="primary" disabled={pending || !convenio} onClick={() => run(() => approve({ id: selected.id, convenio }))}>
+                  <Button
+                    variant="primary"
+                    disabled={pending || !convenio}
+                    onClick={() => run(() => approve({ id: selected.id, convenio, consoleEmail: (consoleEmail?.id === selected.id ? consoleEmail.value : selected.details.consoleEmail).trim() }))}
+                  >
                     <Check className="size-4" aria-hidden="true" />
-                    {pending ? "Guardando…" : "Aprobar y crear comercio"}
+                    {pending ? "Guardando…" : "Aprobar e invitar"}
                   </Button>
                 </div>
-                <Alert>Al aprobar se crean el comercio y su cuenta con el rol Comercio. La aprobación exige el convenio firmado.</Alert>
+                <Alert>
+                  Al aprobar se crea el comercio y se envía una invitación al correo de la consola. Por seguridad, la cuenta de la tienda de quien lo pidió no entra a la consola: el comercio crea ahí un acceso aparte, con contraseña y segundo factor.
+                </Alert>
               </>
             ) : (
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-cuerpo">
@@ -172,6 +193,12 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
                 <dd>{statusText[selected.status]}</dd>
                 <dt className="font-bold text-tinta-suave">Resuelta</dt>
                 <dd>{selected.reviewedAt ?? "—"}</dd>
+                {selected.status === "aprobada" && selected.details.consoleEmail ? (
+                  <>
+                    <dt className="font-bold text-tinta-suave">Invitación a</dt>
+                    <dd>{selected.details.consoleEmail}</dd>
+                  </>
+                ) : null}
                 {selected.decisionReason ? (
                   <>
                     <dt className="font-bold text-tinta-suave">Motivo</dt>

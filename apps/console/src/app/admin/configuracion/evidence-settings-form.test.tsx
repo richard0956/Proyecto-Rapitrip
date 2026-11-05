@@ -43,8 +43,16 @@ describe("EvidenceSettingsForm", () => {
     const user = userEvent.setup();
     render(<EvidenceSettingsForm initial={initial} save={vi.fn()} />);
     expect(screen.queryByText(/deja de proteger ese paso/)).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Foto al entregar/));
+    await user.click(screen.getByLabelText(/Foto al recoger/));
     expect(screen.getByText(/deja de proteger ese paso/)).toBeInTheDocument();
+  });
+
+  it("la foto y el código de entrega no se pueden quitar (Norma 7.1)", () => {
+    render(<EvidenceSettingsForm initial={{ ...initial, deliveryPhoto: false }} save={vi.fn()} />);
+    expect(screen.getByLabelText(/Foto al entregar/)).toBeChecked();
+    expect(screen.getByLabelText(/Foto al entregar/)).toBeDisabled();
+    expect(screen.getByLabelText(/Código de entrega/)).toBeDisabled();
+    expect(screen.getAllByText(/Norma 7.1/)).toHaveLength(2);
   });
 
   it("muestra el error de la base de datos", async () => {

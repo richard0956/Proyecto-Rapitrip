@@ -17,6 +17,9 @@ const admin = createClient(url, key, { auth: { persistSession: false } });
 const { data: found, error: lookupError } = await admin.rpc("lookup_auth_user", { p_email: email });
 if (lookupError) fail(`no se pudo buscar la cuenta: ${lookupError.message}`);
 
+// Zero Trust: el superadmin vive en una cuenta de consola. Una cuenta de la tienda o del repartidor con ese correo no sirve.
+if (found?.id && found.app !== "consola") fail("ese correo ya es una cuenta de la tienda o del repartidor: usa un correo institucional sin cuenta");
+
 let userId = found?.id;
 let created = false;
 if (!userId) {
@@ -26,6 +29,7 @@ if (!userId) {
     password: randomBytes(24).toString("base64url"),
     email_confirm: true,
     user_metadata: { full_name: "Superadministrador" },
+    app_metadata: { rapitrip_app: "consola" },
   });
   if (error || !data.user) fail(`no se pudo crear la cuenta: ${error?.message}`);
   userId = data.user.id;

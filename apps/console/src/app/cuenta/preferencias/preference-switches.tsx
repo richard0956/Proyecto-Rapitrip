@@ -1,9 +1,6 @@
 "use client";
 
-import { Alert, cn, setMotionReduced, useMotionReduced } from "@rapitrip/ui";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import type { ActionResult } from "@/lib/action-error";
+import { cn, setMotionReduced, useMotionReduced } from "@rapitrip/ui";
 
 /** Interruptor accesible (role="switch") con título y explicación al lado. */
 function Switch({ checked, onChange, label, text, disabled }: { checked: boolean; onChange: (value: boolean) => void; label: string; text: string; disabled?: boolean }) {
@@ -25,32 +22,6 @@ function Switch({ checked, onChange, label, text, disabled }: { checked: boolean
         <span className={cn("inline-block size-5 rounded-full bg-white shadow transition-transform", checked ? "translate-x-6" : "translate-x-1")} />
       </button>
     </label>
-  );
-}
-
-/** Correos de pedidos de la tienda: se guarda en la cuenta (sirve en cualquier dispositivo). */
-export function OrderEmailSwitch({ enabled, save }: { enabled: boolean; save: (enabled: boolean) => Promise<ActionResult> }) {
-  const router = useRouter();
-  const [value, setValue] = useState(enabled);
-  const [result, setResult] = useState<ActionResult | null>(null);
-  const [pending, start] = useTransition();
-
-  function change(next: boolean) {
-    setValue(next);
-    setResult(null);
-    start(async () => {
-      const outcome = await save(next);
-      setResult(outcome);
-      if (!outcome.ok) setValue(!next);
-      else router.refresh();
-    });
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Switch checked={value} onChange={change} disabled={pending} label="Avisos de mis compras" text="Si también compras en la tienda de Rapitrip con esta cuenta, te escribimos cuando tu pedido se recibe o se cancela." />
-      {result ? <Alert tone={result.ok ? "info" : "error"}>{result.ok ? (result.message ?? "Listo.") : result.error}</Alert> : null}
-    </div>
   );
 }
 

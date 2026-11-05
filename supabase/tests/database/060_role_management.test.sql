@@ -9,7 +9,7 @@ insert into tu select 'sup',  tests.create_user('sup@t.test');
 insert into tu select 'caj',  tests.create_user('caj@t.test');
 insert into tu select 'com',  tests.create_user('com@t.test');
 insert into tu select 'cli',  tests.create_user('cli@t.test');
-insert into tu select 'boot', tests.create_user('boot@t.test');
+insert into tu select 'boot', tests.create_app_user('boot@t.test', 'consola');
 
 select tests.grant_role((select id from tu where k = 'adm'),  'admin');
 select tests.grant_role((select id from tu where k = 'adm2'), 'admin');

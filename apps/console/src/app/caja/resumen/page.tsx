@@ -84,7 +84,7 @@ export default async function CajaResumen({ searchParams }: { searchParams: Sear
         <li><KpiCard icon={<Scale className="size-[18px]" />} label="Turnos con diferencia" value={shifts.error ? "—" : withDifference.length} hint={`Cerrados ${periodWord} con faltante o sobrante`} /></li>
       </ul>
 
-      <Card className="mb-5 p-5">
+      <Card outerClassName="mb-5" className="p-5">
         <CardHeader title="Ventas por día" subtitle={period.days > 1 ? `Efectivo contra tarjeta, ${period.label.toLowerCase()}` : "Elige Quincena o Mes para ver la tendencia"} />
         {period.days > 1 ? (
           <LineChart

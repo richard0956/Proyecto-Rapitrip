@@ -3,6 +3,7 @@
 import { Alert, Button, TextareaField } from "@rapitrip/ui";
 import { useState, useTransition } from "react";
 import type { ActionResult } from "@/lib/action-error";
+import { SlaBadge } from "@/components/sla-badge";
 
 export type DeletionRequest = { id: string; full_name: string | null; email: string | null; reason: string | null; created_at: string };
 
@@ -31,7 +32,10 @@ function RequestItem({ row, resolve }: { row: DeletionRequest; resolve: (input: 
   return (
     <li className="flex flex-col gap-2 rounded-panel border border-borde p-3">
       <p className="text-sm font-bold text-tinta">{row.full_name ?? "Sin nombre"} · <span className="font-normal">{row.email ?? "—"}</span></p>
-      <p className="text-xs text-tinta-suave">Pedida el {new Date(row.created_at).toLocaleDateString("es")}{row.reason ? ` · Motivo: ${row.reason}` : ""}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-tinta-suave">Pedida el {new Date(row.created_at).toLocaleDateString("es")}{row.reason ? ` · Motivo: ${row.reason}` : ""}</p>
+        <SlaBadge kind="eliminacion" from={row.created_at} />
+      </div>
       <TextareaField label="Nota (queda en la auditoría; si rechazas, el cliente la ve)" value={note} onChange={(e) => setNote(e.target.value)} />
       {error ? <Alert tone="error">{error}</Alert> : null}
       <div className="flex gap-2">

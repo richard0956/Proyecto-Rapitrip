@@ -15,7 +15,11 @@ export async function reportStaffIncident(input: unknown): Promise<ActionResult>
       severity: z.enum(["baja", "media", "alta"], { message: "Elige cuánto te afecta." }),
       where: z.string().trim().max(80).optional(),
       description: z.string().trim().min(10, "Describe el incidente con al menos 10 caracteres.").max(2000),
+      occurredAt: z.string().datetime().optional(),
+      dataInvolved: z.string().trim().max(300).optional(),
+      affected: z.string().trim().max(300).optional(),
     })
+    .refine((v) => v.type !== "seguridad" || (Boolean(v.dataInvolved) && Boolean(v.affected)), { message: "En un incidente de seguridad indica qué información está involucrada y quiénes están afectados." })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   const { area } = await requireAnyConsoleSession();
@@ -26,6 +30,9 @@ export async function reportStaffIncident(input: unknown): Promise<ActionResult>
     p_severity: parsed.data.severity,
     p_description: parsed.data.description,
     ...(parsed.data.where ? { p_where: parsed.data.where } : {}),
+    ...(parsed.data.occurredAt ? { p_occurred_at: parsed.data.occurredAt } : {}),
+    ...(parsed.data.dataInvolved ? { p_data_involved: parsed.data.dataInvolved } : {}),
+    ...(parsed.data.affected ? { p_affected: parsed.data.affected } : {}),
   });
   if (error) return failure(error);
   revalidatePath(`/${area}/incidentes`);

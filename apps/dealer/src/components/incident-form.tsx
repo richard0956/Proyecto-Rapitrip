@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, cn, TextareaField } from "@rapitrip/ui";
+import { Alert, cn, Field, TextareaField } from "@rapitrip/ui";
 import { Bug, CheckCircle2, Send, ShieldAlert, Smartphone } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { friendlyError } from "@/lib/api-error";
@@ -46,9 +46,13 @@ export function IncidentForm() {
   const [place, setPlace] = useState<(typeof places)[number] | null>(null);
   const [severity, setSeverity] = useState<Severity | null>(null);
   const [description, setDescription] = useState("");
+  // Norma 1.3.2 del manual de políticas de TI: en un incidente de seguridad, qué información y a quiénes afecta.
+  const [dataInvolved, setDataInvolved] = useState("");
+  const [affected, setAffected] = useState("");
   const [result, setResult] = useState<Result | null>(null);
   const [pending, setPending] = useState(false);
-  const ready = description.trim().length >= 10 && severity !== null;
+  const security = type === "seguridad";
+  const ready = description.trim().length >= 10 && severity !== null && (!security || (dataInvolved.trim() !== "" && affected.trim() !== ""));
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -62,6 +66,7 @@ export function IncidentForm() {
       p_description: description.trim(),
       ...(place ? { p_where: place } : {}),
       p_device: deviceSummary(),
+      ...(security ? { p_data_involved: dataInvolved.trim(), p_affected: affected.trim() } : {}),
     });
     setPending(false);
     if (error) {
@@ -71,6 +76,8 @@ export function IncidentForm() {
     setPlace(null);
     setSeverity(null);
     setDescription("");
+    setDataInvolved("");
+    setAffected("");
     setResult({ ok: true, ticket: String(data ?? "").slice(0, 8).toUpperCase() });
   }
 
@@ -156,6 +163,14 @@ export function IncidentForm() {
         placeholder="Qué estabas haciendo, qué esperabas y qué salió (si hubo un mensaje de error, cópialo)."
         required
       />
+
+      {security ? (
+        <div className="flex flex-col gap-3 rounded-2xl bg-durazno/40 p-4 ring-1 ring-borde">
+          <p className="text-[12.5px] leading-snug text-tinta">Repórtalo en un máximo de 24 horas e indica qué información y a quiénes afecta.</p>
+          <Field label="¿Qué información está involucrada?" className="text-base" value={dataInvolved} maxLength={300} onChange={(e) => setDataInvolved(e.target.value)} placeholder="Tu contraseña, datos de un cliente…" required />
+          <Field label="¿Quiénes están afectados?" className="text-base" value={affected} maxLength={300} onChange={(e) => setAffected(e.target.value)} placeholder="Tu cuenta, un cliente…" required />
+        </div>
+      ) : null}
 
       <p className="flex items-start gap-2 px-1 text-[12px] leading-snug text-tinta-suave">
         <Smartphone aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />

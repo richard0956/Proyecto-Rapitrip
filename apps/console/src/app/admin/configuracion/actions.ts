@@ -24,3 +24,24 @@ export async function saveEvidenceSettings(input: unknown): Promise<ActionResult
   revalidatePath("/admin/configuracion");
   return { ok: true, message: "Guardamos las reglas." };
 }
+
+/** Dominios de correo institucional del equipo. Solo la dirección los cambia; la base de datos lo vuelve a exigir y lo audita. */
+export async function addInstitutionalDomain(domain: string): Promise<ActionResult> {
+  if (typeof domain !== "string" || domain.trim().length < 3 || domain.length > 253) return { ok: false, error: "Escribe un dominio como rapitrip.com." };
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("add_institutional_domain", { p_domain: domain.trim() });
+  if (error) return failure(error);
+  revalidatePath("/admin/configuracion");
+  return { ok: true };
+}
+
+export async function removeInstitutionalDomain(domain: string): Promise<ActionResult> {
+  if (typeof domain !== "string" || domain.length > 253) return invalidInput;
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("remove_institutional_domain", { p_domain: domain });
+  if (error) return failure(error);
+  revalidatePath("/admin/configuracion");
+  return { ok: true };
+}

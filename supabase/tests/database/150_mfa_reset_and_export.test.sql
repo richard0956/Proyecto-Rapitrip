@@ -48,22 +48,22 @@ select tests.authenticate_as((select id from tu where k = 'adm'), 'aal2',
                     jsonb_build_object('method', 'password', 'timestamp', extract(epoch from now())::bigint - 3700)));
 select throws_ok(format($$select public.reset_mfa(%L, 'con segundo factor viejo')$$, (select id from tu where k = 'com')),
   '42501', null::text, 'exige MFA de los últimos 5 minutos');
-select throws_ok($$select public.export_dataset('accounts', 'auditoría anual de cuentas')$$,
+select throws_ok($$select public.export_dataset('accounts', 'auditoría anual de cuentas', p_recipient => 'Auditoría externa', p_channel => 'Correo cifrado', p_identity_verified => true)$$,
   '42501', null::text, 'exportar exige MFA de los últimos 5 minutos');
 reset role;
 
 -- Exportar
 select tests.authenticate_as((select id from tu where k = 'adm'));
-select ok((public.export_dataset('accounts', 'auditoría anual de cuentas') ->> 'count')::int >= 4,
+select ok((public.export_dataset('accounts', 'auditoría anual de cuentas', p_recipient => 'Auditoría externa', p_channel => 'Correo cifrado', p_identity_verified => true) ->> 'count')::int >= 4,
   'exporta las cuentas con rol operativo');
-select ok(not ((public.export_dataset('accounts', 'auditoría anual de cuentas') -> 'rows')
+select ok(not ((public.export_dataset('accounts', 'auditoría anual de cuentas', p_recipient => 'Auditoría externa', p_channel => 'Correo cifrado', p_identity_verified => true) -> 'rows')
   @> jsonb_build_array(jsonb_build_object('user_id', (select id from tu where k = 'cli')))),
   'las cuentas solo de cliente no se exportan');
-select ok(not ((public.export_dataset('couriers', 'revisión de repartidores activos') -> 'rows')::text like '%secreto%'),
+select ok(not ((public.export_dataset('couriers', 'revisión de repartidores activos', p_recipient => 'Coordinación', p_channel => 'Entrega en persona', p_identity_verified => true) -> 'rows')::text like '%secreto%'),
   'el documento del repartidor nunca se exporta');
-select throws_ok($$select public.export_dataset('clientes', 'auditoría anual de cuentas')$$, '22023', null::text,
+select throws_ok($$select public.export_dataset('clientes', 'auditoría anual de cuentas', p_recipient => 'Auditoría externa', p_channel => 'Correo cifrado', p_identity_verified => true)$$, '22023', null::text,
   'solo se exportan conjuntos conocidos');
-select throws_ok($$select public.export_dataset('accounts', 'corto')$$, '22023', null::text, 'el motivo es obligatorio');
+select throws_ok($$select public.export_dataset('accounts', 'corto', p_recipient => 'Auditoría externa', p_channel => 'Correo cifrado', p_identity_verified => true)$$, '22023', null::text, 'el motivo es obligatorio');
 reset role;
 select ok(exists (select 1 from audit.events where action = 'export' and target_id = 'accounts'
   and (metadata ->> 'count')::int >= 4), 'la exportación queda auditada con la cantidad de registros');

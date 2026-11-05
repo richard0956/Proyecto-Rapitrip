@@ -46,7 +46,7 @@ export async function loadDispatch(supabase: Client, number?: number) {
   const issuesByOrder: Record<string, IssueInfo[]> = {};
   for (const row of issueRows.data ?? []) {
     if (!row.id || !row.order_id || !row.kind || !row.reason) continue;
-    (issuesByOrder[row.order_id] ??= []).push({ id: row.id, kind: row.kind, reason: row.reason, createdAt: formatStoreDateTime(row.created_at) });
+    (issuesByOrder[row.order_id] ??= []).push({ id: row.id, kind: row.kind, reason: row.reason, createdAt: formatStoreDateTime(row.created_at), createdIso: row.created_at ?? undefined });
   }
   const accountByCourier = new Map((couriers.data ?? []).flatMap((row) => (row.id ? [[row.id, row.user_id !== null] as const] : [])));
   const deliveryByOrder = new Map((delivery.data ?? []).flatMap((row) => (row.order_id ? [[row.order_id, row] as const] : [])));

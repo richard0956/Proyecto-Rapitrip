@@ -9,6 +9,8 @@ insert into tu select 'caj', tests.create_user('caj@t.test');
 select tests.grant_role((select id from tu where k = 'adm'), 'admin');
 select tests.grant_role((select id from tu where k = 'sup'), 'superadmin');
 select tests.grant_role((select id from tu where k = 'caj'), 'cajero');
+-- El equipo solo se invita con correos institucionales (Zero Trust).
+insert into identity.institutional_domains (domain) values ('x.com');
 
 select tests.authenticate_as((select id from tu where k = 'adm'));
 select ok((public.create_invitation('Ana@X.com', 'cajero', repeat('a', 64)) ->> 'id') is not null,
@@ -51,7 +53,8 @@ select is(public.begin_accept_invitation(repeat('b', 64)) ->> 'email', 'ana@x.co
 select is(public.begin_accept_invitation(repeat('9', 64)) ->> 'reason', 'invalida', 'un token desconocido es inválido');
 reset role;
 
-insert into tu select 'ana', tests.create_user('ana@x.com', 'Ana');
+-- La Edge Function crea la cuenta de la invitación ya como cuenta de consola.
+insert into tu select 'ana', tests.create_app_user('ana@x.com', 'consola', 'Ana');
 select set_config('role', 'service_role', true);
 select is(public.finish_accept_invitation(repeat('b', 64), (select id from tu where k = 'ana')),
   true, 'se completa la aceptación');

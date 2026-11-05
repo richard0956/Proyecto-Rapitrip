@@ -65,9 +65,13 @@ export function CandidateActions({ userId, detail, anonymize }: CandidateProps) 
   );
 }
 
-export function ExportForm({ request }: { request: (input: { dataset: string; reason: string; from?: string; to?: string }) => Promise<ExportResult> }) {
+export function ExportForm({ request }: { request: (input: { dataset: string; reason: string; from?: string; to?: string; recipient: string; channel: string; identityVerified: boolean }) => Promise<ExportResult> }) {
   const [dataset, setDataset] = useState("accounts");
   const [reason, setReason] = useState("");
+  // Control 1.1.1 del manual de políticas de TI: para quién, por dónde y con su identidad verificada.
+  const [recipient, setRecipient] = useState("");
+  const [channel, setChannel] = useState("");
+  const [verified, setVerified] = useState(false);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [result, setResult] = useState<ExportResult | null>(null);
@@ -81,6 +85,9 @@ export function ExportForm({ request }: { request: (input: { dataset: string; re
         await request({
           dataset,
           reason,
+          recipient,
+          channel,
+          identityVerified: verified,
           from: from ? new Date(`${from}T00:00:00Z`).toISOString() : undefined,
           to: to ? new Date(`${to}T23:59:59Z`).toISOString() : undefined,
         }),
@@ -101,6 +108,14 @@ export function ExportForm({ request }: { request: (input: { dataset: string; re
         <Field label="Hasta" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </div>
       <TextareaField label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mínimo 10 caracteres" required />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="Destinatario" value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Nombre o cargo de quien la recibe" required />
+        <Field label="Canal de envío" value={channel} onChange={(e) => setChannel(e.target.value)} placeholder="Correo cifrado, entrega en persona…" required />
+      </div>
+      <label className="flex items-start gap-3 text-[13px] font-bold text-tinta">
+        <input type="checkbox" checked={verified} onChange={(e) => setVerified(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-hoja" />
+        Verifiqué la identidad del destinatario antes de exportar.
+      </label>
       {result && !result.ok ? <Alert tone="error">{result.error}</Alert> : null}
       {result?.ok ? (
         <Alert>
@@ -115,7 +130,7 @@ export function ExportForm({ request }: { request: (input: { dataset: string; re
           </a>
         </Alert>
       ) : null}
-      <Button variant="primary" type="submit" disabled={pending || reason.trim().length < 10} className="self-start">
+      <Button variant="primary" type="submit" disabled={pending || reason.trim().length < 10 || recipient.trim().length < 3 || channel.trim().length < 3 || !verified} className="self-start">
         {pending ? "Generando…" : "Exportar"}
       </Button>
     </form>

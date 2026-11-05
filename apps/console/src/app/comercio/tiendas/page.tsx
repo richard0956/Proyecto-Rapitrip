@@ -89,7 +89,7 @@ export default async function TiendasPage({ searchParams }: { searchParams: Sear
             <li><KpiCard icon={<Store className="size-[18px]" />} label="Tiendas" value={rows.length} hint="Registradas en tu comercio" /></li>
             <li><KpiCard icon={<Trophy className="size-[18px]" />} tone="durazno" label="Tienda que más vende" value={leader && (leader.metrics?.sales ?? 0) > 0 ? leader.name : "—"} hint={leader && (leader.metrics?.sales ?? 0) > 0 ? `${formatMoney(leader.metrics?.sales ?? 0)} ${word}` : "Sin ventas en el periodo"} /></li>
           </ul>
-          <Card className="mb-5 p-5">
+          <Card outerClassName="mb-5" className="p-5">
             {single ? (
               <>
                 <CardHeader title="Lo vendido por día" subtitle={period.days > 1 ? `${period.label} contra ${vs}` : "Elige 7 días, Quincena o Mes para ver la tendencia"} />

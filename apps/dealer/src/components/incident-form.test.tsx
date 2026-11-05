@@ -33,6 +33,10 @@ describe("IncidentForm", () => {
     await user.click(screen.getByRole("radio", { name: /Grave/ }));
     expect(screen.getByText(/avisa por correo al equipo/)).toBeInTheDocument();
     await describeIt(user, "  Me pidió ingresar otra vez sin motivo  ");
+    // Norma 1.3.2: sin la información involucrada y los afectados, un incidente de seguridad no se envía.
+    expect(send()).toBeDisabled();
+    await user.type(screen.getByLabelText("¿Qué información está involucrada?"), "Mi contraseña");
+    await user.type(screen.getByLabelText("¿Quiénes están afectados?"), "Mi cuenta");
     await user.click(send());
     expect(rpc).toHaveBeenCalledWith("courier_report_incident", {
       p_type: "seguridad",
@@ -40,6 +44,8 @@ describe("IncidentForm", () => {
       p_description: "Me pidió ingresar otra vez sin motivo",
       p_where: "Detalle del pedido",
       p_device: expect.any(String),
+      p_data_involved: "Mi contraseña",
+      p_affected: "Mi cuenta",
     });
     expect(await screen.findByText("#3F2A9C1B")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Reportar otro incidente" }));

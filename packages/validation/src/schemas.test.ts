@@ -92,9 +92,13 @@ describe("reasonSchema y exportRequestSchema", () => {
   it("el motivo común exige 5 caracteres y el de exportación 10", () => {
     expect(reasonSchema.safeParse("abcd").success).toBe(false);
     expect(reasonSchema.safeParse("abcde").success).toBe(true);
-    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "corto" }).success).toBe(false);
-    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "auditoría anual" }).success).toBe(true);
-    expect(exportRequestSchema.safeParse({ dataset: "clientes", reason: "auditoría anual" }).success).toBe(false);
+    const to = { recipient: "Auditoría externa", channel: "Correo cifrado", identityVerified: true };
+    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "corto", ...to }).success).toBe(false);
+    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "auditoría anual", ...to }).success).toBe(true);
+    expect(exportRequestSchema.safeParse({ dataset: "clientes", reason: "auditoría anual", ...to }).success).toBe(false);
+    // Control 1.1.1: sin destinatario, canal o identidad verificada no sale.
+    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "auditoría anual", ...to, recipient: "" }).success).toBe(false);
+    expect(exportRequestSchema.safeParse({ dataset: "accounts", reason: "auditoría anual", ...to, identityVerified: false }).success).toBe(false);
   });
 });
 

@@ -12,7 +12,7 @@ select tests.grant_role((select id from tu where k = 'coo'), 'coordinador');
 
 select tests.authenticate_as((select id from tu where k = 'cli1'), 'aal1');
 select lives_ok($$select public.submit_commerce_request('Ferretería El Clavo',
-  '{"contact_name":"Juan Téllez","phone":"+505 8456 2210","address":"Bo. Altagracia","category":"Ferretería"}')$$,
+  '{"contact_name":"Juan Téllez","phone":"+505 8456 2210","address":"Bo. Altagracia","category":"Ferretería","console_email":"clavo@t.test"}')$$,
   'el cliente envía la solicitud con sus datos');
 reset role;
 

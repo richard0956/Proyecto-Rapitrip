@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(8);
 
 create temp table tu (k text primary key, id uuid);
 grant select on tu to public;
@@ -15,8 +15,10 @@ select tests.authenticate_as((select id from tu where k = 'adm'));
 select is((select count(*) from public.evidence_settings_list), 1::bigint, 'la administración lee las reglas de evidencia');
 select is((select retention_days from public.evidence_settings_list), 90, 'con la conservación acordada de 90 días (3 meses)');
 select is((select alert_distance_m from public.evidence_settings_list), 150, 'y la distancia de alerta de 150 m');
-select lives_ok($$select public.set_evidence_settings(true, true, true, false, 200, 60)$$, 'la administración cambia las reglas');
-select is((select (require_delivery_code::text || ':' || alert_distance_m || ':' || retention_days) from public.evidence_settings_list), 'false:200:60', 'y la vista refleja el cambio');
+select lives_ok($$select public.set_evidence_settings(true, true, false, true, 200, 60)$$, 'la administración cambia las reglas');
+select is((select (require_pickup_code::text || ':' || alert_distance_m || ':' || retention_days) from public.evidence_settings_list), 'false:200:60', 'y la vista refleja el cambio');
+-- Norma 7.1 del manual de políticas de TI: la foto y la confirmación de la entrega no se pueden apagar.
+select throws_ok($$select public.set_evidence_settings(true, false, true, true, 200, 60)$$, '22023', null::text, 'la foto de entrega no se puede desactivar');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'coo'));
 select is((select count(*) from public.evidence_settings_list), 1::bigint, 'la coordinación también las lee');

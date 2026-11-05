@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatMoney } from "@/lib/money";
 import { decideReturn } from "./actions";
+import { SlaBadge } from "@/components/sla-badge";
 
 export type ReturnRow = {
   id: string;
@@ -18,6 +19,8 @@ export type ReturnRow = {
   photos: { label: string; url: string | null }[];
   decisionNote: string | null;
   requestedAt: string;
+  /** Fecha de la solicitud, para su plazo (Norma 9.2.2: 3 días hábiles). */
+  requestedIso?: string;
   decidedAt: string | null;
 };
 
@@ -66,7 +69,10 @@ function ReturnItem({ row }: { row: ReturnRow }) {
             Ver las evidencias de la entrega
           </Link>
         </span>
-        <Badge tone={statusTone[row.status]}>{statusLabel[row.status]}</Badge>
+        <span className="flex flex-wrap items-center gap-2">
+          {row.status === "solicitada" && row.requestedIso ? <SlaBadge kind="devolucion" from={row.requestedIso} /> : null}
+          <Badge tone={statusTone[row.status]}>{statusLabel[row.status]}</Badge>
+        </span>
       </div>
       <p className="text-tinta"><span className="font-bold">Motivo:</span> {row.reason}</p>
       <div>

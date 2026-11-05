@@ -43,11 +43,14 @@ export function LineChart({ series, labels, formatValue = defaultFormat, ariaLab
             </text>
           ) : null,
         )}
+        {/* Las series van juntas: la consola las dibuja de izquierda a derecha al aparecer la tarjeta. */}
+        <g data-line="">
         {main.values.length > 1 ? <polygon points={`${points(main.values)} ${x(main.values.length - 1)},${BOTTOM} ${x(0)},${BOTTOM}`} style={{ fill: strokes[main.tone], opacity: 0.12 }} /> : null}
         {series.map((s) => (
           <polyline key={s.name} points={points(s.values)} fill="none" strokeWidth={s.dashed ? 2 : 3} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={s.dashed ? "5 4" : undefined} style={{ stroke: strokes[s.tone] }} />
         ))}
         {main.values.length > 0 ? <circle cx={x(main.values.length - 1)} cy={y(main.values[main.values.length - 1] ?? 0)} r="4.5" strokeWidth="2" style={{ fill: strokes[main.tone], stroke: "var(--papel)" }} /> : null}
+        </g>
       </svg>
       </div>
       {series.length > 1 ? (

@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /** Se entra con sesión salvo a las pantallas de acceso. Cada página vuelve a comprobar el rol en el servidor. */
-const publicPaths = ["/ingresar", "/aceptar-invitacion", "/offline.html"];
+const publicPaths = ["/ingresar", "/aceptar-invitacion", "/offline.html", "/terminos", "/privacidad"];
 
 /** Renueva las cookies de sesión y redirige por comodidad. */
 export async function proxy(request: NextRequest) {

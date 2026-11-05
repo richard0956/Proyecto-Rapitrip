@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(19);
 
 create temp table tu (k text primary key, id uuid);
 grant select on tu to public;
@@ -48,14 +48,16 @@ select set_config('t.b3', public.create_order(current_setting('t.sb')::uuid, for
 select set_config('t.b4', public.create_order(current_setting('t.sb')::uuid, format('[{"variant_id":"%s","quantity":1}]', current_setting('t.vb'))::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
 reset role;
 
--- El dueño de A también es cliente: su compra en la tienda de B no es una venta suya
+-- Zero Trust: el dueño de A entra a la consola con una cuenta que no compra; para comprar usa su cuenta de la tienda
 select tests.authenticate_as((select id from tu where k = 'coma'));
-select set_config('t.own', public.create_order(current_setting('t.sb')::uuid, format('[{"variant_id":"%s","quantity":1}]', current_setting('t.vb'))::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::text, true);
+select throws_ok(format($$select public.create_order(%L, %L::jsonb, 'efectivo', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)$$,
+  current_setting('t.sb'), format('[{"variant_id":"%s","quantity":1}]', current_setting('t.vb'))),
+  '42501', null::text, 'una cuenta de consola no hace pedidos en la tienda');
 reset role;
 
 -- Estados y fechas puestos a mano (sin disparadores): la prueba es de las cifras, no de la máquina de estados
 set session_replication_role = replica;
-update sales.orders set status = 'confirmado' where id in (current_setting('t.a1')::uuid, current_setting('t.b1')::uuid, current_setting('t.own')::uuid);
+update sales.orders set status = 'confirmado' where id in (current_setting('t.a1')::uuid, current_setting('t.b1')::uuid);
 update sales.orders set status = 'cancelado' where id = current_setting('t.a2')::uuid;
 update sales.orders set status = 'rechazado' where id in (current_setting('t.b2')::uuid, current_setting('t.b3')::uuid, current_setting('t.b4')::uuid);
 -- a1 se hace a las 23:30 hora de Costa Rica (05:30 UTC del día siguiente): debe contar en su día local

@@ -7,11 +7,11 @@ Deno.test("escapeHtml neutraliza etiquetas y comillas", () => {
   assertEquals(escapeHtml(`<script>"x"&'y'</script>`), "&lt;script&gt;&quot;x&quot;&amp;&#39;y&#39;&lt;/script&gt;");
 });
 
-Deno.test("commerce_approved escapa el nombre del negocio", () => {
-  const m = renderEmail("commerce_approved", { business_name: "<b>Tienda</b>", console_url: "https://consola.test" });
+Deno.test("commerce_approved escapa el nombre del negocio y dice a qué correo llegó la invitación", () => {
+  const m = renderEmail("commerce_approved", { business_name: "<b>Tienda</b>", console_email: "negocio@correo.test" });
   assertStringIncludes(m.html, "&lt;b&gt;Tienda&lt;/b&gt;");
   assertEquals(m.html.includes("<b>Tienda</b>"), false);
-  assertStringIncludes(m.text, "https://consola.test");
+  assertStringIncludes(m.text, "negocio@correo.test");
 });
 
 Deno.test("commerce_rejected incluye el motivo", () => {

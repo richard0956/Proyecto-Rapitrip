@@ -18,10 +18,12 @@ export function ColumnList({ items, ariaLabel, formatValue = defaultFormat }: { 
             <li key={`${item.label}-${index}`} title={`${item.label}${item.detail ? ` · ${item.detail}` : ""}: ${formatValue(item.value)}`} className="flex min-w-0 flex-1 flex-col items-center gap-1.5 pt-6">
               <div className="relative flex w-full flex-1 items-end justify-center rounded-t-[10px] rounded-b-md bg-crema">
                 <div
+                  data-bar="y"
                   className={cn("w-full rounded-t-[10px] rounded-b-md transition-[height]", leader ? "bg-esmeralda" : "bg-bruma")}
                   style={{ height: `${Math.max(3, (Math.max(0, item.value) / max) * 100)}%` }}
                 />
                 <span
+                  data-bar-label=""
                   className={cn("absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[12px] font-bold tabular-nums", leader ? "text-tinta" : "text-tinta-suave")}
                   style={{ bottom: `calc(${Math.max(3, (Math.max(0, item.value) / max) * 100)}% + 4px)` }}
                 >

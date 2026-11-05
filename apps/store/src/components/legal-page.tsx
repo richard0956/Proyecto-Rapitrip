@@ -1,6 +1,6 @@
 import { Card } from "@rapitrip/ui";
 import Link from "next/link";
-import { LEGAL_UPDATED, type LegalSection } from "@/lib/legal";
+import { LEGAL_BASIS, LEGAL_UPDATED, type LegalSection } from "@/lib/legal";
 
 /** Correo de contacto para derechos de los titulares; solo se muestra si está configurado. */
 const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
@@ -12,6 +12,7 @@ export function LegalPage({ title, intro, sections, other }: { title: string; in
       <h1 className="mt-2 text-balance text-[34px] font-extrabold leading-tight text-tinta sm:text-[42px]">{title}</h1>
       <p className="mt-3 text-[15px] leading-relaxed text-tinta-suave">{intro}</p>
       <p className="mt-2 text-[13px] text-tinta-suave">Última actualización: {LEGAL_UPDATED}</p>
+      <p className="mt-1 text-[13px] text-tinta-suave">{LEGAL_BASIS}</p>
 
       <Card className="mt-8 p-6 sm:p-8">
         <nav aria-label="Contenido" className="mb-8 border-b border-selva/10 pb-6">

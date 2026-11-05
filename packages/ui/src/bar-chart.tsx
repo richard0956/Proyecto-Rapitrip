@@ -22,7 +22,7 @@ export function BarChart({ labels, values, formatValue = defaultFormat, ariaLabe
           const cx = slot * i + slot / 2;
           return (
             <g key={`${label}-${i}`}>
-              <rect x={cx - barW / 2} y={BOTTOM - h} width={barW} height={h} rx="4" style={{ fill: "var(--esmeralda)" }}>
+              <rect data-bar="y" x={cx - barW / 2} y={BOTTOM - h} width={barW} height={h} rx="4" style={{ fill: "var(--esmeralda)" }}>
                 <title>{`${label}: ${formatValue(value)}`}</title>
               </rect>
               {i % step === 0 ? (

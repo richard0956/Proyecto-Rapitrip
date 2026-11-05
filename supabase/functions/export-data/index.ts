@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   const authorization = req.headers.get("Authorization");
   if (!authorization) return json({ error: "no autenticado" }, 401);
   const body = await req.json().catch(() => null);
-  if (!DATASETS.includes(body?.dataset) || typeof body?.reason !== "string") {
+  if (!DATASETS.includes(body?.dataset) || typeof body?.reason !== "string" || typeof body?.recipient !== "string" || typeof body?.channel !== "string") {
     return json({ error: "datos inválidos" }, 400);
   }
 
@@ -28,6 +28,10 @@ Deno.serve(async (req) => {
     p_reason: body.reason,
     p_from: body.from ?? null,
     p_to: body.to ?? null,
+    // Control 1.1.1: destinatario, canal e identidad verificada; la base de datos los exige y los deja en la auditoría.
+    p_recipient: body.recipient,
+    p_channel: body.channel,
+    p_identity_verified: body.identityVerified === true,
   });
   if (error) return json({ error: error.message }, error.code === "42501" ? 403 : 400);
 

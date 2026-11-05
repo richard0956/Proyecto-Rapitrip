@@ -68,7 +68,8 @@ html[data-intro="playing"] .intro-root {
   justify-content: center;
   gap: 1.25rem;
   overflow: hidden;
-  background: var(--selva);
+  /* `panel` es el verde profundo en claro y el azul Medianoche en oscuro (en oscuro `selva` es el verde luminoso de acción). */
+  background: var(--panel);
   pointer-events: none;
   animation: intro-out 0.95s var(--ease-fluido) 1.65s both;
 }

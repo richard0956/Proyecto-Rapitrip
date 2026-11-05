@@ -13,6 +13,7 @@ const ROLE_LABELS: Record<string, string> = {
   cajero: "Cajero",
   coordinador: "Coordinador de pedidos",
   repartidor: "Repartidor",
+  comercio: "Comercio",
 };
 
 function layout(title: string, body: string): string {
@@ -45,13 +46,15 @@ export function renderEmail(template: TemplateName, data: Record<string, unknown
       return { subject, html, text };
     }
     case "commerce_approved": {
+      // Zero Trust: la cuenta de la tienda no entra a la consola; la invitación llega al correo que el negocio dio para eso.
       const subject = "Tu afiliación a Rapitrip fue aprobada";
-      const url = String(data.console_url ?? "");
-      const text = `Aprobamos la afiliación de ${data.business_name}. Entra a la consola: ${url}\nLa primera vez deberás crear una contraseña y activar el segundo factor.`;
+      const consoleEmail = String(data.console_email ?? "");
+      const text = `Aprobamos la afiliación de ${data.business_name}. Enviamos la invitación a la consola a ${consoleEmail}: ábrela desde ese correo para crear el acceso del negocio.
+Tu cuenta de la tienda sigue siendo solo para comprar.`;
       const html = layout(subject,
         `<p>Aprobamos la afiliación de <strong>${escapeHtml(data.business_name)}</strong>.</p>`
-        + `<p><a href="${escapeHtml(url)}">Entrar a la consola</a></p>`
-        + `<p>La primera vez deberás crear una contraseña y activar el segundo factor.</p>`);
+        + `<p>Enviamos la invitación a la consola a <strong>${escapeHtml(consoleEmail)}</strong>: ábrela desde ese correo para crear el acceso del negocio, con su contraseña y el segundo factor.</p>`
+        + `<p>Tu cuenta de la tienda sigue siendo solo para comprar.</p>`);
       return { subject, html, text };
     }
     case "commerce_rejected": {

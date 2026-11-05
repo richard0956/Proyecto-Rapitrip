@@ -35,7 +35,13 @@ Deno.serve(async (req) => {
   }
 
   const { data: existing } = await admin.rpc("lookup_auth_user", { p_email: begin.email });
+  // Zero Trust: cada cuenta es de una sola app. La de una invitación nace en la app de su rol y nunca reutiliza una de otra.
+  const app = begin.role === "repartidor" ? "repartidor" : "consola";
   let userId: string;
+
+  if (existing && existing.app !== app) {
+    return json({ error: "ese correo ya es una cuenta de otra app de Rapitrip; pide que te inviten con otro correo" }, 409);
+  }
 
   if (!existing) {
     if (!password) return json({ error: "elige una contraseña de 8 a 72 caracteres, con mayúscula, minúscula, número y símbolo" }, 400);
@@ -44,6 +50,8 @@ Deno.serve(async (req) => {
       password,
       email_confirm: true,
       user_metadata: fullName ? { full_name: fullName } : {},
+      // Solo el servidor escribe app_metadata: la base de datos fija con esto la app de la cuenta.
+      app_metadata: { rapitrip_app: app },
     });
     if (error || !data.user) return json({ error: "no se pudo crear la cuenta" }, 500);
     userId = data.user.id;

@@ -10,13 +10,23 @@ import { failedLoginMessage, genericLoginError, lockedLoginMessage, type LoginGu
  */
 export type PasswordSignInResult =
   | { ok: true; session: { access_token: string; refresh_token: string } }
-  | { ok: false; reason: "invalid" | "locked" | "email_not_confirmed" | "captcha" | "unavailable"; message: string | null };
+  | { ok: false; reason: "invalid" | "locked" | "email_not_confirmed" | "captcha" | "unavailable" | "wrong_app"; message: string | null };
 
-type Input = { email: string; password: string; captchaToken?: string | null; clientIp?: string | null };
+/** Cada cuenta es de una sola app (Zero Trust): la tienda, la consola o la del repartidor. */
+export type AccountApp = "tienda" | "consola" | "repartidor";
+
+/** Qué decirle a quien entra con una cuenta de otra app, según dónde intentó entrar. */
+export const wrongAppMessage: Record<AccountApp, string> = {
+  tienda: "Esta cuenta es de la consola o de la app del repartidor y no entra a la tienda. Para comprar, crea una cuenta de cliente con otro correo.",
+  consola: "Esta cuenta no es de la consola. El equipo y los comercios entran con la cuenta que crearon desde su invitación.",
+  repartidor: "Esta cuenta no es de un repartidor. Entra con la cuenta que creaste desde la invitación de Rapitrip.",
+};
+
+type Input = { email: string; password: string; captchaToken?: string | null; clientIp?: string | null; app: AccountApp };
 
 const unavailable: PasswordSignInResult = { ok: false, reason: "unavailable", message: "No pudimos iniciar sesión. Inténtalo de nuevo en un momento." };
 
-export async function passwordSignIn({ email, password, captchaToken, clientIp }: Input): Promise<PasswordSignInResult> {
+export async function passwordSignIn({ email, password, captchaToken, clientIp, app }: Input): Promise<PasswordSignInResult> {
   const { url, anonKey } = publicEnv();
   // Cliente de un solo uso, sin guardar nada. La IP de quien ingresa viaja a Auth para que su límite por IP
   // no junte a todos bajo la del servidor.
@@ -54,6 +64,18 @@ export async function passwordSignIn({ email, password, captchaToken, clientIp }
   // Ya con la sesión abierta: la base solo deja limpiar el contador del propio correo.
   const { error: clearError } = await supabase.rpc("login_guard_success");
   if (clearError) console.error("[ingreso] login_guard_success", clearError.code, clearError.message);
+
+  // La contraseña es correcta, pero la cuenta debe ser de esta app: si no, la sesión se cierra antes de llegar al navegador.
+  const { data: account, error: appError } = await supabase.from("my_account_app").select("app").maybeSingle();
+  if (appError || !account) {
+    console.error("[ingreso] my_account_app", appError?.code, appError?.message);
+    await supabase.auth.signOut({ scope: "local" });
+    return unavailable;
+  }
+  if (account.app !== app) {
+    await supabase.auth.signOut({ scope: "local" });
+    return { ok: false, reason: "wrong_app", message: wrongAppMessage[app] };
+  }
   return { ok: true, session: { access_token: data.session.access_token, refresh_token: data.session.refresh_token } };
 }
 
@@ -61,6 +83,7 @@ export async function passwordSignIn({ email, password, captchaToken, clientIp }
 export async function passwordSignInFromForm(
   raw: { email: unknown; password: unknown; captchaToken?: unknown },
   requestHeaders: { get(name: string): string | null },
+  app: AccountApp,
 ): Promise<PasswordSignInResult> {
   const email = emailSchema.safeParse(raw.email);
   const password = typeof raw.password === "string" && raw.password.length > 0 && raw.password.length <= 1024 ? raw.password : null;
@@ -68,5 +91,5 @@ export async function passwordSignInFromForm(
   const captchaToken = typeof raw.captchaToken === "string" && raw.captchaToken.length <= 4096 ? raw.captchaToken : null;
   // La plataforma de hosting fija el primer valor de x-forwarded-for con la IP real de quien ingresa.
   const clientIp = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || requestHeaders.get("x-real-ip") || null;
-  return passwordSignIn({ email: email.data, password, captchaToken, clientIp });
+  return passwordSignIn({ email: email.data, password, captchaToken, clientIp, app });
 }

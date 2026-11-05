@@ -13,6 +13,8 @@ import { MOTION_KEY } from "@rapitrip/ui";
 import { changePassword, reauthenticateForPassword } from "./actions";
 import { HelpManual } from "./ayuda/help-manual";
 import { MotionSwitch } from "./preferencias/preference-switches";
+import { ThemePicker } from "@/components/theme-picker";
+import { THEME_KEY } from "@/lib/theme";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -71,5 +73,22 @@ describe("reducir animaciones", () => {
     await user.click(toggle);
     expect(document.documentElement.dataset.motion).toBeUndefined();
     expect(localStorage.getItem(MOTION_KEY)).toBeNull();
+  });
+});
+
+describe("tema", () => {
+  it("elegir oscuro lo aplica y lo recuerda; «según el sistema» borra la elección", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduced-motion"), media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    localStorage.removeItem(THEME_KEY);
+    render(<ThemePicker />);
+    await user.click(screen.getByRole("radio", { name: /Oscuro/ }));
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(localStorage.getItem(THEME_KEY)).toBe("dark");
+    expect(screen.getByRole("radio", { name: /Oscuro/ })).toBeChecked();
+    await user.click(screen.getByRole("radio", { name: /Según el sistema/ }));
+    expect(localStorage.getItem(THEME_KEY)).toBeNull();
+    expect(document.documentElement.dataset.theme).toBe("light");
+    vi.unstubAllGlobals();
   });
 });

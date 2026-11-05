@@ -27,8 +27,12 @@ describe("StaffIncidents", () => {
     expect(screen.getByText(/avisa por correo a la administración/)).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("¿Dónde pasó? (opcional)"), "Caja y venta");
     await user.type(screen.getByLabelText("Cuéntanos qué pasó"), "Un correo pidió mi contraseña");
+    // Norma 1.3.2: un incidente de seguridad no se envía sin la información involucrada y los afectados.
+    expect(send).toBeDisabled();
+    await user.type(screen.getByLabelText("¿Qué información está involucrada?"), "Contraseña");
+    await user.type(screen.getByLabelText("¿Quiénes están afectados?"), "Mi cuenta");
     await user.click(send);
-    expect(report).toHaveBeenCalledWith({ type: "seguridad", severity: "alta", where: "Caja y venta", description: "Un correo pidió mi contraseña" });
+    expect(report).toHaveBeenCalledWith({ type: "seguridad", severity: "alta", where: "Caja y venta", description: "Un correo pidió mi contraseña", dataInvolved: "Contraseña", affected: "Mi cuenta" });
     expect(await screen.findByText("Reporte enviado")).toBeInTheDocument();
     expect(refresh).toHaveBeenCalled();
   });

@@ -2,9 +2,9 @@ import { Card, cn } from "@rapitrip/ui";
 import type { ReactNode } from "react";
 
 /** Tarjeta de una sección de «Mi cuenta»: icono en burbuja, título, explicación corta y su contenido. */
-export function SectionCard({ icon, title, text, tone = "menta", actions, children, className }: { icon: ReactNode; title: string; text?: string; tone?: "menta" | "lavanda" | "durazno"; actions?: ReactNode; children: ReactNode; className?: string }) {
+export function SectionCard({ icon, title, text, tone = "menta", actions, children, className, outerClassName }: { icon: ReactNode; title: string; text?: string; tone?: "menta" | "lavanda" | "durazno"; actions?: ReactNode; children: ReactNode; className?: string; outerClassName?: string }) {
   return (
-    <Card className={cn("p-5 sm:p-6", className)}>
+    <Card className={cn("p-5 sm:p-6", className)} outerClassName={outerClassName}>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <span aria-hidden="true" className={cn("flex size-10 shrink-0 items-center justify-center rounded-2xl", tone === "menta" ? "bg-menta text-hoja" : tone === "lavanda" ? "bg-lavanda text-marino" : "bg-durazno text-durazno-texto")}>

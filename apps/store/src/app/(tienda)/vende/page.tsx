@@ -109,7 +109,7 @@ export default async function VendePage() {
               </span>
             </div>
             {last.status === "pendiente" ? <Alert className="mt-5">El equipo de Rapitrip está revisando tu solicitud. Te avisaremos por correo cuando haya una decisión.</Alert> : null}
-            {last.status === "aprobada" ? <Alert className="mt-5">Tu comercio fue aprobado. Revisa tu correo: ahí están los pasos para ingresar a la consola de comercio.</Alert> : null}
+            {last.status === "aprobada" ? <Alert className="mt-5">Tu comercio fue aprobado. La invitación a la consola llegó al correo que diste para ella: ábrela desde ahí para crear el acceso del negocio. Esta cuenta sigue siendo solo para comprar.</Alert> : null}
             {last.status === "rechazada" ? (
               <Alert tone="warning" className="mt-5">
                 No pudimos afiliar tu comercio{last.decision_reason ? `: ${last.decision_reason}` : "."} Puedes corregir los datos y enviar una solicitud nueva.

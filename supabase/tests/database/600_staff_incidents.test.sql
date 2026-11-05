@@ -22,7 +22,7 @@ select ok(public.staff_report_incident('interrupcion', 'media', 'La impresora de
 select throws_ok($$select public.staff_report_incident('interrupcion', 'baja', 'corto')$$, '22023', null::text, 'la descripción necesita al menos 10 caracteres');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'coo'));
-select ok(public.staff_report_incident('seguridad', 'alta', 'Un repartidor recibió un enlace sospechoso', 'Pedidos') is not null, 'coordinación reporta un incidente');
+select ok(public.staff_report_incident('seguridad', 'alta', 'Un repartidor recibió un enlace sospechoso', 'Pedidos', now() - interval '1 hour', 'Credenciales de la cuenta', 'Un repartidor') is not null, 'coordinación reporta un incidente');
 reset role;
 select tests.authenticate_as((select id from tu where k = 'com'));
 select ok(public.staff_report_incident('interrupcion', 'baja', 'Las fotos del catálogo no cargan', 'Catálogo') is not null, 'el comercio reporta un incidente');

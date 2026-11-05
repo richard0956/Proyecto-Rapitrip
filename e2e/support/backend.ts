@@ -40,12 +40,17 @@ export function totp(secret: string, now = Date.now()): string {
   return String(code % 10 ** 6).padStart(6, "0");
 }
 
-export async function createUser(email: string, { confirmed = true, fullName }: { confirmed?: boolean; fullName?: string } = {}) {
+/**
+ * Crea una cuenta. Zero Trust: cada cuenta es de una sola app; sin `app` es de la tienda (como un registro normal). Las de la
+ * consola y del repartidor nacen marcadas por el servidor, como las que crea la invitación.
+ */
+export async function createUser(email: string, { confirmed = true, fullName, app }: { confirmed?: boolean; fullName?: string; app?: "consola" | "repartidor" } = {}) {
   const { data, error } = await admin().auth.admin.createUser({
     email,
     password: PASSWORD,
     email_confirm: confirmed,
     user_metadata: fullName ? { full_name: fullName } : {},
+    ...(app ? { app_metadata: { rapitrip_app: app } } : {}),
   });
   if (error || !data.user) throw error ?? new Error("No se pudo crear el usuario");
   return data.user;
@@ -70,7 +75,7 @@ export async function confirmEmail(email: string) {
 
 export async function createSuperadmin() {
   const email = uniqueEmail("director");
-  const user = await createUser(email, { fullName: "Directora de Prueba" });
+  const user = await createUser(email, { fullName: "Directora de Prueba", app: "consola" });
   const { error } = await admin().rpc("bootstrap_superadmin", { p_user: user.id });
   if (error) throw error;
   return { id: user.id, email, password: PASSWORD };
@@ -104,20 +109,31 @@ export async function createInvitation(client: SupabaseClient, email: string, ro
   return token;
 }
 
-/** Cuenta de comercio lista para usar: solicitud enviada por el cliente y aprobada por un director. */
-/** `details` permite pedir una empresa: `{ business_kind: "empresa", ruc: "J0310000123456" }`; por omisión es un vendedor propio. */
+/**
+ * Cuenta de comercio lista para usar: un cliente de la tienda pide la afiliación con un correo para la consola, un director la
+ * aprueba y esa invitación se acepta con una cuenta de consola nueva (Zero Trust: nunca la del cliente). `email` es el de la
+ * consola; `customerEmail`, el de la tienda.
+ * `details` permite pedir una empresa: `{ business_kind: "empresa", ruc: "J0310000123456" }`; por omisión es un vendedor propio.
+ */
 export async function createCommerceAccount(businessName = "Comercio E2E", details: Record<string, string> = {}) {
+  const customerEmail = uniqueEmail("cliente-comercio");
   const email = uniqueEmail("comercio");
-  await createUser(email, { fullName: "Dueña de Comercio" });
+  await createUser(customerEmail, { fullName: "Dueña de Comercio" });
   const customer = createClient(url!, anon!, options);
-  const { error: signInError } = await customer.auth.signInWithPassword({ email, password: PASSWORD });
+  const { error: signInError } = await customer.auth.signInWithPassword({ email: customerEmail, password: PASSWORD });
   if (signInError) throw signInError;
-  const { data: request, error: requestError } = await customer.rpc("submit_commerce_request", { p_business_name: businessName, p_details: details });
+  const { data: request, error: requestError } = await customer.rpc("submit_commerce_request", { p_business_name: businessName, p_details: { ...details, console_email: email } });
   if (requestError || !request) throw requestError ?? new Error("No se pudo enviar la solicitud");
 
   const director = await createSuperadmin();
   const api = await consoleClient(director.email, director.password);
-  const { error: approveError } = await api.rpc("approve_commerce_request", { p_request: request, p_convenio_confirmed: true });
+  const token = randomBytes(32).toString("base64url");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const { error: approveError } = await api.rpc("approve_commerce_request", { p_request: request, p_convenio_confirmed: true, p_token_hash: tokenHash });
   if (approveError) throw approveError;
-  return { email, password: PASSWORD, businessName, director };
+  // Lo que hace la Edge Function accept-invitation: la cuenta nace en la consola y recibe el rol del comercio.
+  const owner = await createUser(email, { fullName: "Dueña de Comercio", app: "consola" });
+  const { data: accepted, error: acceptError } = await admin().rpc("finish_accept_invitation", { p_token_hash: tokenHash, p_user: owner.id });
+  if (acceptError || accepted !== true) throw acceptError ?? new Error("No se pudo aceptar la invitación del comercio");
+  return { email, customerEmail, password: PASSWORD, businessName, director };
 }

@@ -44,15 +44,6 @@ export async function saveAvatar(input: unknown): Promise<ActionResult> {
   return { ok: true, message: parsed.data.path ? "Foto actualizada." : "Quitamos tu foto." };
 }
 
-export async function setOrderEmails(enabled: boolean): Promise<ActionResult> {
-  await requireAnyConsoleSession();
-  const supabase = await serverSupabase();
-  const { error } = await supabase.rpc("set_my_notifications", { p_order_email: enabled === true });
-  if (error) return failure(error);
-  revalidatePath("/cuenta/preferencias");
-  return { ok: true, message: enabled ? "Te avisaremos por correo." : "Ya no te enviaremos esos correos." };
-}
-
 /** Resultado del cambio de contraseña. `needsCode`: Supabase pide confirmar con el código que manda al correo. */
 export type PasswordResult = { ok: true } | { ok: false; error: string; needsCode?: boolean };
 

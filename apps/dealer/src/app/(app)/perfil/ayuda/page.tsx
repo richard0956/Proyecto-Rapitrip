@@ -1,4 +1,5 @@
 import { CircleHelp, ClipboardList, Mail, MonitorX, Siren, Workflow } from "lucide-react";
+import Link from "next/link";
 import { HelpFaq, type FaqItem } from "@/components/help-faq";
 import { IncidentForm } from "@/components/incident-form";
 import { SettingsHeader, SettingsSection } from "@/components/settings-header";
@@ -107,6 +108,16 @@ export default function AyudaPage() {
           Escríbenos a {contactEmail}
         </a>
       ) : null}
+
+      <p className="px-1 text-center text-[12.5px] text-tinta-suave">
+        <Link href="/terminos" className="font-bold text-hoja underline-offset-2 hover:underline">
+          Términos de uso
+        </Link>{" "}
+        ·{" "}
+        <Link href="/privacidad" className="font-bold text-hoja underline-offset-2 hover:underline">
+          Política de privacidad
+        </Link>
+      </p>
     </div>
   );
 }

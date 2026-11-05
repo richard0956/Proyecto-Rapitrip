@@ -29,6 +29,22 @@ const common: HelpGroup = {
       steps: ["Entra a «Mi cuenta».", "Cambia tu foto, tu nombre o tu teléfono y guarda.", "El correo es institucional: si cambia, lo actualiza la administración."],
       href: "/cuenta",
     },
+    {
+      id: "preferencias",
+      title: "Modo oscuro y animaciones",
+      summary: "Elige cómo se ve la consola en tu computadora.",
+      steps: ["Entra a «Mi cuenta» → «Preferencias».", "En «Tema» elige claro, oscuro o según el sistema.", "Si la computadora va lenta o el movimiento te molesta, activa «Reducir animaciones»."],
+      href: "/cuenta/preferencias",
+      tip: "Se guarda en este navegador: en otra computadora puedes elegir otra cosa.",
+    },
+    {
+      id: "politicas",
+      title: "Políticas de TI de Rapitrip",
+      summary: "Las reglas de seguridad, cuentas, datos personales y operación que rigen la consola.",
+      steps: ["Entra a «Mi cuenta» → «Políticas de TI».", "Con «Lo que aplica a mi rol» ves solo lo que te toca; con «Todo el manual», el documento completo.", "Usa el buscador para encontrar una regla, una norma o un procedimiento."],
+      href: "/cuenta/politicas",
+      tip: "Usar la consola implica cumplirlas: por ejemplo, reportar un incidente de seguridad dentro de las 24 horas.",
+    },
   ],
 };
 
@@ -59,20 +75,25 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
             title: "Invitar y gestionar al equipo",
             summary: "Las cuentas del equipo entran solo por invitación.",
             steps: [
-              "En «Usuarios y roles», pulsa «Invitar persona», escribe el correo y elige el rol.",
+              "En «Usuarios y roles», pulsa «Invitar persona», escribe su correo institucional y elige el rol.",
               "La persona recibe un enlace de un solo uso que vence a los 4 días; las pendientes están en la pestaña «Invitaciones».",
               "Abre la ficha de una persona para suspender, reactivar o revocar cada rol; todo pide un motivo.",
               "Desde la ficha también se restablece el segundo factor si perdió su teléfono.",
             ],
             href: "/admin/usuarios",
-            tip: "Nadie asigna un rol igual o superior al suyo; solo la dirección crea administradores.",
+            tip: "Cada cuenta es de una sola app: el correo no puede ser de una cuenta de la tienda ni del repartidor. Los dominios permitidos están en «Configuración».",
           },
           {
             id: "solicitudes",
             title: "Aprobar solicitudes de afiliación",
             summary: "Comercios con RUC y vendedores propios piden vender en Rapitrip.",
-            steps: ["Filtra en «Solicitudes» por estado y tipo.", "Revisa los datos y confirma que el convenio está firmado.", "Aprueba (se crea el comercio y su cuenta) o rechaza con motivo."],
+            steps: [
+              "Filtra en «Solicitudes» por estado y tipo.",
+              "Revisa los datos y el correo para la consola (puedes corregirlo); confirma que el convenio está firmado.",
+              "Aprueba (se crea el comercio y se invita a ese correo) o rechaza con motivo.",
+            ],
             href: "/admin/solicitudes",
+            tip: "La cuenta de la tienda de quien lo pidió no entra a la consola. Si la invitación vence, reenvíala desde la ficha del comercio.",
           },
           {
             id: "comercios",

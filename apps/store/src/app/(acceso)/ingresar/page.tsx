@@ -1,4 +1,5 @@
 import { getSessionInfo } from "@rapitrip/supabase";
+import { wrongAppMessage } from "@rapitrip/supabase/password-sign-in";
 import { Alert, Card } from "@rapitrip/ui";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Ingresar" };
 
-type Params = Promise<{ next?: string; expirada?: string; error?: string; confirmado?: string }>;
+type Params = Promise<{ next?: string; expirada?: string; error?: string; confirmado?: string; cuenta?: string }>;
 
 export default async function IngresarPage({ searchParams }: { searchParams: Params }) {
   const params = await searchParams;
@@ -29,6 +30,7 @@ export default async function IngresarPage({ searchParams }: { searchParams: Par
         </div>
         {params.expirada ? <Alert tone="warning">Tu sesión venció por seguridad. Ingresa de nuevo y seguimos donde ibas.</Alert> : null}
         {params.error ? <Alert tone="error">El enlace no es válido o ya venció. Vuelve a intentarlo.</Alert> : null}
+        {params.cuenta === "otra-app" ? <Alert tone="warning">{wrongAppMessage.tienda}</Alert> : null}
         {googleEnabled() ? (
           <>
             <GoogleButton next={next} />

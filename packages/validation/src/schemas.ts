@@ -41,11 +41,15 @@ export const courierSchema = z.object({
   document_path: z.string().regex(/^[A-Za-z0-9/_.-]{1,300}$/).optional(),
 });
 
+/** Control 1.1.1 del manual de políticas de TI: cada salida de información dice para qué, para quién y por dónde sale. */
 export const exportRequestSchema = z.object({
   dataset: z.enum(["audit", "login_events", "accounts", "couriers"]),
   reason: strongReasonSchema,
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
+  recipient: z.string().trim().min(3, "indica el destinatario de la información").max(200),
+  channel: z.string().trim().min(3, "indica el canal por el que la enviarás").max(120),
+  identityVerified: z.literal(true, { message: "verifica la identidad del destinatario antes de exportar" }),
 });
 /** Tiendas de un comercio (Fase 2). Los mismos límites que valida la base de datos. */
 const optionalText = (max: number) =>

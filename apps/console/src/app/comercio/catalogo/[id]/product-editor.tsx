@@ -484,7 +484,7 @@ function ImagesCard({ product, images, locked, add, remove }: { product: Product
         {images.map((image, index) => (
           <li key={image.id} className={cn("group relative aspect-square overflow-hidden rounded-2xl bg-calido ring-1 ring-borde", index === 0 && "col-span-2 row-span-2")}>
             <img src={image.url} alt={`Imagen ${index + 1} de ${product.name}`} className="size-full object-cover" loading="lazy" />
-            {index === 0 ? <span className="absolute left-2 top-2 rounded-full bg-selva/80 px-2 py-0.5 text-[10px] font-bold text-white">Portada</span> : null}
+            {index === 0 ? <span className="absolute left-2 top-2 rounded-full bg-panel/80 px-2 py-0.5 text-[10px] font-bold text-white">Portada</span> : null}
             {!locked ? (
               <button type="button" onClick={() => drop(image)} disabled={pending} aria-label={`Eliminar imagen ${index + 1}`} className="absolute bottom-1.5 right-1.5 flex size-8 items-center justify-center rounded-full bg-papel text-rojo shadow-suave transition-transform duration-500 ease-fluido active:scale-95 focus-visible:outline-2 focus-visible:outline-hoja">
                 <Trash2 className="size-4" aria-hidden="true" />

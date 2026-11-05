@@ -180,7 +180,7 @@ export default async function ComercioHome({ searchParams }: { searchParams: Sea
         </Card>
       </div>
 
-      <Card className="mb-5 p-5">
+      <Card outerClassName="mb-5" className="p-5">
         <CardHeader title="Inventario" subtitle="Hasta 20 variantes por vista; el detalle completo está en Inventario" />
         <div className="mb-3.5">
           <FilterChips basePath="/comercio" param="inventario" current={stockFilter} options={stockChips} keep={{ periodo: period.key, tienda: store }} />

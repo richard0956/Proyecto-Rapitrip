@@ -23,6 +23,18 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   const { pathname } = request.nextUrl;
+
+  // Zero Trust: la tienda solo admite cuentas de cliente. Una sesión de otra app (por ejemplo, un ingreso con Google cuyo
+  // correo es de la consola, o una sesión de antes de separar las cuentas) se cierra aquí y se explica en «Ingresar».
+  if (data?.claims && !isCustomerSession(data.claims)) {
+    await supabase.auth.signOut({ scope: "local" });
+    const url = request.nextUrl.clone();
+    url.pathname = "/ingresar";
+    url.search = "?cuenta=otra-app";
+    const redirect = NextResponse.redirect(url);
+    for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+    return redirect;
+  }
   if (!data?.claims && protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     const url = request.nextUrl.clone();
     url.pathname = "/ingresar";
@@ -30,6 +42,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   return response;
+}
+
+/** La sesión es de una cuenta de la tienda si su token trae el rol de cliente activo (lo pone el hook de acceso). */
+function isCustomerSession(claims: Record<string, unknown>): boolean {
+  const roles = claims.app_roles;
+  return Array.isArray(roles) && roles.some((entry) => (entry as { role?: unknown } | null)?.role === "cliente");
 }
 
 export const config = {

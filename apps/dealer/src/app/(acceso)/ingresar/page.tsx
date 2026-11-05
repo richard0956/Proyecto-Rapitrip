@@ -1,4 +1,5 @@
 import { Alert, Card } from "@rapitrip/ui";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccessShell } from "@/components/access-shell";
 import { claimsHaveCourierRole } from "@/lib/claims";
@@ -28,6 +29,17 @@ export default async function IngresarPage({ searchParams }: { searchParams: Par
         {params.expirada ? <Alert tone="warning">Tu sesión venció. Ingresa de nuevo.</Alert> : null}
         <LoginForm />
         <p className="text-[12.5px] text-tinta-suave">¿Olvidaste tu contraseña? Pide a coordinación que te envíe una invitación nueva.</p>
+        <p className="text-[12.5px] leading-snug text-tinta-suave">
+          Al ingresar aceptas los{" "}
+          <Link href="/terminos" className="font-bold text-hoja underline-offset-2 hover:underline">
+            Términos de uso
+          </Link>{" "}
+          y la{" "}
+          <Link href="/privacidad" className="font-bold text-hoja underline-offset-2 hover:underline">
+            Política de privacidad
+          </Link>
+          .
+        </p>
       </Card>
     </AccessShell>
   );

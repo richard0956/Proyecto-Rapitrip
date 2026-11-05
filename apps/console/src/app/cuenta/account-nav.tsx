@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@rapitrip/ui";
-import { BookOpen, KeyRound, SlidersHorizontal, UserRound } from "lucide-react";
+import { BookOpen, KeyRound, ShieldCheck, SlidersHorizontal, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,9 +10,10 @@ const sections = [
   { href: "/cuenta/seguridad", label: "Seguridad", icon: KeyRound },
   { href: "/cuenta/preferencias", label: "Preferencias", icon: SlidersHorizontal },
   { href: "/cuenta/ayuda", label: "Ayuda", icon: BookOpen },
+  { href: "/cuenta/politicas", label: "Políticas de TI", icon: ShieldCheck },
 ] as const;
 
-/** Las cuatro secciones de «Mi cuenta», como pestañas arriba de cada una. */
+/** Las secciones de «Mi cuenta», como pestañas arriba de cada una. */
 export function AccountNav() {
   const pathname = usePathname();
   return (

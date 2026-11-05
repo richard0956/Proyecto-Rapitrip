@@ -6,6 +6,8 @@ grant select on tu to public;
 insert into tu select 'u1', tests.create_user('u1@t.test', 'Usuario Uno');
 insert into tu select 'u2', tests.create_user('u2@t.test');
 insert into tu select 'u3', tests.create_user('u3@t.test');
+-- Una cuenta de consola sin roles: ahí se prueban las reglas del rol comercio.
+insert into tu select 'k1', tests.create_app_user('k1@t.test', 'consola');
 create temp table tc (k text primary key, id uuid);
 insert into tc select 'c1', tests.create_commerce('Comercio 1');
 insert into tc select 'c2', tests.create_commerce('Comercio 2');
@@ -18,10 +20,10 @@ select ok(exists (select 1 from identity.user_roles
   where user_id = (select id from tu where k = 'u1') and role = 'cliente' and status = 'activo'),
   'toda cuenta nueva recibe el rol cliente');
 
-select throws_ok(format($$insert into identity.user_roles (user_id, role) values (%L, 'comercio')$$, (select id from tu where k = 'u1')),
+select throws_ok(format($$insert into identity.user_roles (user_id, role) values (%L, 'comercio')$$, (select id from tu where k = 'k1')),
   '23514', null::text, 'el rol comercio exige un comercio');
 select throws_ok(format($$insert into identity.user_roles (user_id, role, commerce_id) values (%L, 'cajero', %L)$$,
-  (select id from tu where k = 'u1'), (select id from tc where k = 'c1')),
+  (select id from tu where k = 'k1'), (select id from tc where k = 'c1')),
   '23514', null::text, 'un rol distinto de comercio no admite comercio');
 
 select lives_ok(format($$select tests.grant_role(%L, 'comercio', %L)$$, (select id from tu where k = 'u1'), (select id from tc where k = 'c1')),

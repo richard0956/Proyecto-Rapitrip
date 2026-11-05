@@ -9,7 +9,8 @@ import { requireConsoleAccess } from "@/lib/guard";
 import { formatMoney } from "@/lib/money";
 import { formatStoreDateTime, storeState } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
-import { setCommerceStatus } from "../actions";
+import { inviteCommerceAccount, setCommerceStatus } from "../actions";
+import { ConsoleInvite } from "./console-invite";
 import { StatusControl } from "./status-control";
 
 type StoreRow = { id: string; name: string; address: string | null; phone: string | null; fee: number | null; closedUntil: string | null; state: ReturnType<typeof storeState>; published: number; draft: number; orders: number; sales: number };
@@ -27,13 +28,15 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
   const supabase = await serverSupabase();
   const to = new Date();
   const from = new Date(to.getTime() - 30 * DAY_MS);
-  const [commerce, stores, products, accounts, reclass, sales] = await Promise.all([
+  const [commerce, stores, products, accounts, reclass, sales, invitations, request] = await Promise.all([
     supabase.from("commerces_list").select("id, name, status, created_at, kind, ruc").eq("id", id).maybeSingle(),
     supabase.from("stores_list").select("id, name, address, contact_phone, delivery_fee, status, closed_until, open_now").eq("commerce_id", id).order("created_at"),
     supabase.from("products_list").select("id, store_id, status").eq("commerce_id", id),
     supabase.from("accounts_staff").select("full_name, email, role_status").eq("role", "comercio").eq("commerce_id", id),
     supabase.from("commerce_reclassification_stats").select("reclassified, express_total").eq("commerce_id", id).maybeSingle(),
     supabase.rpc("sales_by_store", { p_from: from.toISOString(), p_to: to.toISOString() }),
+    supabase.from("invitations_list").select("email, status, expires_at").eq("commerce_id", id).eq("status", "pendiente").order("created_at", { ascending: false }).limit(1),
+    supabase.from("commerce_requests_list").select("details").eq("commerce_id", id).maybeSingle(),
   ]);
   if (!commerce.data || !commerce.data.id || !commerce.data.name) notFound();
   const failed = stores.error || products.error || accounts.error || sales.error;
@@ -68,6 +71,9 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
       : [],
   );
   const owner = accounts.data?.[0];
+  const pendingInvite = invitations.data?.[0] ?? null;
+  const requestDetails = request.data?.details;
+  const requestedEmail = requestDetails && typeof requestDetails === "object" && !Array.isArray(requestDetails) && typeof requestDetails.console_email === "string" ? requestDetails.console_email : "";
   const totals = {
     sales: rows.reduce((sum, row) => sum + row.sales, 0),
     orders: rows.reduce((sum, row) => sum + row.orders, 0),
@@ -143,7 +149,19 @@ export default async function ComercioDetallePage({ params }: { params: Promise<
                   <Badge tone={owner.role_status === "activo" ? "positive" : "warning"}>{owner.role_status === "activo" ? "Activa" : "Suspendida"}</Badge>
                 </div>
               ) : (
-                <p className="text-[13px] text-tinta-suave">Sin cuenta activa asociada.</p>
+                <div className="flex flex-col gap-3">
+                  {pendingInvite ? (
+                    <div className="rounded-panel bg-durazno/60 p-3.5 ring-1 ring-borde">
+                      <p className="text-sm font-bold text-tinta">Invitación pendiente</p>
+                      <p className="text-[12.5px] leading-snug text-tinta-suave">
+                        Enviada a <span className="font-semibold text-tinta">{pendingInvite.email}</span>. Vence el {formatDate(pendingInvite.expires_at)}.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[13px] text-tinta-suave">Todavía no tiene cuenta de consola. Invítala con un correo propio del negocio: su cuenta de la tienda no entra a la consola.</p>
+                  )}
+                  <ConsoleInvite commerceId={commerce.data.id} defaultEmail={pendingInvite?.email ?? requestedEmail} pending={Boolean(pendingInvite)} invite={inviteCommerceAccount} />
+                </div>
               )}
               <Link href="/admin/usuarios" className={buttonStyles({ variant: "secondary", className: "mt-4 w-full" })}>
                 Gestionar en Usuarios y roles

@@ -32,6 +32,7 @@ export default async function DevolucionesPage() {
             photos: (row.photos ?? []).map((path) => ({ label: path.split("/").pop() ?? path, url: urlByPath.get(path) ?? null })),
             decisionNote: row.decision_note,
             requestedAt: formatDateTime(row.requested_at),
+            requestedIso: row.requested_at ?? undefined,
             decidedAt: row.decided_at ? formatDateTime(row.decided_at) : null,
           },
         ]

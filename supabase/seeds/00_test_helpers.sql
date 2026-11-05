@@ -28,11 +28,38 @@ begin
   return v_id;
 end $$;
 
+-- Cada cuenta es de una sola app (Zero Trust): dar un rol de consola o de repartidor a una cuenta de prueba la pasa a
+-- esa app, como si hubiera nacido de una invitación; el rol de cliente con el que se creó se borra.
+create or replace function tests.set_app(p_user uuid, p_app text)
+returns void language plpgsql as $$
+begin
+  if to_regclass('identity.profiles') is null or not exists (
+       select 1 from information_schema.columns where table_schema = 'identity' and table_name = 'profiles' and column_name = 'app') then
+    return;
+  end if;
+  perform set_config('rapitrip.allow_app_change', 'on', true);
+  execute 'update identity.profiles set app = $1 where id = $2 and app is distinct from $1' using p_app, p_user;
+  perform set_config('rapitrip.allow_app_change', 'off', true);
+  if p_app <> 'tienda' then
+    delete from identity.user_roles where user_id = p_user and role = 'cliente';
+  end if;
+end $$;
+
 create or replace function tests.grant_role(p_user uuid, p_role text, p_commerce uuid default null)
 returns void language plpgsql as $$
 begin
+  perform tests.set_app(p_user, case p_role when 'cliente' then 'tienda' when 'repartidor' then 'repartidor' else 'consola' end);
   insert into identity.user_roles (user_id, role, commerce_id)
   values (p_user, p_role::identity.app_role, p_commerce);
+end $$;
+
+-- Una cuenta de consola o de repartidor recién creada (sin roles), como la que deja una invitación antes de aceptarla.
+create or replace function tests.create_app_user(p_email text, p_app text, p_full_name text default null)
+returns uuid language plpgsql as $$
+declare v_id uuid := tests.create_user(p_email, p_full_name);
+begin
+  perform tests.set_app(v_id, p_app);
+  return v_id;
 end $$;
 
 create or replace function tests.touch(p_user uuid, p_ago interval default '0 seconds')

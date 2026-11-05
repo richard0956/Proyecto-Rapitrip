@@ -30,7 +30,7 @@ export function PickupHandoff({ orderId, status, loadCode, loadPhoto }: { orderI
 
   if (showCode) {
     return (
-      <Card className="mb-3.5 border-2 border-hoja p-4">
+      <Card outerClassName="mb-3.5" className="border-2 border-hoja p-4">
         <CardHeader title="Código de recogida" subtitle="Muéstraselo al repartidor al entregarle el pedido" />
         {code === null ? (
           <p className="text-sm text-tinta-suave">Cargando…</p>
@@ -51,7 +51,7 @@ export function PickupHandoff({ orderId, status, loadCode, loadPhoto }: { orderI
   }
   if (showPhoto && photo?.ok && photo.photo) {
     return (
-      <Card className="mb-3.5 p-4">
+      <Card outerClassName="mb-3.5" className="p-4">
         <CardHeader title="Recogida registrada" subtitle={`El repartidor lo recogió el ${when.format(new Date(photo.photo.takenAt))}`} />
         {photo.photo.url ? (
           <a href={photo.photo.url} target="_blank" rel="noopener noreferrer" className="block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">

@@ -86,14 +86,15 @@ test.describe("@backend consola · acceso y roles", () => {
     }
   });
 
-  test("una cuenta de cliente no tiene acceso a la consola", async ({ page }) => {
+  test("una cuenta de la tienda no entra a la consola (Zero Trust)", async ({ page }) => {
     const email = uniqueEmail("cliente");
     await createUser(email);
     await page.goto(`${CONSOLE_URL}/login`);
     await page.getByLabel("Correo").fill(email);
     await page.getByLabel("Contraseña").fill(PASSWORD);
     await page.getByRole("button", { name: "Ingresar a la consola" }).click();
-    await expect(page).toHaveURL(/\/sin-acceso$/);
+    await expect(page.getByRole("alert")).toContainText("Esta cuenta no es de la consola");
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test("la sesión se cierra tras 15 minutos sin actividad", async ({ page }) => {

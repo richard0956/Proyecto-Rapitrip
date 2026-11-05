@@ -94,7 +94,7 @@ export async function CourierDetail({ id, listPath, periodKey, manage }: Props) 
         </Card>
       </div>
 
-      <Card className="mb-5 p-5">
+      <Card outerClassName="mb-5" className="p-5">
         <CardHeader title="Pedidos recientes" subtitle="Los últimos 15 pedidos asignados, entregados o en curso" />
         <DataTable
           caption="Pedidos del repartidor"

@@ -26,8 +26,8 @@ export default async function SeguridadPage() {
     <>
       <PageHeader title="Mi cuenta" description="Tu perfil, la seguridad de tu acceso, tus preferencias y la ayuda de tu rol." />
       <AccountNav />
-      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
-        <SectionCard icon={<KeyRound className="size-[18px]" />} title="Contraseña" text={canChangePassword ? "Cámbiala si crees que alguien más la conoce. Pedimos un código al correo si tu ingreso no es reciente." : "Tu acceso se creó con una invitación de la administración."}>
+      <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-2">
+        <SectionCard outerClassName="h-full" icon={<KeyRound className="size-[18px]" />} title="Contraseña" text={canChangePassword ? "Cámbiala si crees que alguien más la conoce. Pedimos un código al correo si tu ingreso no es reciente." : "Tu acceso se creó con una invitación de la administración."}>
           {canChangePassword ? (
             <PasswordForm actions={{ change: changePassword, sendCode: reauthenticateForPassword }} />
           ) : (
@@ -51,7 +51,7 @@ export default async function SeguridadPage() {
             </div>
           </SectionCard>
 
-          <SectionCard icon={<Clock className="size-[18px]" />} tone="durazno" title="Sesiones" text="Dónde está abierta tu cuenta.">
+          <SectionCard outerClassName="flex-1" icon={<Clock className="size-[18px]" />} tone="durazno" title="Sesiones" text="Dónde está abierta tu cuenta.">
             <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px]">
               <dt className="text-tinta-suave">Último ingreso</dt>
               <dd className="font-semibold text-tinta">{formatDateTime(profile?.last_sign_in_at)}</dd>

@@ -13,6 +13,7 @@ const schema = z
     ruc: z.string().trim().max(40).default(""),
     cedula: z.string().trim().max(40).default(""),
     email: z.string().trim().email("Escribe un correo válido.").max(120),
+    consoleEmail: z.string().trim().toLowerCase().email("Escribe un correo válido para la consola.").max(254),
     description: z.string().trim().min(10, "Describe tu negocio y tus productos (mínimo 10 caracteres).").max(500, "La descripción es demasiado larga."),
   businessName: z.string().trim().min(2, "Escribe el nombre de tu negocio.").max(150, "El nombre es demasiado largo."),
   contactName: z.string().trim().min(2, "Escribe el nombre del representante.").max(120),
@@ -37,10 +38,10 @@ export async function submitCommerceRequest(input: unknown): Promise<CustomerRes
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   await requireCustomer("/vende");
   const supabase = await serverSupabase();
-  const { businessName, contactName, phone, email, address, category, description, businessKind, ruc, cedula } = parsed.data;
+  const { businessName, contactName, phone, email, consoleEmail, address, category, description, businessKind, ruc, cedula } = parsed.data;
   const { error } = await supabase.rpc("submit_commerce_request", {
     p_business_name: businessName,
-    p_details: { contact_name: contactName, phone, email, address, category, description, business_kind: businessKind, ...(businessKind === "empresa" ? { ruc } : { cedula: cedula.replace(/[\s.-]/g, "").toUpperCase() }) },
+    p_details: { contact_name: contactName, phone, email, console_email: consoleEmail, address, category, description, business_kind: businessKind, ...(businessKind === "empresa" ? { ruc } : { cedula: cedula.replace(/[\s.-]/g, "").toUpperCase() }) },
   });
   if (isSessionExpired(error)) return expiredResult;
   if (error) return failure(error);

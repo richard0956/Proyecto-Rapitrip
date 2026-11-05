@@ -1,5 +1,6 @@
 import { Alert } from "@rapitrip/ui";
 import { PageHeader } from "@/components/shell";
+import { StalledOrders } from "@/components/stalled-orders";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
 import { tabKeys } from "./dispatch-tabs";
@@ -12,12 +13,15 @@ export const metadata = { title: "Pedidos" };
 export default async function CoordinacionPage({ searchParams }: { searchParams: Promise<{ vista?: string }> }) {
   const { vista } = await searchParams;
   await requireConsoleAccess("coordinacion");
-  const { rows, couriers, failed } = await loadDispatch(await serverSupabase());
+  const supabase = await serverSupabase();
+  const [{ rows, couriers, failed }, stalled] = await Promise.all([loadDispatch(supabase), supabase.rpc("stalled_orders")]);
+  if (stalled.error) console.error("[coordinacion:sin-avance]", stalled.error.message);
 
   return (
     <>
       <PageHeader title="Pedidos" description="Propón cada pedido a un repartidor, sigue su entrega y atiende sus avisos. La lista se actualiza sola." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo. Recarga la página.</Alert> : null}
+      <StalledOrders rows={stalled.data ?? []} basePath="/coordinacion/pedidos" />
       <DispatchWorkspace rows={rows} couriers={couriers} initialTab={tabKeys.find((key) => key === vista) ?? "listos"} />
     </>
   );

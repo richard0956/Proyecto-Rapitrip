@@ -1,16 +1,19 @@
-import { Alert, Card, CardHeader, ColumnList, DataTable, DonutChart, EmptyState, KpiCard, LineChart, buttonStyles } from "@rapitrip/ui";
-import { Ban, Banknote, FileText, Mail, PackageCheck, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Alert, Card, CardHeader, DataTable, DonutChart, EmptyState, HBarList, KpiCard, LineChart, buttonStyles } from "@rapitrip/ui";
+import { Ban, Banknote, FileText, Mail, PackageCheck, ShieldCheck, Timer, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AttentionRow } from "@/components/attention-row";
 import { FilterChips } from "@/components/filter-chips";
 import { PageHeader } from "@/components/shell";
+import { StalledOrders } from "@/components/stalled-orders";
 import { StoreFilter } from "@/components/store-filter";
 import { compactMoney, fillDays, firstDays, parsePeriod, periodOptions, projectMonthEnd, trendOf } from "@/lib/dashboard";
 import { first, optionalUuid, type SearchParams } from "@/lib/filters";
 import { timeAgo } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { formatMoney } from "@/lib/money";
-import { orderStatusColor, orderStatuses, orderStatusLabel } from "@/lib/orders";
+import { orderStatuses, orderStatusLabel } from "@/lib/orders";
+import { salesShare } from "@/lib/sales-share";
+import { overdueSummary } from "@/lib/sla-overview";
 import { serverSupabase } from "@/lib/supabase";
 
 export const metadata = { title: "Inicio" };
@@ -25,13 +28,13 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 export default async function AdminHome({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  await requireConsoleAccess("admin");
+  const session = await requireConsoleAccess("admin");
   const period = parsePeriod(first(params.periodo));
   const store = optionalUuid.parse(first(params.tienda));
   const supabase = await serverSupabase();
   const head = { count: "exact", head: true } as const;
   const range = { p_from: period.from, p_to: period.to, p_store: store };
-  const [profile, requests, invitations, incidents, commerces, stores, current, previous, byStatus, byStore, overdue, rejections, pending] = await Promise.all([
+  const [profile, requests, invitations, incidents, commerces, stores, current, previous, byStatus, byStore, overdue, rejections, pending, storeOwners, commerceNames, stalled] = await Promise.all([
     supabase.from("my_profile").select("full_name").maybeSingle(),
     count(supabase.from("commerce_requests_list").select("*", head).eq("status", "pendiente"), "solicitudes"),
     count(supabase.from("invitations_list").select("*", head).eq("status", "pendiente"), "invitaciones"),
@@ -45,8 +48,14 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
     supabase.rpc("overdue_confirmations"),
     supabase.rpc("repeat_rejections"),
     supabase.from("commerce_requests_list").select("id, business_name, created_at").eq("status", "pendiente").order("created_at", { ascending: false }).limit(5),
+    // Para sumar las ventas de cada comercio: a qué comercio pertenece cada tienda (también las cerradas) y su nombre.
+    supabase.from("stores_list").select("id, commerce_id"),
+    supabase.from("commerces_list").select("id, name"),
+    supabase.rpc("stalled_orders"),
   ]);
-  const queryErrors = [stores, current, previous, byStatus, byStore, overdue, rejections, pending].flatMap((result) => (result.error ? [result.error.message] : []));
+  // Plazos del manual de políticas de TI que ya vencieron (las eliminaciones las atiende solo la dirección).
+  const overdueSla = await overdueSummary(supabase, { includeDeletions: session.role === "superadmin" });
+  const queryErrors = [stores, current, previous, byStatus, byStore, overdue, rejections, pending, storeOwners, commerceNames, stalled].flatMap((result) => (result.error ? [result.error.message] : []));
   if (queryErrors.length > 0) console.error("[inicio:cifras]", queryErrors.join(" | "));
   const failed = queryErrors.length > 0 || [requests, invitations, incidents, commerces].some((value) => value === null);
 
@@ -74,11 +83,12 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
   const vs = period.key === "mes" ? "el mes anterior" : period.key === "quincena" ? "la quincena anterior" : period.key === "7d" ? "los 7 días anteriores" : "ayer";
   const periodWord = period.key === "hoy" ? "hoy" : period.key === "7d" ? "7 días" : period.key === "quincena" ? "esta quincena" : "este mes";
 
-  const statusSlices = orderStatuses.flatMap((status) => {
-    const found = statusRows.find((row) => row.status === status);
-    return found ? [{ label: orderStatusLabel[status], value: Number(found.orders), color: orderStatusColor[status] }] : [];
+  // Estados con pedidos, en el orden del flujo: barras horizontales para que cada nombre se lea completo.
+  const statusBars = orderStatuses.flatMap((status) => {
+    const orders = Number(statusRows.find((row) => row.status === status)?.orders ?? 0);
+    return orders > 0 ? [{ label: orderStatusLabel[status], value: orders, tone: status === "cancelado" || status === "rechazado" ? ("marino" as const) : ("hoja" as const) }] : [];
   });
-  const storeColumns = (byStore.data ?? []).slice(0, 6).map((row) => ({ label: row.store_name ?? "Tienda", value: Number(row.sales) }));
+  const commerceSlices = salesShare(byStore.data ?? [], storeOwners.data ?? [], commerceNames.data ?? []);
   const overdueCount = Number(overdue.data ?? 0);
   const repeat = rejections.data ?? [];
   const pendingRows = (pending.data ?? []).flatMap((row) => (row.id ? [{ id: row.id, name: row.business_name ?? "Sin nombre", ago: timeAgo(row.created_at) }] : []));
@@ -93,6 +103,10 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
     requests ? { href: "/admin/solicitudes", icon: <FileText className="size-[18px]" />, text: `${plural(requests, "solicitud pendiente de comercio o vendedor", "solicitudes pendientes de comercios y vendedores")}` } : null,
     incidents ? { href: "/admin/incidentes", icon: <ShieldCheck className="size-[18px]" />, text: `${plural(incidents, "incidente de TI sin resolver", "incidentes de TI sin resolver")}` } : null,
     invitations ? { href: "/admin/usuarios", icon: <Mail className="size-[18px]" />, text: `${plural(invitations, "invitación esperando respuesta", "invitaciones esperando respuesta")}` } : null,
+    overdueSla.devoluciones ? { href: "/admin/devoluciones", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.devoluciones, "devolución pasó", "devoluciones pasaron")} los 3 días hábiles para decidir` } : null,
+    overdueSla.eliminaciones ? { href: "/admin/datos-personales", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.eliminaciones, "solicitud de eliminación pasó", "solicitudes de eliminación pasaron")} los 30 días` } : null,
+    overdueSla.incidentes ? { href: "/admin/incidentes", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.incidentes, "falla del sistema pasó", "fallas del sistema pasaron")} su plazo de corrección` } : null,
+    overdueSla.incidencias ? { href: "/coordinacion", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.incidencias, "aviso de repartidor lleva", "avisos de repartidores llevan")} más de 30 minutos sin resolver` } : null,
   ].filter((item) => item !== null);
 
   return (
@@ -103,6 +117,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
         <StoreFilter basePath="/admin" stores={(stores.data ?? []).flatMap((row) => (row.id && row.name ? [{ id: row.id, name: row.name }] : []))} current={store} keep={{ periodo: period.key }} />
       </div>
       {failed ? <Alert tone="error" className="mb-5">Algunos indicadores no se pudieron cargar. Recarga la página.</Alert> : null}
+      <StalledOrders rows={stalled.data ?? []} basePath="/admin/pedidos" />
       {overdueCount > 0 || repeat.length > 0 ? (
         <Alert tone="warning" className="mb-5">
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -133,7 +148,7 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
         </li>
       </ul>
 
-      <Card className="mb-5 p-5">
+      <Card outerClassName="mb-5" className="p-5">
         <CardHeader title="Ventas por día" subtitle={period.days > 1 ? `${period.label} contra ${vs}` : "Elige 7 días, Quincena o Mes para ver la tendencia"} />
         {period.days > 1 ? (
           <>
@@ -169,12 +184,12 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
 
       <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="p-5">
-          <CardHeader title="Pedidos por estado" />
-          <DonutChart items={statusSlices} ariaLabel={`Pedidos por estado, ${period.label}`} totalLabel="pedidos" />
+          <CardHeader title="Pedidos por estado" subtitle="Dónde está cada pedido del periodo, en el orden del flujo" />
+          {statusBars.length > 0 ? <HBarList items={statusBars} /> : <p className="py-6 text-center text-sm text-tinta-suave">Sin pedidos en el periodo</p>}
         </Card>
         <Card className="p-5">
-          <CardHeader title="Ventas por tienda" />
-          <ColumnList items={storeColumns} ariaLabel={`Ventas por tienda, ${period.label}`} formatValue={compactMoney} />
+          <CardHeader title="Ventas por comercio" subtitle="Qué parte de las ventas del periodo hace cada comercio" />
+          <DonutChart items={commerceSlices} ariaLabel={`Ventas por comercio, ${period.label}`} totalLabel="ventas" formatValue={compactMoney} />
         </Card>
       </div>
 
@@ -218,3 +233,4 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
     </>
   );
 }
+

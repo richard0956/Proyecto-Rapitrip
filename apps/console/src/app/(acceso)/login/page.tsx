@@ -1,5 +1,6 @@
 import { getSessionInfo, homePathForRole } from "@rapitrip/supabase";
 import { Alert, Card } from "@rapitrip/ui";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { serverSupabase } from "@/lib/supabase";
@@ -22,6 +23,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         {invitacion === "ok" ? <Alert>Tu acceso está listo. Ingresa con tu correo y contraseña.</Alert> : null}
         <LoginForm />
         <Alert>El sistema te lleva al área de tu rol: administración, operaciones o comercio.</Alert>
+        <p className="text-[12.5px] leading-snug text-tinta-suave">
+          Al ingresar aceptas los{" "}
+          <Link href="/terminos" className="font-bold text-hoja underline-offset-2 hover:underline">
+            Términos de uso
+          </Link>{" "}
+          y la{" "}
+          <Link href="/privacidad" className="font-bold text-hoja underline-offset-2 hover:underline">
+            Política de privacidad
+          </Link>{" "}
+          de la consola.
+        </p>
       </Card>
     </AuthShell>
   );

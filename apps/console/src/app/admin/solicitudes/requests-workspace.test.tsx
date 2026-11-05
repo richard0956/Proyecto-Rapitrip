@@ -5,7 +5,7 @@ import { RequestsWorkspace, type RequestRow } from "./requests-workspace";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
-const details = { contactName: "Ana", phone: "", address: "", category: "", ruc: "", cedula: "", email: "", description: "" };
+const details = { contactName: "Ana", phone: "", address: "", category: "", ruc: "", cedula: "", email: "ana@correo.test", description: "", consoleEmail: "panaderia@negocio.test" };
 const rows: RequestRow[] = [
   { id: "1", name: "Panadería La Esperanza", status: "pendiente", receivedAgo: "hace 2 h", receivedAt: "", decisionReason: null, reviewedAt: null, details: { ...details, kind: "empresa" } },
   { id: "2", name: "Doña Marta Frutas", status: "pendiente", receivedAgo: "hace 1 día", receivedAt: "", decisionReason: null, reviewedAt: null, details: { ...details, kind: "informal" } },
@@ -51,5 +51,20 @@ describe("RequestsWorkspace", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "Estado de la solicitud" }), "aprobada");
     expect(bodyRows()).toHaveLength(1);
     expect(screen.getByText("Ferretería Núñez")).toBeInTheDocument();
+  });
+
+  it("aprobar envía el correo de la consola de la solicitud, o el que corrija la administración", async () => {
+    const user = userEvent.setup();
+    const approve = vi.fn(async () => ({ ok: true as const, message: "Comercio aprobado." }));
+    render(<RequestsWorkspace rows={rows} approve={approve} reject={ok} />);
+    await user.click(screen.getByRole("button", { name: "Revisar Panadería La Esperanza" }));
+    const field = screen.getByLabelText("Correo para la cuenta de consola");
+    expect(field).toHaveValue("panaderia@negocio.test");
+    await user.clear(field);
+    await user.type(field, "ventas@laesperanza.test");
+    await user.click(screen.getByRole("checkbox", { name: /convenio/ }));
+    await user.click(screen.getByRole("button", { name: /Aprobar e invitar/ }));
+    expect(approve).toHaveBeenCalledWith({ id: "1", convenio: true, consoleEmail: "ventas@laesperanza.test" });
+    expect(await screen.findByText("Comercio aprobado.")).toBeInTheDocument();
   });
 });

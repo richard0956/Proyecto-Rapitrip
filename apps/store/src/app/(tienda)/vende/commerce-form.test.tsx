@@ -14,6 +14,7 @@ async function fill() {
   await user.type(screen.getByLabelText("Nombre del negocio"), "Ferretería El Clavo");
   await user.type(screen.getByLabelText("Teléfono"), "+505 8456 2210");
   await user.type(screen.getByLabelText("Correo electrónico"), "juan@correo.com");
+  await user.type(screen.getByLabelText("Correo para la consola del negocio"), "ventas@elclavo.com");
   await user.type(screen.getByLabelText("Dirección del negocio"), "Bo. Altagracia, Managua");
   await user.type(screen.getByLabelText("Categoría"), "Ferretería");
   await user.type(screen.getByLabelText("Describe tu negocio y los productos que ofreces"), "Venta de herramientas y materiales");
@@ -35,9 +36,10 @@ describe("CommerceForm", () => {
     const submit = vi.fn().mockResolvedValue({ ok: true });
     render(<CommerceForm initialName="Juan Téllez" submit={submit} />);
     await fill();
-    expect(submit).toHaveBeenCalledWith({ businessKind: "informal", ruc: "", cedula: "001-010190-0000A", businessName: "Ferretería El Clavo", contactName: "Juan Téllez", phone: "+505 8456 2210", email: "juan@correo.com", address: "Bo. Altagracia, Managua", category: "Ferretería", description: "Venta de herramientas y materiales" });
+    expect(submit).toHaveBeenCalledWith({ businessKind: "informal", ruc: "", cedula: "001-010190-0000A", businessName: "Ferretería El Clavo", contactName: "Juan Téllez", phone: "+505 8456 2210", email: "juan@correo.com", consoleEmail: "ventas@elclavo.com", address: "Bo. Altagracia, Managua", category: "Ferretería", description: "Venta de herramientas y materiales" });
     expect(await screen.findByRole("status")).toHaveTextContent("Solicitud enviada");
     expect(screen.getByRole("status")).toHaveTextContent("Recibimos la solicitud de «Ferretería El Clavo»");
+    expect(screen.getByRole("status")).toHaveTextContent("la invitación a la consola llegará a ventas@elclavo.com");
   });
 
   it("una empresa debe escribir su RUC y se envía con el tipo", async () => {
@@ -51,6 +53,7 @@ describe("CommerceForm", () => {
     await user.type(screen.getByLabelText("Dirección del negocio"), "Km 9 Carretera Masaya");
     await user.type(screen.getByLabelText("Categoría"), "Distribución");
     await user.type(screen.getByLabelText("Correo electrónico"), "info@norte.com");
+    await user.type(screen.getByLabelText("Correo para la consola del negocio"), "consola@norte.com");
     await user.type(screen.getByLabelText("Describe tu negocio y los productos que ofreces"), "Distribuidora de abarrotes");
     expect(screen.queryByLabelText("Número de cédula")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar solicitud" })).toBeDisabled();

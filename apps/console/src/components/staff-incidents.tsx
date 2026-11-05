@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Badge, Button, Card, SelectField, TextareaField, cn } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, Field, SelectField, TextareaField, cn } from "@rapitrip/ui";
 import { Bug, CheckCircle2, History, LifeBuoy, Send, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent, type ReactNode } from "react";
@@ -30,7 +30,8 @@ const statusLabel: Record<Status, string> = { abierto: "Recibido", en_atencion: 
 const statusTone = { abierto: "warning", en_atencion: "neutral", resuelto: "positive" } as const;
 const severityLabel: Record<Severity, string> = { baja: "Leve", media: "Media", alta: "Grave" };
 
-type Report = (input: { type: IncidentType; severity: Severity | undefined; where?: string; description: string }) => Promise<ActionResult>;
+export type IncidentReportInput = { type: IncidentType; severity: Severity | undefined; where?: string; description: string; occurredAt?: string; dataInvolved?: string; affected?: string };
+type Report = (input: IncidentReportInput) => Promise<ActionResult>;
 
 /** «Reportar incidente» de caja, coordinación y comercio: el formulario a la izquierda y lo ya reportado, con su estado, a la derecha. */
 export function StaffIncidents({ places, mine, report }: { places: string[]; mine: MyIncident[]; report: Report }) {
@@ -86,27 +87,50 @@ function Heading({ icon, title, subtitle, tone = "menta" }: { icon: ReactNode; t
   );
 }
 
+/** Fecha y hora local actual en el formato de `datetime-local` (no se reporta un incidente del futuro). */
+function nowLocal() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
+
 function ReportForm({ places, report }: { places: string[]; report: Report }) {
   const router = useRouter();
   const [type, setType] = useState<IncidentType>("interrupcion");
   const [severity, setSeverity] = useState<Severity | null>(null);
   const [where, setWhere] = useState("");
   const [description, setDescription] = useState("");
+  // Norma 1.3.2 del manual de políticas de TI: fecha, información involucrada y personas afectadas.
+  const [occurredAt, setOccurredAt] = useState("");
+  const [dataInvolved, setDataInvolved] = useState("");
+  const [affected, setAffected] = useState("");
+  // El tope de la fecha se calcula en el navegador al enfocar el campo: en el servidor la hora no coincide y rompe la hidratación.
+  const [maxDate, setMaxDate] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [pending, start] = useTransition();
-  const ready = severity !== null && description.trim().length >= 10;
+  const security = type === "seguridad";
+  const ready = severity !== null && description.trim().length >= 10 && (!security || (dataInvolved.trim() !== "" && affected.trim() !== ""));
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     if (!severity) return setError("Elige cuánto te afecta.");
     start(async () => {
-      const result = await report({ type, severity, description: description.trim(), ...(where ? { where } : {}) });
+      const result = await report({
+        type,
+        severity,
+        description: description.trim(),
+        ...(where ? { where } : {}),
+        ...(occurredAt ? { occurredAt: new Date(occurredAt).toISOString() } : {}),
+        ...(security ? { dataInvolved: dataInvolved.trim(), affected: affected.trim() } : {}),
+      });
       if (!result.ok) return setError(result.error);
       setSeverity(null);
       setWhere("");
       setDescription("");
+      setOccurredAt("");
+      setDataInvolved("");
+      setAffected("");
       setSent(true);
       router.refresh();
     });
@@ -169,6 +193,7 @@ function ReportForm({ places, report }: { places: string[]; report: Report }) {
         {severity === "alta" ? <p className="mt-2 text-[12.5px] font-semibold text-rojo">Un reporte grave avisa por correo a la administración de inmediato.</p> : null}
       </fieldset>
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <SelectField label="¿Dónde pasó? (opcional)" value={where} onChange={(e) => setWhere(e.target.value)}>
         <option value="">Elige la pantalla</option>
         {places.map((place) => (
@@ -177,6 +202,16 @@ function ReportForm({ places, report }: { places: string[]; report: Report }) {
           </option>
         ))}
       </SelectField>
+      <Field label="¿Cuándo pasó? (opcional)" type="datetime-local" value={occurredAt} max={maxDate} onFocus={() => setMaxDate(nowLocal())} onChange={(e) => setOccurredAt(e.target.value)} hint="Si lo dejas vacío, se toma la hora del reporte." />
+      </div>
+
+      {security ? (
+        <div className="grid grid-cols-1 gap-4 rounded-panel bg-durazno/40 p-4 ring-1 ring-borde sm:grid-cols-2">
+          <p className="text-[12.5px] leading-snug text-tinta sm:col-span-2">Un incidente de seguridad se reporta en un máximo de 24 horas e indica qué información y a quiénes afecta.</p>
+          <Field label="¿Qué información está involucrada?" value={dataInvolved} maxLength={300} onChange={(e) => setDataInvolved(e.target.value)} placeholder="Contraseña, datos de clientes, pagos…" required />
+          <Field label="¿Quiénes están afectados?" value={affected} maxLength={300} onChange={(e) => setAffected(e.target.value)} placeholder="Tu cuenta, un cliente, un comercio…" required />
+        </div>
+      ) : null}
 
       <TextareaField
         label="Cuéntanos qué pasó"

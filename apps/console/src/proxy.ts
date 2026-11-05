@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const publicPaths = ["/login", "/aceptar-invitacion", "/sesion-expirada", "/sin-acceso"];
+const publicPaths = ["/login", "/aceptar-invitacion", "/sesion-expirada", "/sin-acceso", "/terminos", "/privacidad"];
 
 /** Renueva las cookies de sesión y redirige a login por comodidad. La seguridad real está en `requireConsoleAccess` y en la base de datos. */
 export async function proxy(request: NextRequest) {

@@ -3,16 +3,18 @@ import { PageHeader } from "@/components/shell";
 import { defaultEvidenceSettings, type EvidenceSettings } from "@/lib/evidence-settings";
 import { requireConsoleAccess } from "@/lib/guard";
 import { serverSupabase } from "@/lib/supabase";
-import { saveEvidenceSettings } from "./actions";
+import { addInstitutionalDomain, removeInstitutionalDomain, saveEvidenceSettings } from "./actions";
+import { DomainsCard } from "./domains-card";
 import { EvidenceSettingsForm } from "./evidence-settings-form";
 
 export const metadata = { title: "Configuración" };
 
 export default async function ConfiguracionPage() {
-  await requireConsoleAccess("admin");
+  const session = await requireConsoleAccess("admin");
   const supabase = await serverSupabase();
-  const { data, error } = await supabase.from("evidence_settings_list").select("*").maybeSingle();
+  const [{ data, error }, domains] = await Promise.all([supabase.from("evidence_settings_list").select("*").maybeSingle(), supabase.rpc("list_institutional_domains")]);
   if (error) console.error("[configuracion]", error.message);
+  if (domains.error) console.error("[configuracion:dominios]", domains.error.message);
   const initial: EvidenceSettings = data
     ? {
         pickupPhoto: data.require_pickup_photo ?? true,
@@ -26,9 +28,12 @@ export default async function ConfiguracionPage() {
 
   return (
     <>
-      <PageHeader title="Configuración" description="Reglas de la operación. Hoy: la evidencia que se exige al repartidor en cada entrega." />
+      <PageHeader title="Configuración" description="Reglas de la operación: la evidencia que se exige al repartidor en cada entrega y los correos con los que se invita al equipo." />
       {error ? <Alert tone="error" className="mb-5">No pudimos cargar las reglas actuales. Se muestran los valores acordados: no guardes hasta recargar.</Alert> : null}
-      <EvidenceSettingsForm initial={initial} save={saveEvidenceSettings} />
+      <div className="flex flex-col gap-5">
+        <EvidenceSettingsForm initial={initial} save={saveEvidenceSettings} />
+        <DomainsCard domains={(domains.data ?? []).map((row) => row.domain)} canEdit={session.role === "superadmin"} add={addInstitutionalDomain} remove={removeInstitutionalDomain} />
+      </div>
     </>
   );
 }

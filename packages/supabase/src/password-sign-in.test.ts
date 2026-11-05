@@ -1,16 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { rpc, signInWithPassword, createClient } = vi.hoisted(() => {
+const { rpc, signInWithPassword, signOut, accountApp, createClient } = vi.hoisted(() => {
   const rpc = vi.fn();
   const signInWithPassword = vi.fn();
-  return { rpc, signInWithPassword, createClient: vi.fn(() => ({ rpc, auth: { signInWithPassword } })) };
+  const signOut = vi.fn(async () => ({ error: null }));
+  // La app de la cuenta que acaba de ingresar (vista my_account_app).
+  const accountApp = vi.fn(async () => ({ data: { app: "tienda" }, error: null }));
+  const from = vi.fn(() => ({ select: () => ({ maybeSingle: accountApp }) }));
+  return { rpc, signInWithPassword, signOut, accountApp, createClient: vi.fn(() => ({ rpc, from, auth: { signInWithPassword, signOut } })) };
 });
 vi.mock("@supabase/supabase-js", () => ({ createClient }));
 
 import { genericLoginError } from "./login-guard";
-import { passwordSignIn, passwordSignInFromForm } from "./password-sign-in";
+import { passwordSignIn, passwordSignInFromForm, wrongAppMessage } from "./password-sign-in";
 
-const input = { email: "ana@t.test", password: "Clave-123", captchaToken: "tok", clientIp: "190.1.2.3" };
+const input = { email: "ana@t.test", password: "Clave-123", captchaToken: "tok", clientIp: "190.1.2.3", app: "tienda" as const };
 const open = { locked: false, remaining: 6, warn: false, lock_minutes: 15 };
 
 describe("passwordSignIn", () => {
@@ -60,6 +64,26 @@ describe("passwordSignIn", () => {
     const result = await passwordSignIn(input);
     expect(rpc).toHaveBeenLastCalledWith("login_guard_success");
     expect(result).toEqual({ ok: true, session: { access_token: "a", refresh_token: "r" } });
+    expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it("una cuenta de otra app no entra aunque la contraseña sea correcta: se cierra su sesión", async () => {
+    rpc.mockResolvedValue({ data: open, error: null });
+    signInWithPassword.mockResolvedValue({ data: { session: { access_token: "a", refresh_token: "r" } }, error: null });
+    accountApp.mockResolvedValueOnce({ data: { app: "consola" }, error: null });
+    expect(await passwordSignIn(input)).toEqual({ ok: false, reason: "wrong_app", message: wrongAppMessage.tienda });
+    expect(signOut).toHaveBeenCalledWith({ scope: "local" });
+
+    accountApp.mockResolvedValueOnce({ data: { app: "tienda" }, error: null });
+    expect(await passwordSignIn({ ...input, app: "consola" })).toEqual({ ok: false, reason: "wrong_app", message: wrongAppMessage.consola });
+  });
+
+  it("si no puede leer la app de la cuenta, tampoco la deja entrar", async () => {
+    rpc.mockResolvedValue({ data: open, error: null });
+    signInWithPassword.mockResolvedValue({ data: { session: { access_token: "a", refresh_token: "r" } }, error: null });
+    accountApp.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "sin permiso" } } as never);
+    expect(await passwordSignIn(input)).toMatchObject({ ok: false, reason: "unavailable" });
+    expect(signOut).toHaveBeenCalled();
   });
 
   it("los errores que no son de contraseña no cuentan como fallo", async () => {
@@ -80,12 +104,12 @@ describe("passwordSignIn", () => {
 
   it("desde el formulario valida la entrada y toma la IP del encabezado", async () => {
     const headers = new Headers({ "x-forwarded-for": "190.1.2.3, 10.0.0.1" });
-    expect(await passwordSignInFromForm({ email: "no-es-correo", password: "x" }, headers)).toEqual({ ok: false, reason: "invalid", message: genericLoginError });
+    expect(await passwordSignInFromForm({ email: "no-es-correo", password: "x" }, headers, "tienda")).toEqual({ ok: false, reason: "invalid", message: genericLoginError });
     expect(rpc).not.toHaveBeenCalled();
 
     rpc.mockResolvedValue({ data: open, error: null });
     signInWithPassword.mockResolvedValue({ data: { session: { access_token: "a", refresh_token: "r" } }, error: null });
-    await passwordSignInFromForm({ email: " Ana@T.test ", password: "Clave-123", captchaToken: 5 }, headers);
+    await passwordSignInFromForm({ email: " Ana@T.test ", password: "Clave-123", captchaToken: 5 }, headers, "tienda");
     expect(rpc).toHaveBeenCalledWith("login_guard_check", { p_email: "ana@t.test" });
     expect(signInWithPassword).toHaveBeenCalledWith({ email: "ana@t.test", password: "Clave-123", options: undefined });
     expect(createClient).toHaveBeenCalledWith("http://127.0.0.1:54321", "anon", expect.objectContaining({ global: { headers: { "X-Forwarded-For": "190.1.2.3" } } }));

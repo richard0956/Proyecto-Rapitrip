@@ -11,7 +11,7 @@ export function HBarList({ items, formatValue = defaultFormat }: { items: { labe
         <li key={`${item.label}-${index}`} className="grid grid-cols-[minmax(0,9rem)_1fr_auto] items-center gap-3 text-[13px]">
           <span className="truncate font-semibold text-tinta">{item.label}</span>
           <span aria-hidden="true" className="h-2.5 overflow-hidden rounded-full bg-menta">
-            <span className={cn("block h-full rounded-full", item.tone === "marino" ? "bg-marino" : "bg-esmeralda")} style={{ width: `${Math.max(2, (Math.max(0, item.value) / max) * 100)}%` }} />
+            <span data-bar="x" className={cn("block h-full rounded-full", item.tone === "marino" ? "bg-marino" : "bg-esmeralda")} style={{ width: `${Math.max(2, (Math.max(0, item.value) / max) * 100)}%` }} />
           </span>
           <span className="tabular-nums text-tinta-suave">{formatValue(item.value)}</span>
         </li>

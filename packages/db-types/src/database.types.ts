@@ -174,28 +174,28 @@ export type Database = {
                   ]
                 },"invitations_list": {
                   Row: {
-                    "accepted_at": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"invited_by": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                    "accepted_at": string | null,"commerce_id": string | null,"created_at": string | null,"email": string | null,"expires_at": string | null,"id": string | null,"invited_by": string | null,"role": "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status": "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                           "accepted_at"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                          }
                         Update: {
-                           "accepted_at"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
+                           "accepted_at"?: string | null,"commerce_id"?: string | null,"created_at"?: string | null,"email"?: string | null,"expires_at"?: string | null,"id"?: string | null,"invited_by"?: string | null,"role"?: "superadmin"|"admin"|"cajero"|"coordinador"|"comercio"|"cliente"|"repartidor" | null,"status"?: "pendiente"|"aceptada"|"cancelada"|"vencida" | null
                          }
                         Relationships: [
                     
                   ]
                 },"it_incidents_list": {
                   Row: {
-                    "created_at": string | null,"description": string | null,"id": string | null,"origin": "automatico"|"manual" | null,"reported_from": string | null,"reporter_name": string | null,"resolution": string | null,"resolved_at": string | null,"severity": "baja"|"media"|"alta" | null,"source": string | null,"status": "abierto"|"en_atencion"|"resuelto" | null,"type": "seguridad"|"interrupcion" | null
+                    "affected": string | null,"created_at": string | null,"data_involved": string | null,"description": string | null,"id": string | null,"notice_channel": string | null,"notified_at": string | null,"occurred_at": string | null,"origin": "automatico"|"manual" | null,"reported_from": string | null,"reporter_name": string | null,"resolution": string | null,"resolved_at": string | null,"severity": "baja"|"media"|"alta" | null,"source": string | null,"status": "abierto"|"en_atencion"|"resuelto" | null,"type": "seguridad"|"interrupcion" | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"reported_from"?: string | null,"reporter_name"?: string | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: string | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
+                           "affected"?: never,"created_at"?: string | null,"data_involved"?: never,"description"?: string | null,"id"?: string | null,"notice_channel"?: never,"notified_at"?: never,"occurred_at"?: never,"origin"?: "automatico"|"manual" | null,"reported_from"?: never,"reporter_name"?: never,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: never,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
                          }
                         Update: {
-                           "created_at"?: string | null,"description"?: string | null,"id"?: string | null,"origin"?: "automatico"|"manual" | null,"reported_from"?: string | null,"reporter_name"?: string | null,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: string | null,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
+                           "affected"?: never,"created_at"?: string | null,"data_involved"?: never,"description"?: string | null,"id"?: string | null,"notice_channel"?: never,"notified_at"?: never,"occurred_at"?: never,"origin"?: "automatico"|"manual" | null,"reported_from"?: never,"reporter_name"?: never,"resolution"?: string | null,"resolved_at"?: string | null,"severity"?: "baja"|"media"|"alta" | null,"source"?: never,"status"?: "abierto"|"en_atencion"|"resuelto" | null,"type"?: "seguridad"|"interrupcion" | null
                          }
                         Relationships: [
                     
@@ -206,6 +206,20 @@ export type Database = {
                   }
                   ComputedFields: never
                   Relationships: [
+                    
+                  ]
+                },"my_account_app": {
+                  Row: {
+                    "app": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                           "app"?: string | null
+                         }
+                        Update: {
+                           "app"?: string | null
+                         }
+                        Relationships: [
                     
                   ]
                 },"my_addresses": {
@@ -511,7 +525,18 @@ export type Database = {
                 }
           }
           Functions: {
-            "add_product_image":
+            "access_review_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"access_reviews":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "changes": string,"findings": string,"id": string,"reviewed_at": string,"reviewer_name": string,"snapshot": Json
+            }[]
+                           },
+"add_institutional_domain":
+{ Args: { "p_domain": string }; Returns: undefined
+                           },
+"add_product_image":
 { Args: { "p_path": string,"p_product": string }; Returns: string
                            },
 "add_stock":
@@ -524,7 +549,7 @@ export type Database = {
 { Args: { "p_amount": number,"p_currency": string,"p_event_id": string,"p_intent": string,"p_order": string,"p_paid": boolean,"p_session": string,"p_type": string }; Returns: string
                            },
 "approve_commerce_request":
-{ Args: { "p_convenio_confirmed": boolean,"p_request": string }; Returns: string
+{ Args: { "p_console_email"?: string,"p_convenio_confirmed": boolean,"p_request": string,"p_token_hash": string }; Returns: Json
                            },
 "assign_order_courier":
 { Args: { "p_courier": string,"p_order": string }; Returns: undefined
@@ -677,19 +702,11 @@ export type Database = {
 "courier_release_order":
 { Args: { "p_order": string,"p_reason": string }; Returns: undefined
                            },
+"courier_report_incident":
+{ Args: { "p_affected"?: string,"p_data_involved"?: string,"p_description": string,"p_device"?: string,"p_occurred_at"?: string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
+                           },
 "courier_report_problem":
 { Args: { "p_kind": string,"p_order": string,"p_reason": string }; Returns: string
-                           },
-"courier_report_incident":
-{ Args: { "p_description": string,"p_device"?: string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
-                           },
-"my_incidents":
-{ Args: Record<PropertyKey, never>; Returns: {
-              "created_at": string,"description": string,"id": string,"reported_from": string,"resolution": string,"resolved_at": string,"severity": "baja"|"media"|"alta","status": "abierto"|"en_atencion"|"resuelto","type": "seguridad"|"interrupcion"
-            }[]
-                           },
-"staff_report_incident":
-{ Args: { "p_description": string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
                            },
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined
@@ -701,6 +718,9 @@ export type Database = {
                            },
 "create_checkout":
 { Args: { "p_address": string,"p_client_ref"?: string,"p_department"?: string,"p_groups": Json,"p_latitude"?: number,"p_longitude"?: number,"p_notes"?: string,"p_payment_method": string,"p_phone": string }; Returns: Json
+                           },
+"create_commerce_invitation":
+{ Args: { "p_commerce": string,"p_email": string,"p_token_hash": string }; Returns: Json
                            },
 "create_counter_sale":
 { Args: { "p_items": Json,"p_payment_method": string,"p_reference"?: string,"p_store": string }; Returns: string
@@ -757,7 +777,7 @@ export type Database = {
             }[]
                            },
 "export_dataset":
-{ Args: { "p_dataset": string,"p_from"?: string,"p_reason": string,"p_to"?: string }; Returns: Json
+{ Args: { "p_channel"?: string,"p_dataset": string,"p_from"?: string,"p_identity_verified"?: boolean,"p_reason": string,"p_recipient"?: string,"p_to"?: string }; Returns: Json
                            },
 "finish_accept_invitation":
 { Args: { "p_token_hash": string,"p_user": string }; Returns: boolean
@@ -781,8 +801,22 @@ export type Database = {
               "created_at": string,"full_name": string,"id": string,"message": string,"rating": number,"topic": string
             }[]
                            },
+"list_institutional_domains":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"domain": string
+            }[]
+                           },
 "login_events_page":
 { Args: { "p_before"?: number,"p_from"?: string,"p_limit"?: number,"p_result"?: string,"p_to"?: string,"p_user"?: string }; Returns: Json
+                           },
+"login_guard_check":
+{ Args: { "p_email": string }; Returns: Json
+                           },
+"login_guard_fail":
+{ Args: { "p_email": string }; Returns: Json
+                           },
+"login_guard_success":
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "lookup_auth_user":
 { Args: { "p_email": string }; Returns: Json
@@ -801,6 +835,11 @@ export type Database = {
                            },
 "my_delivery_code":
 { Args: { "p_order": string }; Returns: string
+                           },
+"my_incidents":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"description": string,"id": string,"reported_from": string,"resolution": string,"resolved_at": string,"severity": "baja"|"media"|"alta","status": "abierto"|"en_atencion"|"resuelto","type": "seguridad"|"interrupcion"
+            }[]
                            },
 "my_return_request":
 { Args: { "p_order": string }; Returns: {
@@ -891,11 +930,17 @@ export type Database = {
 "reclassify_order":
 { Args: { "p_order": string,"p_reason": string }; Returns: undefined
                            },
+"record_access_review":
+{ Args: { "p_changes"?: string,"p_findings": string }; Returns: string
+                           },
 "record_checkout_payment_session":
 { Args: { "p_checkout": string,"p_currency": string,"p_session": string }; Returns: Json
                            },
 "record_delivery_quote":
 { Args: { "p_client": string,"p_latitude": number,"p_longitude": number,"p_road_km"?: number,"p_store": string }; Returns: Json
+                           },
+"record_incident_notice":
+{ Args: { "p_channel": string,"p_incident": string,"p_note": string }; Returns: undefined
                            },
 "record_order_checkout_session":
 { Args: { "p_currency": string,"p_order": string,"p_session": string }; Returns: Json
@@ -908,6 +953,9 @@ export type Database = {
                            },
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
+                           },
+"remove_institutional_domain":
+{ Args: { "p_domain": string }; Returns: undefined
                            },
 "remove_product_image":
 { Args: { "p_image": string }; Returns: string
@@ -1051,6 +1099,14 @@ export type Database = {
                            },
 "set_variant_status":
 { Args: { "p_status": string,"p_variant": string }; Returns: undefined
+                           },
+"staff_report_incident":
+{ Args: { "p_affected"?: string,"p_data_involved"?: string,"p_description": string,"p_occurred_at"?: string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
+                           },
+"stalled_orders":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": string,"minutes": number,"number": string,"since": string,"status": string,"store_name": string
+            }[]
                            },
 "store_top_products":
 { Args: { "p_from": string,"p_per_store"?: number,"p_to": string }; Returns: {

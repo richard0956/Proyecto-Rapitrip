@@ -389,8 +389,8 @@ export function CheckoutForm({ addresses, profilePhone, quoteAction, quoteGroup,
           {values.method === "tarjeta"
             ? `Te llevamos a la página segura de Stripe${shipments > 1 ? " para pagar toda la compra de una vez" : ""}. Los datos de tu tarjeta nunca pasan por Rapitrip.`
             : shipments > 1
-              ? "Se crea un pedido por cada entrega. Cada comercio tiene 45 minutos para confirmar el suyo."
-              : "El comercio tiene 45 minutos para confirmar tu pedido."}
+              ? "Se crea un pedido por cada entrega. Cada comercio tiene 15 minutos para confirmar el suyo (los programados, 24 horas)."
+              : "El comercio tiene 15 minutos para confirmar tu pedido (si es programado, 24 horas)."}
         </p>
       </Card>
     </form>

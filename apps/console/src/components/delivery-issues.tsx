@@ -6,8 +6,10 @@ import { useState } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { issueLabel } from "@/lib/order-trace";
+import { SlaBadge } from "./sla-badge";
 
-export type IssueInfo = { id: string; kind: string; reason: string; createdAt: string };
+/** `createdIso`: cuándo llegó el aviso, para su plazo (Control 7.2.1: 30 minutos). */
+export type IssueInfo = { id: string; kind: string; reason: string; createdAt: string; createdIso?: string };
 
 const hints: Record<string, string> = {
   no_entregado: "El repartidor intentó entregar y no pudo. Decide si reintenta, lo devuelve a la tienda o se cancela.",
@@ -22,12 +24,15 @@ export function IssuesPanel({ issues, resolve, onReclassify }: { issues: IssueIn
   const [attending, setAttending] = useState<IssueInfo | null>(null);
   if (issues.length === 0) return null;
   return (
-    <Card className="mb-3.5 border border-durazno p-4">
+    <Card outerClassName="mb-3.5" className="border border-durazno p-4">
       <CardHeader title="Avisos del repartidor" subtitle="Esperan tu respuesta" actions={<Badge tone="warning">{issues.length}</Badge>} />
       <ul className="flex flex-col gap-3">
         {issues.map((issue) => (
           <li key={issue.id} className="rounded-panel bg-durazno/50 p-3 text-sm">
-            <p className="font-bold text-tinta">{issueLabel[issue.kind] ?? "Aviso"}</p>
+            <p className="flex flex-wrap items-center justify-between gap-2 font-bold text-tinta">
+              {issueLabel[issue.kind] ?? "Aviso"}
+              {issue.createdIso ? <SlaBadge kind="incidencia" from={issue.createdIso} /> : null}
+            </p>
             <p className="text-tinta">«{issue.reason}»</p>
             <p className="mt-1 text-xs text-tinta-suave">{issue.createdAt}</p>
             <p className="mt-1 text-xs text-tinta-suave">{hints[issue.kind]}</p>

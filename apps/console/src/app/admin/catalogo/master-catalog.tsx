@@ -70,7 +70,7 @@ export function MasterCatalog({ rows, create, rename, setStatus, setProgramadoOn
         {kind === "categoria" ? (
           <div className="flex min-w-[200px] flex-col gap-1.5">
             <label htmlFor="parent" className="text-xs font-bold text-tinta-suave">Dentro de</label>
-            <select id="parent" value={parentId} onChange={(e) => setParentId(e.target.value)} className="min-h-11 rounded-campo border border-borde-campo bg-white px-3 text-sm text-tinta focus-visible:outline-2 focus-visible:outline-hoja">
+            <select id="parent" value={parentId} onChange={(e) => setParentId(e.target.value)} className="min-h-11 rounded-campo border border-borde-campo bg-superficie px-3 text-sm text-tinta focus-visible:outline-2 focus-visible:outline-hoja">
               <option value="">Categoría principal</option>
               {topCategories.map((row) => (
                 <option key={row.id} value={row.id}>{row.name}</option>
