@@ -1,7 +1,7 @@
 "use client";
 
 import { Alert, Button, buttonStyles, Field, TextareaField } from "@rapitrip/ui";
-import { Building2, Check, CheckCircle2, FileText, IdCard, KeyRound, Mail, MapPin, Smartphone, Store, Tag, UserRound, type LucideIcon } from "lucide-react";
+import { Building2, Check, CheckCircle2, FileText, IdCard, Mail, MapPin, Smartphone, Store, Tag, UserRound, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createElement, useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
@@ -14,8 +14,8 @@ import { whatsappLink } from "@/lib/whatsapp";
 const supportLink = whatsappLink(undefined, "Hola, tengo una consulta sobre la afiliación de comercios en Rapitrip.");
 const DRAFT_KEY = "rapitrip:vende";
 type Kind = "informal" | "empresa";
-type Values = { businessKind: Kind; ruc: string; cedula: string; businessName: string; contactName: string; phone: string; email: string; consoleEmail: string; address: string; category: string; description: string };
-const empty: Values = { businessKind: "informal", ruc: "", cedula: "", businessName: "", contactName: "", phone: "", email: "", consoleEmail: "", address: "", category: "", description: "" };
+type Values = { businessKind: Kind; ruc: string; cedula: string; businessName: string; contactName: string; phone: string; email: string; address: string; category: string; description: string };
+const empty: Values = { businessKind: "informal", ruc: "", cedula: "", businessName: "", contactName: "", phone: "", email: "", address: "", category: "", description: "" };
 
 const kinds: { value: Kind; title: string; text: string; icon: LucideIcon }[] = [
   { value: "informal", title: "Vendedor propio", text: "Vendes por tu cuenta. Te pedimos tu cédula.", icon: Store },
@@ -108,7 +108,7 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
           <div className="min-w-0">
             <h2 className="text-[17px] font-bold text-tinta">Solicitud enviada</h2>
             <p className="mt-1 text-[13.5px] leading-relaxed text-tinta-suave">
-              Recibimos la solicitud de «{values.businessName}» ({empresa ? "empresa con RUC" : "vendedor propio"}). Te avisaremos a {values.email} cuando la revisemos; si te aprobamos, la invitación a la consola llegará a {values.consoleEmail}.
+              Recibimos la solicitud de «{values.businessName}» ({empresa ? "empresa con RUC" : "vendedor propio"}). Te avisaremos a {values.email} cuando la revisemos. Si te aprobamos, un administrador de Rapitrip te entregará el acceso a la consola de tu negocio.
             </p>
           </div>
         </div>
@@ -193,18 +193,6 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
           <Field label="Teléfono" icon={<Smartphone className="size-4" />} type="tel" autoComplete="tel" value={values.phone} onChange={set("phone")} hint="Al enviar la solicitud te escribiremos por WhatsApp a este número para confirmarte que la recibimos. Usaremos un proveedor de mensajería (UltraMsg) solo para ese fin." required />
           <div className="sm:col-span-2">
             <Field label="Correo electrónico" icon={<Mail className="size-4" />} type="email" autoComplete="email" value={values.email} onChange={set("email")} required />
-          </div>
-          <div className="sm:col-span-2">
-            <Field
-              label="Correo para la consola del negocio"
-              icon={<KeyRound className="size-4" />}
-              type="email"
-              autoComplete="off"
-              value={values.consoleEmail}
-              onChange={set("consoleEmail")}
-              hint="Al aprobarte te invitamos aquí para crear el acceso a la consola. Por seguridad es una cuenta aparte: usa un correo distinto del de tu cuenta de la tienda y sin cuenta en Rapitrip."
-              required
-            />
           </div>
         </div>
       </Group>

@@ -67,4 +67,19 @@ describe("RequestsWorkspace", () => {
     expect(approve).toHaveBeenCalledWith({ id: "1", convenio: true, consoleEmail: "ventas@laesperanza.test" });
     expect(await screen.findByText("Comercio aprobado.")).toBeInTheDocument();
   });
+
+  it("sin correo de consola (el formulario ya no lo pide) no se puede aprobar hasta escribirlo", async () => {
+    const user = userEvent.setup();
+    const approve = vi.fn(async () => ({ ok: true as const, message: "Comercio aprobado." }));
+    const sinCorreo = rows.map((row) => ({ ...row, details: { ...row.details, consoleEmail: "" } }));
+    render(<RequestsWorkspace rows={sinCorreo} approve={approve} reject={ok} />);
+    await user.click(screen.getByRole("button", { name: "Revisar Panadería La Esperanza" }));
+    await user.click(screen.getByRole("checkbox", { name: /convenio/ }));
+    const aprobar = screen.getByRole("button", { name: /Aprobar e invitar/ });
+    expect(aprobar).toBeDisabled();
+    await user.type(screen.getByLabelText("Correo para la cuenta de consola"), "no-es-correo");
+    expect(aprobar).toBeDisabled();
+    await user.type(screen.getByLabelText("Correo para la cuenta de consola"), "@dueno.test");
+    expect(aprobar).toBeEnabled();
+  });
 });

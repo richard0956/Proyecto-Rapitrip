@@ -12,10 +12,10 @@ insert into tu select 'adm',  tests.create_user('adm@t.test');
 select tests.grant_role((select id from tu where k = 'adm'), 'admin');
 update auth.users set email_confirmed_at = null where id = (select id from tu where k = 'cli3');
 
--- Enviar: la solicitud trae el correo propio del negocio para la consola (Zero Trust: otra cuenta, otro correo).
+-- Enviar: el correo de la consola es opcional (lo escribe el administrador al aprobar); si viene, es otra cuenta y otro correo (Zero Trust).
 select tests.authenticate_as((select id from tu where k = 'cli1'), 'aal1');
-select throws_ok($$select public.submit_commerce_request('Tienda Uno', '{"nota":"x"}')$$, '22023', null::text,
-  'la solicitud exige el correo para la consola');
+select throws_ok($$select public.submit_commerce_request('Tienda Uno', '{"nota":"x","console_email":"no-es-un-correo"}')$$, '22023', null::text,
+  'si se manda el correo de la consola, debe estar bien escrito');
 select throws_ok($$select public.submit_commerce_request('Tienda Uno', '{"console_email":"CLI1@t.test"}')$$, '22023', null::text,
   'el correo de la consola no puede ser el de la cuenta de la tienda');
 select lives_ok($$select set_config('t.req1', public.submit_commerce_request('Tienda Uno', '{"nota":"x","console_email":"Negocio1@t.test"}')::text, true)$$,

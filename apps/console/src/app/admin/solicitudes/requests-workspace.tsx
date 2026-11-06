@@ -161,7 +161,7 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
                   icon={<Mail className="size-4" />}
                   value={consoleEmail?.id === selected.id ? consoleEmail.value : selected.details.consoleEmail}
                   onChange={(e) => setConsoleEmail({ id: selected.id, value: e.target.value })}
-                  hint="Le llega la invitación para crear el acceso del comercio. Debe ser un correo sin cuenta en Rapitrip, distinto del de su cuenta de la tienda."
+                  hint="El solicitante no lo escribe en el formulario: escríbelo tú. Le llega la invitación para crear el acceso del comercio. Debe ser un correo sin cuenta en Rapitrip, distinto del de su cuenta de la tienda."
                 />
                 <TextareaField label="Motivo (si rechazas)" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Escribe el motivo del rechazo (mínimo 10 caracteres)" />
                 <label className="flex items-start gap-3 text-[13px] font-bold text-tinta">
@@ -176,7 +176,7 @@ export function RequestsWorkspace({ rows, approve, reject }: Props) {
                   </Button>
                   <Button
                     variant="primary"
-                    disabled={pending || !convenio}
+                    disabled={pending || !convenio || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((consoleEmail?.id === selected.id ? consoleEmail.value : selected.details.consoleEmail).trim())}
                     onClick={() => run(() => approve({ id: selected.id, convenio, consoleEmail: (consoleEmail?.id === selected.id ? consoleEmail.value : selected.details.consoleEmail).trim() }))}
                   >
                     <Check className="size-4" aria-hidden="true" />
