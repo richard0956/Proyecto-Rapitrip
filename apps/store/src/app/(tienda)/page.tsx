@@ -6,6 +6,7 @@ import { BadgePercent, ChevronRight, MapPin, Plus, Store } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CartBanner } from "@/components/cart-banner";
+import { AutoRail } from "@/components/auto-rail";
 import { CategoryTile } from "@/components/category-tile";
 import { HomeHero } from "@/components/home-hero";
 import { ProductCard } from "@/components/product-card";
@@ -96,7 +97,7 @@ export default async function Home() {
   ]);
   // Solo cuenta como «más vendido» lo que de verdad se vendió en los últimos 30 días.
   const topSold = bestSellers.filter((product) => product.sold_units > 0).slice(0, 10);
-  const popular = [...categories].filter((category) => category.product_count > 0).sort((a, b) => b.product_count - a.product_count).slice(0, 8);
+  const popular = [...categories].filter((category) => category.product_count > 0).sort((a, b) => b.product_count - a.product_count).slice(0, 16);
   // Productos con foto para la composición central del héroe (sin repetir la oferta destacada).
   const picks = [...deals, ...topSold, ...recent].filter((product, index, all) => product.cover_path && all.findIndex((p) => p.id === product.id) === index);
 
@@ -113,11 +114,14 @@ export default async function Home() {
         <Tray>
           <section aria-labelledby="categorias">
             <SectionHeader id="categorias" title="Categorías populares" href="/catalogo" />
-            <ul className="stagger mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-8">
-              {popular.map((category, index) => (
-                <CategoryTile key={category.id} category={category} index={index} />
-              ))}
-            </ul>
+            {/* Se desliza sola en bucle (se detiene al pasar el cursor); con «reducir movimiento» es una fila que se desliza con el dedo. */}
+            <div className="mt-6 -mx-3 sm:-mx-6 lg:mx-0">
+              <AutoRail count={popular.length} gap="0.75rem">
+                {popular.map((category, index) => (
+                  <CategoryTile key={category.id} category={category} index={index} className="w-[132px] shrink-0 sm:w-[148px]" />
+                ))}
+              </AutoRail>
+            </div>
           </section>
         </Tray>
       ) : null}

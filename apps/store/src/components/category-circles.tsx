@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createElement, type ReactNode } from "react";
 import type { Category } from "@/lib/catalog";
 import { filtersHref, type CatalogFilters } from "@/lib/catalog-filters";
+import { AutoRail } from "./auto-rail";
 import { categoryIcon } from "./category-tile";
 
 /** Fondo pastel, borde e ícono de cada círculo; se repiten en orden, con los mismos tonos de las tarjetas de categoría. */
@@ -38,15 +39,16 @@ function Circle({ href, current, tone, label, count, icon }: { href: string; cur
 }
 
 /**
- * Fila de círculos con las categorías del catálogo, a la manera de los círculos de productos de la portada: en pantallas anchas
- * se ve completa (centrada y con salto de línea si no cabe) y en móvil se desliza. Cada círculo conserva el resto de filtros.
+ * Fila de círculos con las categorías del catálogo, a la manera de los círculos de productos de la portada. Se desliza sola
+ * en bucle (se detiene al pasar el cursor) y, con «reducir movimiento», queda como una fila que se desliza con el dedo.
+ * Cada círculo conserva el resto de filtros.
  */
 export function CategoryCircles({ base, filters, categories }: { base: string; filters: CatalogFilters; categories: Category[] }) {
   if (categories.length === 0) return null;
   const iconClass = "size-7 sm:size-8";
   return (
-    <nav aria-label="Categorías" className="-mx-3 overflow-x-auto px-3 [scrollbar-width:none] sm:-mx-6 sm:px-6 lg:mx-0 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
-      <ul className="flex w-max snap-x gap-2 pb-1 sm:gap-3 lg:w-auto lg:flex-wrap lg:justify-center">
+    <nav aria-label="Categorías" className="-mx-3 sm:-mx-6 lg:mx-0">
+      <AutoRail count={categories.length + 1} gap="0.75rem">
         <Circle
           href={filtersHref(base, filters, { categoria: null, pagina: 1 })}
           current={!filters.categoria}
@@ -65,7 +67,7 @@ export function CategoryCircles({ base, filters, categories }: { base: string; f
             icon={createElement(categoryIcon(category.name), { className: iconClass, strokeWidth: 1.6 })}
           />
         ))}
-      </ul>
+      </AutoRail>
     </nav>
   );
 }

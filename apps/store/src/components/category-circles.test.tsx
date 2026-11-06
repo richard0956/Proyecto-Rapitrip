@@ -21,4 +21,15 @@ describe("CategoryCircles", () => {
     const { container } = render(<CategoryCircles base="/catalogo" filters={parseFilters({})} categories={[]} />);
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("se desliza sola: la segunda copia de la lista va oculta y sin foco, y los lectores de pantalla ven cada categoría una vez", () => {
+    const { container } = render(<CategoryCircles base="/catalogo" filters={parseFilters({})} categories={categories} />);
+    const tracks = container.querySelectorAll(".auto-rail-track");
+    expect(tracks).toHaveLength(2);
+    expect(tracks[1]).toHaveAttribute("aria-hidden", "true");
+    expect(tracks[1]).toHaveAttribute("inert");
+    expect(tracks[0]).not.toHaveAttribute("aria-hidden");
+    expect(screen.getAllByRole("link")).toHaveLength(categories.length + 1);
+    expect(container.querySelector(".auto-rail")).toHaveStyle({ "--rail-duration": "24s" });
+  });
 });

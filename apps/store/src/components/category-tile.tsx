@@ -66,9 +66,9 @@ export function categoryIcon(name: string): LucideIcon {
 }
 
 /** Tarjeta de categoría de la portada: ícono grande sobre un fondo pastel, nombre y cuántos productos tiene. */
-export function CategoryTile({ category, index }: { category: Category; index: number }) {
+export function CategoryTile({ category, index, className }: { category: Category; index: number; className?: string }) {
   return (
-    <li>
+    <li className={className}>
       <Link
         href={`/catalogo?categoria=${category.id}`}
         className="group flex h-full flex-col items-center rounded-tarjeta bg-superficie p-3 text-center shadow-[0_18px_40px_-30px_rgb(6_54_42/0.35)] ring-1 ring-selva/[0.05] transition-[transform,box-shadow] duration-500 ease-fluido hover:-translate-y-1 hover:shadow-[0_24px_48px_-24px_rgb(6_54_42/0.35)] focus-visible:outline-2 focus-visible:outline-hoja motion-reduce:hover:translate-y-0"

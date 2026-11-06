@@ -165,3 +165,51 @@ p {
   .stagger > :nth-child(9) { --n: 8; }
   .stagger > :nth-child(n + 10) { --n: 9; }
 }
+
+/*
+ * Fila que se desliza sola (AutoRail): categorías del catálogo y de la portada. Sin animación es una lista normal que se desliza
+ * con el dedo; con movimiento, dos copias corren un ancho completo en bucle y se detienen al pasar el cursor o al enfocar.
+ * `html[data-motion="reducido"]` es la preferencia de la tienda; `prefers-reduced-motion`, la del sistema.
+ */
+@keyframes rail-scroll {
+  to {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+.auto-rail {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.auto-rail::-webkit-scrollbar {
+  display: none;
+}
+.auto-rail-track {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--rail-gap, 0.75rem);
+  margin: 0;
+  padding: 0 var(--rail-gap, 0.75rem) 0 0;
+  list-style: none;
+}
+.auto-rail-copy {
+  display: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion="reducido"]) .auto-rail {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+  }
+  html:not([data-motion="reducido"]) .auto-rail-track {
+    min-width: 100%;
+    justify-content: space-around;
+    animation: rail-scroll var(--rail-duration, 40s) linear infinite;
+  }
+  html:not([data-motion="reducido"]) .auto-rail-copy {
+    display: flex;
+  }
+  html:not([data-motion="reducido"]) .auto-rail:hover .auto-rail-track,
+  html:not([data-motion="reducido"]) .auto-rail:focus-within .auto-rail-track {
+    animation-play-state: paused;
+  }
+}
