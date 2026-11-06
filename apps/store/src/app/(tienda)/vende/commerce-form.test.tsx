@@ -18,6 +18,7 @@ async function fill() {
   await user.type(screen.getByLabelText("Dirección del negocio"), "Bo. Altagracia, Managua");
   await user.type(screen.getByLabelText("Categoría"), "Ferretería");
   await user.type(screen.getByLabelText("Describe tu negocio y los productos que ofreces"), "Venta de herramientas y materiales");
+  await user.click(screen.getByRole("checkbox", { name: /acepto los/i }));
   await user.click(screen.getByRole("button", { name: "Enviar solicitud" }));
 }
 
@@ -27,6 +28,11 @@ beforeEach(() => {
 });
 
 describe("CommerceForm", () => {
+  it("avisa que se contactará por WhatsApp al teléfono indicado", () => {
+    render(<CommerceForm initialName="" submit={vi.fn()} />);
+    expect(screen.getByText(/te escribiremos por WhatsApp a este número/i)).toBeInTheDocument();
+  });
+
   it("el botón queda deshabilitado hasta completar los campos", () => {
     render(<CommerceForm initialName="Juan Téllez" submit={vi.fn()} />);
     expect(screen.getByRole("button", { name: "Enviar solicitud" })).toBeDisabled();
@@ -36,7 +42,7 @@ describe("CommerceForm", () => {
     const submit = vi.fn().mockResolvedValue({ ok: true });
     render(<CommerceForm initialName="Juan Téllez" submit={submit} />);
     await fill();
-    expect(submit).toHaveBeenCalledWith({ businessKind: "informal", ruc: "", cedula: "001-010190-0000A", businessName: "Ferretería El Clavo", contactName: "Juan Téllez", phone: "+505 8456 2210", email: "juan@correo.com", consoleEmail: "ventas@elclavo.com", address: "Bo. Altagracia, Managua", category: "Ferretería", description: "Venta de herramientas y materiales" });
+    expect(submit).toHaveBeenCalledWith({ businessKind: "informal", ruc: "", cedula: "001-010190-0000A", businessName: "Ferretería El Clavo", contactName: "Juan Téllez", phone: "+505 8456 2210", email: "juan@correo.com", consoleEmail: "ventas@elclavo.com", address: "Bo. Altagracia, Managua", category: "Ferretería", description: "Venta de herramientas y materiales", termsAccepted: true, termsVersion: "2026-11" });
     expect(await screen.findByRole("status")).toHaveTextContent("Solicitud enviada");
     expect(screen.getByRole("status")).toHaveTextContent("Recibimos la solicitud de «Ferretería El Clavo»");
     expect(screen.getByRole("status")).toHaveTextContent("la invitación a la consola llegará a ventas@elclavo.com");
@@ -58,6 +64,8 @@ describe("CommerceForm", () => {
     expect(screen.queryByLabelText("Número de cédula")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar solicitud" })).toBeDisabled();
     await user.type(screen.getByLabelText("Número RUC"), "J0310000012345");
+    expect(screen.getByRole("button", { name: "Enviar solicitud" })).toBeDisabled();
+    await user.click(screen.getByRole("checkbox", { name: /acepto los/i }));
     await user.click(screen.getByRole("button", { name: "Enviar solicitud" }));
     expect(submit).toHaveBeenCalledWith(expect.objectContaining({ businessKind: "empresa", ruc: "J0310000012345" }));
   });

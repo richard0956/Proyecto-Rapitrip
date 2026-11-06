@@ -7,7 +7,9 @@ import { getProduct, isUuid } from "@/lib/catalog";
 import { kindLabel } from "@/lib/catalog-filters";
 import { productImageUrl } from "@/lib/money";
 import { siteUrl } from "@/lib/site-url";
+import { reportCatalogIssue } from "./actions";
 import { AddToCart } from "./add-to-cart";
+import { ReportIssue } from "./report-issue";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -96,6 +98,7 @@ export default async function ProductoPage({ params }: Props) {
           {product.description ? <p className="max-w-[60ch] whitespace-pre-line text-[15px] leading-relaxed text-tinta-suave">{product.description}</p> : null}
           {allSoldOut ? <Alert tone="warning">Este producto está agotado por ahora.</Alert> : null}
           <AddToCart storeId={product.store.id} storeName={product.store.name} storeOpen={product.store.open_now} variants={product.variants} />
+          <ReportIssue productId={product.id} report={reportCatalogIssue} />
         </section>
       </div>
     </main>

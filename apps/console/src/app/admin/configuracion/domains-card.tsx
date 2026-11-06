@@ -58,7 +58,9 @@ export function DomainsCard({ domains, canEdit, add, remove }: { domains: string
             run(() => add(value), () => setValue(""));
           }}
         >
-          <Field label="Agregar dominio" placeholder="rapitrip.com" value={value} onChange={(e) => setValue(e.target.value)} className="sm:flex-1" />
+          <div className="sm:flex-1">
+            <Field label="Agregar dominio" placeholder="rapitrip.com" value={value} onChange={(e) => setValue(e.target.value)} />
+          </div>
           <Button type="submit" disabled={busy || value.trim() === ""}>
             <Plus aria-hidden="true" className="size-4" />
             Agregar

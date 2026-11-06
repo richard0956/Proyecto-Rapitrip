@@ -1,11 +1,11 @@
 "use client";
 
 import { PinPicker, type LatLng } from "@rapitrip/maps";
-import { Alert, Badge, Button, Card, CardHeader, Field, SelectField } from "@rapitrip/ui";
+import { Alert, Badge, Button, Card, Field, SelectField } from "@rapitrip/ui";
 import { departments } from "@rapitrip/validation";
-import { CalendarOff, Check, Clock, MapPin, Plus, Smartphone, Trash2 } from "lucide-react";
+import { CalendarOff, Check, ChevronDown, Clock, MapPin, Plus, Power, Smartphone, Store, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { ReasonDialog } from "@/components/reason-dialog";
 import type { ActionResult } from "@/lib/action-error";
 import { flattenHours, formatCalendarDate, formatStoreDateTime, storeState, todayInStoreZone, weekdays, type HoursByDay } from "@/lib/stores";
@@ -34,6 +34,9 @@ function Feedback({ message }: { message: Message }) {
 export function StoreEditor({ store, hours, exceptions, disabled, actions }: { store: Store; hours: HoursByDay; exceptions: Exception[]; disabled: boolean; actions: Actions }) {
   const state = storeState(store);
   const located = store.latitude !== null && store.longitude !== null;
+  const closedNow = store.closed_until !== null && new Date(store.closed_until) > new Date();
+  const departmentName = departments.find((d) => d.code === store.department)?.name;
+  const openDays = Object.values(hours).filter((ranges) => ranges.length > 0).length;
   return (
     <>
       {!located ? (
@@ -46,21 +49,54 @@ export function StoreEditor({ store, hours, exceptions, disabled, actions }: { s
           Falta el departamento de la tienda. Sin él, un pedido a otro departamento no se reconoce como programado y se trata como express si queda cerca.
         </Alert>
       ) : null}
-      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="flex flex-col gap-5">
-          <HoursCard storeId={store.id} initial={hours} disabled={disabled} save={actions.saveStoreHours} />
-          <ExceptionsCard storeId={store.id} exceptions={exceptions} save={actions.saveStoreException} remove={actions.deleteStoreException} />
-        </div>
-        <div className="flex flex-col gap-5">
-          <Card className="p-5">
-            <CardHeader title="Estado" actions={<Badge tone={state.tone}>{state.label}</Badge>} />
-            <ClosureControls store={store} close={actions.closeStoreTemporarily} reopen={actions.reopenStore} setStatus={actions.setStoreStatus} />
-          </Card>
+      <div className="mx-auto flex max-w-3xl flex-col gap-4">
+        <Section id="estado" icon={<Power className="size-[18px]" />} title="Estado" summary={closedNow ? "Cierre temporal activo" : store.status === "activa" ? "Recibiendo pedidos" : "Inactiva: no aparece ni vende"} badge={<Badge tone={state.tone}>{state.label}</Badge>}>
+          <ClosureControls store={store} close={actions.closeStoreTemporarily} reopen={actions.reopenStore} setStatus={actions.setStoreStatus} />
+        </Section>
+        <Section id="datos" icon={<Store className="size-[18px]" />} title="Datos de la tienda" summary={[store.address, store.phone].filter(Boolean).join(" · ") || "Sin dirección ni teléfono"} defaultOpen>
           <DetailsCard store={store} update={actions.updateStore} />
+        </Section>
+        <Section id="ubicacion" icon={<MapPin className="size-[18px]" />} title="Ubicación en el mapa" summary={located ? `Pin marcado${departmentName ? ` · ${departmentName}` : " · falta el departamento"}` : "Sin ubicación: no recibe pedidos"} badge={!located || !store.department ? <Badge tone="warning">Pendiente</Badge> : null} defaultOpen={!located || !store.department}>
           <LocationCard store={store} save={actions.setStoreLocation} saveDepartment={actions.setStoreDepartment} />
-        </div>
+        </Section>
+        <Section id="horario" icon={<Clock className="size-[18px]" />} title="Horario semanal" summary={openDays === 0 ? "Sin horario: cerrada todos los días" : `Abre ${openDays} de 7 días`}>
+          <HoursCard storeId={store.id} initial={hours} disabled={disabled} save={actions.saveStoreHours} />
+        </Section>
+        <Section id="excepciones" icon={<CalendarOff className="size-[18px]" />} title="Excepciones por fecha" summary={exceptions.length === 0 ? "Sin excepciones próximas" : `${exceptions.length} ${exceptions.length === 1 ? "excepción próxima" : "excepciones próximas"}`}>
+          <ExceptionsCard storeId={store.id} exceptions={exceptions} save={actions.saveStoreException} remove={actions.deleteStoreException} />
+        </Section>
       </div>
     </>
+  );
+}
+
+/** Sección plegable: el encabezado resume cómo está esa parte de la tienda; el cuerpo queda montado para no perder lo que se esté editando. */
+function Section({ id, icon, title, summary, badge, defaultOpen = false, children }: { id: string; icon: ReactNode; title: string; summary: string; badge?: ReactNode; defaultOpen?: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <Card className="p-0">
+      <button
+        type="button"
+        id={`${id}-trigger`}
+        aria-expanded={open}
+        aria-controls={`${id}-panel`}
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-3.5 rounded-[inherit] p-4 text-left focus-visible:outline-2 focus-visible:outline-hoja sm:px-5"
+      >
+        <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-hoja/10 text-hoja">
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-bold tracking-tight text-tinta">{title}</span>
+          <span className="block truncate text-[13px] text-tinta-suave">{summary}</span>
+        </span>
+        {badge}
+        <ChevronDown aria-hidden="true" className={`size-5 shrink-0 text-tinta-suave transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div id={`${id}-panel`} role="region" aria-labelledby={`${id}-trigger`} hidden={!open} className="border-t border-borde px-4 pb-5 pt-4 sm:px-5">
+        {children}
+      </div>
+    </Card>
   );
 }
 
@@ -89,8 +125,7 @@ function LocationCard({ store, save, saveDepartment }: { store: Store; save: Act
   }
 
   return (
-    <Card className="p-5">
-      <CardHeader title="Ubicación en el mapa" />
+    <>
       <div className="flex flex-col gap-3.5">
         <SelectField label="Departamento" value={department} onChange={(e) => setDepartment(e.target.value)} hint="Define si los pedidos a otros departamentos se entregan de forma programada." disabled={pending}>
           <option value="">Elige un departamento</option>
@@ -111,7 +146,7 @@ function LocationCard({ store, save, saveDepartment }: { store: Store; save: Act
           {pending ? "Guardando…" : "Guardar ubicación"}
         </Button>
       </div>
-    </Card>
+    </>
   );
 }
 
@@ -133,19 +168,18 @@ function DetailsCard({ store, update }: { store: Store; update: Actions["updateS
   }
 
   return (
-    <Card className="p-5">
-      <CardHeader title="Datos de la tienda" />
-      <form onSubmit={save} className="flex flex-col gap-3.5" noValidate>
-        <Field label="Nombre" value={values.name} onChange={set("name")} required />
+    <form onSubmit={save} className="flex flex-col gap-3.5" noValidate>
+      <Field label="Nombre" value={values.name} onChange={set("name")} required />
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <Field label="Dirección" icon={<MapPin className="size-4" />} value={values.address} onChange={set("address")} />
         <Field label="Teléfono de contacto" icon={<Smartphone className="size-4" />} type="tel" value={values.phone} onChange={set("phone")} />
-        <Feedback message={message} />
-        <Button variant="primary" type="submit" disabled={pending || values.name.trim().length < 2} className="self-start">
-          <Check className="size-4" aria-hidden="true" />
-          {pending ? "Guardando…" : "Guardar datos"}
-        </Button>
-      </form>
-    </Card>
+      </div>
+      <Feedback message={message} />
+      <Button variant="primary" type="submit" disabled={pending || values.name.trim().length < 2} className="self-start">
+        <Check className="size-4" aria-hidden="true" />
+        {pending ? "Guardando…" : "Guardar datos"}
+      </Button>
+    </form>
   );
 }
 
@@ -247,8 +281,8 @@ function HoursCard({ storeId, initial, disabled, save }: { storeId: string; init
   }
 
   return (
-    <Card className="p-5">
-      <CardHeader title="Horario semanal" subtitle="Hora de Nicaragua. Un día puede tener varios tramos; sin tramos, ese día está cerrado." />
+    <>
+      <p className="mb-2 text-[13px] text-tinta-suave">Hora de Nicaragua. Un día puede tener varios tramos; sin tramos, ese día está cerrado.</p>
       <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
         <ul className="flex flex-col divide-y divide-borde">
           {weekdays.map(({ value, label }) => {
@@ -292,7 +326,7 @@ function HoursCard({ storeId, initial, disabled, save }: { storeId: string; init
           {pending ? "Guardando…" : "Guardar horario"}
         </Button>
       </form>
-    </Card>
+    </>
   );
 }
 
@@ -319,8 +353,8 @@ function ExceptionsCard({ storeId, exceptions, save, remove }: { storeId: string
   }
 
   return (
-    <Card className="p-5">
-      <CardHeader title="Excepciones por fecha" subtitle="Feriados o días con horario distinto. Mandan sobre el horario semanal." />
+    <>
+      <p className="mb-3 text-[13px] text-tinta-suave">Feriados o días con horario distinto. Mandan sobre el horario semanal.</p>
       {exceptions.length === 0 ? (
         <p className="mb-4 text-[13px] text-tinta-suave">No hay excepciones próximas.</p>
       ) : (
@@ -342,7 +376,7 @@ function ExceptionsCard({ storeId, exceptions, save, remove }: { storeId: string
         </ul>
       )}
       <form
-        className="flex flex-col gap-3 rounded-panel bg-calido/50 p-4"
+        className="flex flex-col gap-3 rounded-panel border border-borde p-4"
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
@@ -372,6 +406,6 @@ function ExceptionsCard({ storeId, exceptions, save, remove }: { storeId: string
           Agregar excepción
         </Button>
       </form>
-    </Card>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert@1";
-import { buildCheckoutParams, buildPurchaseCheckoutParams, purchaseTotalMinorUnits, refundParams, signStripePayload, stripeEventTarget, toMinorUnits, verifyStripeSignature, type Purchase } from "./stripe.ts";
+import { asCheckoutTheme, brandingParams, buildCheckoutParams, buildPurchaseCheckoutParams, purchaseTotalMinorUnits, refundParams, signStripePayload, stripeEventTarget, toMinorUnits, verifyStripeSignature, type Purchase } from "./stripe.ts";
 
 const secret = "whsec_prueba_para_tests";
 const payload = JSON.stringify({ id: "evt_test_1", type: "checkout.session.completed", data: { object: { id: "cs_test_1" } } });
@@ -137,4 +137,29 @@ Deno.test("el reembolso es completo sin monto y parcial con monto en centavos", 
   assertThrows(() => refundParams("pi_1", "x", 0));
   assertThrows(() => refundParams("pi_1", "x", -5));
   assertThrows(() => refundParams("pi_1", "x", 12.5));
+});
+
+Deno.test("la marca de Checkout apaga el precio adaptable y solo manda imágenes con una tienda pública", () => {
+  const local = brandingParams("http://127.0.0.1:3000", "light", () => undefined);
+  assertEquals(local["adaptive_pricing[enabled]"], "false");
+  assertEquals(local["branding_settings[display_name]"], "Rapitrip");
+  assertEquals(local["branding_settings[logo][url]"], undefined);
+  const publica = brandingParams("https://rapitrip.example", "light", () => undefined);
+  assertEquals(publica["branding_settings[logo][url]"], "https://rapitrip.example/brand/stripe-logo.png");
+  assertEquals(publica["branding_settings[icon][url]"], "https://rapitrip.example/brand/stripe-icono.png");
+  const conArchivo = brandingParams("http://127.0.0.1:3000", "light", (name) => (name === "STRIPE_LOGO_FILE" ? "file_logo" : undefined));
+  assertEquals(conArchivo["branding_settings[logo][type]"], "file");
+  assertEquals(conArchivo["branding_settings[logo][file]"], "file_logo");
+  assertEquals(conArchivo["branding_settings[icon][type]"], undefined);
+  assertEquals(buildCheckoutParams({ id: "i", number: 1, storeName: "T", deliveryFee: 0 }, [], { currency: "nio", storeUrl: "https://rapitrip.example" })["adaptive_pricing[enabled]"], "false");
+});
+
+Deno.test("la página de pago sigue el tema: verde en claro, azul Medianoche en oscuro", () => {
+  const claro = brandingParams("http://x", "light", () => undefined);
+  const oscuro = brandingParams("http://x", "dark", () => undefined);
+  assertEquals(claro["branding_settings[background_color]"], "#0d5644");
+  assertEquals(oscuro["branding_settings[background_color]"], "#0b2236");
+  assertEquals(asCheckoutTheme("dark"), "dark");
+  assertEquals(asCheckoutTheme("otra cosa"), "light");
+  assertEquals(buildCheckoutParams({ id: "i", number: 1, storeName: "T", deliveryFee: 0 }, [], { currency: "nio", storeUrl: "http://x", theme: "dark" })["branding_settings[background_color]"], "#0b2236");
 });

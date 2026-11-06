@@ -3,8 +3,12 @@
 import { reasonSchema } from "@rapitrip/validation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { InvoicesResult } from "@/components/order-invoices";
 import { failure, invalidInput, type ActionResult } from "@/lib/action-error";
+import { formatDateTime } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
+import { sortInvoices } from "@/lib/invoices";
+import { formatMoney } from "@/lib/money";
 import type { DistanceResult } from "@/lib/order-route";
 import { serverSupabase } from "@/lib/supabase";
 
@@ -47,6 +51,20 @@ export async function pickupCode(id: string): Promise<{ ok: true; code: string |
   const { data, error } = await supabase.rpc("order_pickup_code", { p_order: parsed.data });
   if (error) return { ok: false, error: "No pudimos cargar el código de recogida." };
   return { ok: true, code: data ?? null };
+}
+
+/** Facturas del pedido que ve el comercio: la de venta y sus notas de crédito. La de servicio es de Rapitrip y la base no se la muestra. */
+export async function orderInvoices(id: string): Promise<InvoicesResult> {
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "Pedido inválido." };
+  await requireConsoleAccess("comercio");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("order_invoices", { p_order: parsed.data });
+  if (error) return { ok: false, error: "No pudimos cargar las facturas." };
+  return {
+    ok: true,
+    invoices: sortInvoices(data ?? []).map((row) => ({ id: row.id, kind: row.kind, number: row.number, issuedLabel: formatDateTime(row.issued_at), totalLabel: formatMoney(row.total) })),
+  };
 }
 
 /** Foto que tomó el repartidor al recoger el pedido (enlace firmado por 5 minutos). El comercio no ve la de entrega: muestra el domicilio del cliente. */

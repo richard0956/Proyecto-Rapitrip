@@ -1,6 +1,9 @@
 import { Alert } from "@rapitrip/ui";
 import { FilterChips } from "@/components/filter-chips";
+import { CatalogNotices } from "@/components/catalog-notices";
 import { PageHeader } from "@/components/shell";
+import { markCatalogReportFixed } from "@/lib/catalog-control-actions";
+import { loadCatalogNotices } from "@/lib/load-catalog-notices";
 import { parsePeriod, periodOptions } from "@/lib/dashboard";
 import { first, optionalUuid, type SearchParams } from "@/lib/filters";
 import { requireConsoleAccess } from "@/lib/guard";
@@ -20,6 +23,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Sea
   await requireConsoleAccess("comercio");
   const period = parsePeriod(first(params.periodo));
   const supabase = await serverSupabase();
+  const catalogNotices = await loadCatalogNotices(supabase);
   const [stores, products, master, stats] = await Promise.all([
     supabase.from("stores_list").select("id, name, status").order("name"),
     supabase.from("products_list").select("id, store_id, name, status, active_variants, min_price, cover_path, category_id").order("name"),
@@ -62,6 +66,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Sea
     <>
       <PageHeader title="Catálogo" description="Productos de cada tienda, con sus variantes, precios e imágenes, y cómo se están moviendo." />
       {failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo el catálogo. Recarga la página.</Alert> : null}
+      <CatalogNotices notices={catalogNotices} markFixed={markCatalogReportFixed} />
       <div className="mb-5">
         <FilterChips basePath="/comercio/catalogo" param="periodo" current={period.key} options={periodOptions} keep={{ tienda }} />
       </div>

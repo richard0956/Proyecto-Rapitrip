@@ -73,8 +73,9 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     await expect(page.getByText(/Ventas \(1\)/)).toBeVisible();
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
 
-    // Cierre: se esperan 500 + 300 = 800; con 790 hay diferencia y exige nota
-    await expect(page.getByText(/Efectivo esperado/).locator("..")).toContainText("800");
+    // Cierre a ciegas: se esperan 500 + 300 = 800 pero no se muestra; con 790 hay diferencia y exige nota
+    await expect(page.getByText("En efectivo", { exact: true }).locator("..")).toContainText("300");
+    await expect(page.getByText(/Efectivo esperado/)).toHaveCount(0);
     await page.getByRole("button", { name: "Cerrar caja" }).click();
     const close = page.getByRole("dialog");
     await close.getByLabel("Efectivo contado").fill("790");

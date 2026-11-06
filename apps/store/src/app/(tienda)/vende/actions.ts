@@ -1,6 +1,7 @@
 "use server";
 
 import { failure, isSessionExpired } from "@rapitrip/supabase";
+import { MERCHANT_TERMS_VERSION } from "@/lib/legal";
 import { phoneSchema } from "@rapitrip/validation";
 import { z } from "zod";
 import { expiredResult, type CustomerResult } from "@/lib/result";
@@ -9,6 +10,8 @@ import { serverSupabase } from "@/lib/supabase";
 
 const schema = z
   .object({
+    termsAccepted: z.literal(true, { message: "Acepta los términos y condiciones del comercio afiliado para enviar la solicitud." }),
+    termsVersion: z.literal(MERCHANT_TERMS_VERSION, { message: "Los términos cambiaron. Recarga la página y vuelve a aceptarlos." }),
     businessKind: z.enum(["informal", "empresa"]).default("informal"),
     ruc: z.string().trim().max(40).default(""),
     cedula: z.string().trim().max(40).default(""),
@@ -38,10 +41,10 @@ export async function submitCommerceRequest(input: unknown): Promise<CustomerRes
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
   await requireCustomer("/vende");
   const supabase = await serverSupabase();
-  const { businessName, contactName, phone, email, consoleEmail, address, category, description, businessKind, ruc, cedula } = parsed.data;
+  const { businessName, contactName, phone, email, consoleEmail, address, category, description, businessKind, ruc, cedula, termsVersion } = parsed.data;
   const { error } = await supabase.rpc("submit_commerce_request", {
     p_business_name: businessName,
-    p_details: { contact_name: contactName, phone, email, console_email: consoleEmail, address, category, description, business_kind: businessKind, ...(businessKind === "empresa" ? { ruc } : { cedula: cedula.replace(/[\s.-]/g, "").toUpperCase() }) },
+    p_details: { contact_name: contactName, phone, email, console_email: consoleEmail, address, category, description, business_kind: businessKind, terms_version: termsVersion, terms_accepted_at: new Date().toISOString(), ...(businessKind === "empresa" ? { ruc } : { cedula: cedula.replace(/[\s.-]/g, "").toUpperCase() }) },
   });
   if (isSessionExpired(error)) return expiredResult;
   if (error) return failure(error);

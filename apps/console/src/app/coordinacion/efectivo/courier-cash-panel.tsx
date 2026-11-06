@@ -1,11 +1,10 @@
 "use client";
 
-import { Alert, Badge, Button, Card, CardHeader, EmptyState, KpiCard } from "@rapitrip/ui";
-import { Banknote, Scale, Wallet } from "lucide-react";
+import { Alert, Badge, Button, Card, CardHeader, EmptyState } from "@rapitrip/ui";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatMoney } from "@/lib/money";
-import { cashStatus, summarizeCash } from "@/lib/courier-cash";
+import { cashStatus } from "@/lib/courier-cash";
 import type { RegisterCashResult } from "./actions";
 
 export type DeliveredCash = {
@@ -27,7 +26,6 @@ export function CourierCashPanel({ rows, register }: { rows: DeliveredCash[]; re
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const summary = useMemo(() => summarizeCash(rows), [rows]);
 
   async function accept(orderId: string) {
     setBusy(orderId);
@@ -40,13 +38,8 @@ export function CourierCashPanel({ rows, register }: { rows: DeliveredCash[]; re
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard icon={<Wallet className="size-5" />} tone="durazno" label="Por rendir en caja" value={formatMoney(summary.pending)} hint={`${summary.pendingOrders} pedido${summary.pendingOrders === 1 ? "" : "s"}`} />
-        <KpiCard icon={<Banknote className="size-5" />} label="Recibido en caja" value={formatMoney(summary.received)} hint={`${summary.receivedOrders} pedido${summary.receivedOrders === 1 ? "" : "s"}`} />
-        <KpiCard icon={<Scale className="size-5" />} tone="lavanda" label="Diferencias" value={formatMoney(summary.difference)} hint={summary.differences === 0 ? "Todo coincide" : `${summary.differences} pedido${summary.differences === 1 ? "" : "s"} no coinciden`} />
-      </div>
       <Card className="p-5">
-        <CardHeader title="Entregas en efectivo" subtitle="Cada entrega genera un código de cobro que el cajero usa al recibir el efectivo." />
+        <CardHeader title="Pedidos entregados en efectivo" subtitle="Cada cobro tiene su código. Para un repartidor sin cuenta, regístralo aquí y después envía la entrega a caja." />
         {error ? <Alert tone="error" className="mb-4">{error}</Alert> : null}
         {rows.length === 0 ? (
           <EmptyState title="Sin entregas en efectivo">Aquí aparecen los pedidos en efectivo ya entregados.</EmptyState>
@@ -73,7 +66,7 @@ export function CourierCashPanel({ rows, register }: { rows: DeliveredCash[]; re
                   {status.kind === "recibido" ? (
                     <Badge tone="positive">Recibido en caja</Badge>
                   ) : status.kind === "pendiente_caja" ? (
-                    <Badge tone="warning">Pendiente de caja</Badge>
+                    <Badge tone="warning">A cargo del repartidor</Badge>
                   ) : row.hasAccount ? (
                     <Badge tone="warning">Sin cobro registrado</Badge>
                   ) : (

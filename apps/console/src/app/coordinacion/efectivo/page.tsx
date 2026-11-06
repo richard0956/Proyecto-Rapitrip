@@ -1,5 +1,8 @@
 import { Alert } from "@rapitrip/ui";
+import { AccountabilityCard, CashKpis, CustodyCard, HandoffHistoryCard } from "@/components/cash-control";
 import { PageHeader } from "@/components/shell";
+import { startHandoffFor } from "@/lib/cash-control-actions";
+import { loadCashControl } from "@/lib/load-cash-control";
 import { requireConsoleAccess } from "@/lib/guard";
 import { formatStoreDateTime } from "@/lib/stores";
 import { serverSupabase } from "@/lib/supabase";
@@ -11,7 +14,8 @@ export const metadata = { title: "Efectivo de repartidores" };
 export default async function EfectivoPage() {
   await requireConsoleAccess("coordinacion");
   const supabase = await serverSupabase();
-  const [orders, couriers] = await Promise.all([
+  const [control, orders, couriers] = await Promise.all([
+    loadCashControl(supabase),
     supabase
       .from("orders_list")
       .select("id, number, store_name, total, payment_ref, cash_received_at, cash_collected, courier_id, delivered_at")
@@ -46,12 +50,20 @@ export default async function EfectivoPage() {
 
   return (
     <>
-      <PageHeader title="Efectivo de repartidores" description="Lo que cobró cada repartidor al entregar y lo que caja ya recibió. Las diferencias aparecen marcadas." />
+      <PageHeader title="Efectivo de repartidores" description="Quién tiene el efectivo cobrado, cada entrega a caja y las faltas que quedan registradas." />
       <Alert tone="info" className="mb-5">
-        Quien usa la aplicación registra el efectivo al entregar y recibe un código que lleva al cajero. Solo se registra aquí el efectivo de un repartidor sin cuenta.
+        El repartidor con cuenta envía «Efectivo entregado» a una caja desde su aplicación y el cajero lo cuenta y confirma. Para quien no tiene cuenta, registra aquí el cobro y envía tú la entrega a caja.
       </Alert>
-      {orders.error ? <Alert tone="error" className="mb-5">No pudimos cargar los pedidos. Recarga la página.</Alert> : null}
-      <CourierCashPanel rows={rows} register={registerCourierCash} />
+      {orders.error || control.failed ? <Alert tone="error" className="mb-5">No pudimos cargar todo. Recarga la página.</Alert> : null}
+      <div className="flex flex-col gap-5">
+        <CashKpis custody={control.custody} open={control.open} />
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+          <CustodyCard rows={control.custody} points={control.points} start={startHandoffFor} />
+          <AccountabilityCard open={control.open} resolved={control.resolved} />
+        </div>
+        <HandoffHistoryCard rows={control.handoffs} />
+        <CourierCashPanel rows={rows} register={registerCourierCash} />
+      </div>
     </>
   );
 }

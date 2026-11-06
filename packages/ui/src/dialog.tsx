@@ -22,7 +22,7 @@ export function Dialog({ open, onClose, title, children, wide }: DialogProps) {
       ref={ref}
       onClose={onClose}
       aria-labelledby={titleId}
-      className={cn("m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto rounded-tarjeta border border-borde bg-papel p-6 text-tinta backdrop:bg-selva/60", wide ? "max-w-2xl" : "max-w-md")}
+      className={cn("m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] overflow-y-auto rounded-tarjeta border border-borde bg-papel p-6 text-tinta backdrop:bg-[#060b14]/70 backdrop:backdrop-blur-sm", wide ? "max-w-2xl" : "max-w-md")}
     >
       <h2 id={titleId} className="text-xl font-extrabold text-tinta">
         {title}

@@ -6,12 +6,14 @@ export type Theme = "light" | "dark";
 export type ThemeChoice = Theme | "system";
 
 export const THEME_KEY = "rapitrip:tema";
+/** Cookie con el tema que se está viendo (elegido o del sistema): el servidor la lee para que la página de pago de Stripe lo siga. */
+export const THEME_COOKIE = "rapitrip-tema-activo";
 
 /**
  * Script del <head>: fija `data-theme` en <html> antes del primer pintado, así no hay destello claro al cargar en oscuro.
  * Si el navegador no deja leer el almacenamiento, sigue la preferencia del sistema.
  */
-export const themeScript = `try{var t=null;try{t=localStorage.getItem("${THEME_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t}catch(e){}`;
+export const themeScript = `try{var t=null;try{t=localStorage.getItem("${THEME_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t;document.cookie="${THEME_COOKIE}="+t+";path=/;max-age=31536000;samesite=lax"}catch(e){}`;
 
 export function currentTheme(): Theme {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -20,6 +22,7 @@ export function currentTheme(): Theme {
 /** Aplica el tema y, si es una elección del cliente, la recuerda. */
 export function applyTheme(theme: Theme, remember: boolean) {
   document.documentElement.dataset.theme = theme;
+  document.cookie = `${THEME_COOKIE}=${theme};path=/;max-age=31536000;samesite=lax`;
   if (!remember) return;
   try {
     localStorage.setItem(THEME_KEY, theme);

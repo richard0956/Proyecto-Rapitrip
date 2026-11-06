@@ -1,6 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { sendMail } from "../_shared/mailer.ts";
 import { renderEmail, type TemplateName } from "../_shared/templates.ts";
+import { InvalidPhoneError, sendWhatsApp, ultramsgConfigured } from "../_shared/ultramsg.ts";
+import { renderWhatsApp, type WhatsAppTemplate } from "../_shared/whatsapp_templates.ts";
 
 Deno.serve(async (req) => {
   const secret = Deno.env.get("OUTBOX_SECRET");
@@ -28,5 +30,26 @@ Deno.serve(async (req) => {
       failed++;
     }
   }
-  return new Response(JSON.stringify({ sent, failed }), { headers: { "Content-Type": "application/json" } });
+  // WhatsApp (afiliación y soporte): bandeja aparte; sin credenciales de UltraMsg no se reclama nada y los mensajes esperan.
+  let whatsapp = { sent: 0, failed: 0, skipped: 0 };
+  if (ultramsgConfigured()) {
+    const { data: msgs, error: waError } = await admin.rpc("claim_whatsapp_outbox", { p_limit: 20 });
+    if (waError) {
+      console.error(`claim_whatsapp_outbox: ${waError.message}`);
+    } else {
+      for (const msg of msgs ?? []) {
+        try {
+          await sendWhatsApp({ to: msg.to_phone, body: renderWhatsApp(msg.template as WhatsAppTemplate, msg.data) });
+          await admin.rpc("mark_whatsapp_outbox", { p_id: msg.id, p_ok: true });
+          whatsapp.sent++;
+        } catch (e) {
+          const invalid = e instanceof InvalidPhoneError;
+          await admin.rpc("mark_whatsapp_outbox", { p_id: msg.id, p_ok: false, p_error: String(e), p_skip: invalid });
+          if (invalid) whatsapp.skipped++;
+          else whatsapp.failed++;
+        }
+      }
+    }
+  }
+  return new Response(JSON.stringify({ sent, failed, whatsapp }), { headers: { "Content-Type": "application/json" } });
 });

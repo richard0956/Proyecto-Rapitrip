@@ -7,8 +7,11 @@ import { useRouter } from "next/navigation";
 import { createElement, useEffect, useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Steps } from "@/components/steps";
 import { saveDraft, takeDraft } from "@/lib/draft";
+import { MERCHANT_TERMS_VERSION } from "@/lib/legal";
 import type { CustomerResult } from "@/lib/result";
+import { whatsappLink } from "@/lib/whatsapp";
 
+const supportLink = whatsappLink(undefined, "Hola, tengo una consulta sobre la afiliación de comercios en Rapitrip.");
 const DRAFT_KEY = "rapitrip:vende";
 type Kind = "informal" | "empresa";
 type Values = { businessKind: Kind; ruc: string; cedula: string; businessName: string; contactName: string; phone: string; email: string; consoleEmail: string; address: string; category: string; description: string };
@@ -37,22 +40,34 @@ function Group({ number, title, text, children }: { number: number; title: strin
   );
 }
 
+/** Resumen de lo que más pesa en el convenio; el texto completo está en /terminos-comercio. */
+const commitments = [
+  "Catálogo y precios al día; cobras el precio publicado.",
+  "Confirmas cada pedido en máximo 15 minutos.",
+  "Cuenta propia de la consola, solo de tu negocio.",
+  "Datos de clientes solo para cumplir el pedido.",
+  "Liquidaciones y reversiones por devoluciones según tu convenio.",
+  "Avisas de inmediato cualquier incidente de seguridad.",
+];
+
 /**
- * Formulario de afiliación en cuatro grupos (tipo de vendedor, negocio, contacto y descripción) con una barra de avance de los
+ * Formulario de afiliación en cinco grupos (tipo de vendedor, negocio, contacto, descripción y aceptación de los términos) con una barra de avance de los
  * campos obligatorios. El tipo se elige con dos tarjetas: el vendedor propio pide cédula y la empresa, RUC.
  */
-export function CommerceForm({ initialName, submit }: { initialName: string; submit: (values: Values) => Promise<CustomerResult> }) {
+export function CommerceForm({ initialName, submit }: { initialName: string; submit: (values: Values & { termsAccepted: boolean; termsVersion: string }) => Promise<CustomerResult> }) {
   const router = useRouter();
   const [values, setValues] = useState<Values>({ ...empty, contactName: initialName });
   const [result, setResult] = useState<CustomerResult | null>(null);
   const [restored, setRestored] = useState(false);
+  // La aceptación no se guarda en el borrador: si la sesión vence, se vuelve a marcar al retomar la solicitud.
+  const [accepted, setAccepted] = useState(false);
   const [pending, start] = useTransition();
   const set = (key: keyof Values) => (e: { target: { value: string } }) => setValues((v) => ({ ...v, [key]: e.target.value }));
   const empresa = values.businessKind === "empresa";
   // El RUC solo se pide a las empresas; la cédula, solo al vendedor propio.
   const required = (Object.keys(values) as (keyof Values)[]).filter((key) => key !== "businessKind" && (key === "ruc" ? empresa : key === "cedula" ? !empresa : true));
   const done = required.filter((key) => values[key].trim()).length;
-  const missing = done < required.length;
+  const missing = done < required.length || !accepted;
 
   useEffect(() => {
     const draft = takeDraft<Values>(DRAFT_KEY);
@@ -72,7 +87,7 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
     event.preventDefault();
     setResult(null);
     start(async () => {
-      const outcome = await submit(values);
+      const outcome = await submit({ ...values, termsAccepted: accepted, termsVersion: MERCHANT_TERMS_VERSION });
       if (!outcome.ok && outcome.expired) {
         saveDraft(DRAFT_KEY, values);
         router.replace(`/ingresar?next=${encodeURIComponent("/vende")}&expirada=1`);
@@ -175,7 +190,7 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
       <Group number={3} title="Contacto" text="Te escribimos aquí para avisarte de la revisión.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label={empresa ? "Representante" : "Nombre completo"} icon={<UserRound className="size-4" />} autoComplete="name" value={values.contactName} onChange={set("contactName")} required />
-          <Field label="Teléfono" icon={<Smartphone className="size-4" />} type="tel" autoComplete="tel" value={values.phone} onChange={set("phone")} required />
+          <Field label="Teléfono" icon={<Smartphone className="size-4" />} type="tel" autoComplete="tel" value={values.phone} onChange={set("phone")} hint="Al enviar la solicitud te escribiremos por WhatsApp a este número para confirmarte que la recibimos. Usaremos un proveedor de mensajería (UltraMsg) solo para ese fin." required />
           <div className="sm:col-span-2">
             <Field label="Correo electrónico" icon={<Mail className="size-4" />} type="email" autoComplete="email" value={values.email} onChange={set("email")} required />
           </div>
@@ -206,9 +221,43 @@ export function CommerceForm({ initialName, submit }: { initialName: string; sub
         <p className="-mt-2 text-right text-[12px] text-tinta-suave">{values.description.length} de 500 caracteres</p>
       </Group>
 
+      <Group number={5} title="Términos del comercio afiliado" text="Las reglas con las que trabajarás en Rapitrip, basadas en nuestro manual de políticas, normas, controles y procedimientos.">
+        <ul className="grid gap-2 pl-10 text-[13px] leading-snug text-tinta-suave sm:grid-cols-2">
+          {commitments.map((text) => (
+            <li key={text} className="flex items-start gap-2">
+              <Check aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-hoja" strokeWidth={3} />
+              {text}
+            </li>
+          ))}
+        </ul>
+        <label className="flex cursor-pointer items-start gap-2.5 rounded-2xl bg-crema/60 p-4 text-[13.5px] leading-snug text-tinta ring-1 ring-borde has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-hoja">
+          <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5 size-[18px] shrink-0 accent-hoja" />
+          <span>
+            Declaro que los datos son verdaderos y acepto los{" "}
+            <Link href="/terminos-comercio" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+              términos y condiciones del comercio afiliado
+            </Link>{" "}
+            y la{" "}
+            <Link href="/privacidad" target="_blank" className="font-bold text-hoja underline-offset-2 hover:underline">
+              política de privacidad
+            </Link>
+            , con los que trabajaré como vendedor en Rapitrip.
+          </span>
+        </label>
+      </Group>
+
       {result && !result.ok ? <Alert tone="error">{result.error}</Alert> : null}
+      {supportLink ? (
+        <p className="text-[13px] text-tinta-suave">
+          ¿Dudas antes de enviar?{" "}
+          <a href={supportLink} target="_blank" rel="noopener noreferrer" className="font-bold text-hoja underline-offset-2 hover:underline">
+            Escríbenos por WhatsApp
+          </a>
+          .
+        </p>
+      ) : null}
       <div className="flex flex-col gap-3 border-t border-borde pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[12.5px] text-tinta-suave">{missing ? "Completa todos los campos para enviar." : "Todo listo: revisa tus datos y envía."}</p>
+        <p className="text-[12.5px] text-tinta-suave">{missing ? (done < required.length ? "Completa todos los campos para enviar." : "Acepta los términos del comercio para enviar.") : "Todo listo: revisa tus datos y envía."}</p>
         <Button variant="primary" type="submit" disabled={pending || missing} arrow className="sm:min-w-[200px]">
           {pending ? "Enviando…" : "Enviar solicitud"}
         </Button>

@@ -67,3 +67,29 @@ Deno.test("order_cancelled distingue rechazado y menciona el reembolso solo con 
   assertStringIncludes(tarjeta.subject, "cancelado");
   assertStringIncludes(tarjeta.text, "reembolso");
 });
+
+Deno.test("order_received lista las facturas emitidas y aclara que no tienen validez fiscal", () => {
+  const m = renderEmail("order_received", {
+    number: 88, store_name: "Tienda", total: 230, order_id: "abc", store_url: "https://tienda.test",
+    invoices: [{ kind: "venta", number: "RT-V-000123" }, { kind: "servicio", number: "RT-S-000123" }],
+  });
+  assertStringIncludes(m.text, "factura de venta RT-V-000123 y factura de servicio RT-S-000123");
+  assertStringIncludes(m.text, "sin validez fiscal");
+  assertStringIncludes(m.html, "<strong>RT-S-000123</strong>");
+  assertStringIncludes(m.html, "descargarlas en PDF");
+});
+
+Deno.test("order_received sin facturas sale como antes, y datos raros se ignoran y se escapan", () => {
+  const sin = renderEmail("order_received", { number: 1, store_name: "T", total: 1 });
+  assertEquals(sin.text.includes("factura"), false);
+  const raro = renderEmail("order_received", { number: 1, store_name: "T", total: 1, invoices: [{ kind: "venta" }, null, "x", { kind: "venta", number: "<b>RT</b>" }] });
+  assertStringIncludes(raro.html, "&lt;b&gt;RT&lt;/b&gt;");
+  assertEquals(raro.html.includes("<b>RT</b>"), false);
+});
+
+Deno.test("order_cancelled menciona las notas de crédito cuando las hay", () => {
+  const m = renderEmail("order_cancelled", { number: 8, store_name: "T", status: "cancelado", payment_method: "efectivo", credit_notes: [{ kind: "nota_credito_venta", number: "RT-NCV-000045" }] });
+  assertStringIncludes(m.text, "nota de crédito de venta RT-NCV-000045");
+  assertStringIncludes(m.html, "RT-NCV-000045");
+  assertEquals(renderEmail("order_cancelled", { number: 9, store_name: "T", status: "cancelado", credit_notes: [] }).text.includes("Anulamos"), false);
+});

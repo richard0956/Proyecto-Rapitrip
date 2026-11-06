@@ -15,12 +15,16 @@ function refresh() {
   revalidatePath("/caja");
 }
 
-export async function openCashSession(opening: number): Promise<ActionResult> {
-  const parsed = money.safeParse(opening);
+/** Abre el turno en una caja física. Sin monto: el saldo inicial es lo contado en el último cierre de esa caja. */
+export async function openCashSession(input: { opening: number | null; registerId: string | null }): Promise<ActionResult> {
+  const parsed = z.object({ opening: money.nullable(), registerId: z.string().uuid().nullable() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
   await requireConsoleAccess("caja");
   const supabase = await serverSupabase();
-  const { error } = await supabase.rpc("open_cash_session", { p_opening: parsed.data });
+  const { error } = await supabase.rpc("open_cash_session", {
+    p_opening: parsed.data.opening as number,
+    ...(parsed.data.registerId ? { p_register: parsed.data.registerId } : {}),
+  });
   if (error) return failure(error);
   refresh();
   return { ok: true };
@@ -51,13 +55,28 @@ export async function createCounterSale(input: unknown): Promise<ActionResult> {
   return { ok: true };
 }
 
-/** Recibe del repartidor el efectivo de un pedido entregado. Queda en el turno abierto del cajero. */
-export async function receiveCourierCash(orderId: string): Promise<ActionResult> {
-  const parsed = z.string().uuid().safeParse(orderId);
+export type HandoffResult = { ok: true; status: "confirmada" | "con_diferencia"; declared: number; counted: number; difference: number } | { ok: false; error: string };
+
+/** Confirma la entrega de efectivo de un repartidor con el monto que el cajero contó (sin ver lo declarado). */
+export async function confirmCashHandoff(input: { id: string; counted: number; note?: string }): Promise<HandoffResult> {
+  const parsed = z.object({ id: z.string().uuid(), counted: money, note: z.string().trim().max(200).optional() }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: firstIssue(parsed.error) };
+  await requireConsoleAccess("caja");
+  const supabase = await serverSupabase();
+  const { data, error } = await supabase.rpc("confirm_cash_handoff", { p_handoff: parsed.data.id, p_counted: parsed.data.counted, ...(parsed.data.note ? { p_note: parsed.data.note } : {}) });
+  if (error) return failure(error) as { ok: false; error: string };
+  refresh();
+  const result = data as { status: "confirmada" | "con_diferencia"; declared: number; counted: number; difference: number };
+  return { ok: true, status: result.status, declared: Number(result.declared), counted: Number(result.counted), difference: Number(result.difference) };
+}
+
+/** «No lo recibí»: la entrega queda rechazada y el efectivo sigue a cargo del repartidor. */
+export async function rejectCashHandoff(id: string, reason: string): Promise<ActionResult> {
+  const parsed = z.object({ id: z.string().uuid(), reason: reasonSchema }).safeParse({ id, reason });
   if (!parsed.success) return invalidInput;
   await requireConsoleAccess("caja");
   const supabase = await serverSupabase();
-  const { error } = await supabase.rpc("receive_courier_cash", { p_order: parsed.data });
+  const { error } = await supabase.rpc("reject_cash_handoff", { p_handoff: parsed.data.id, p_reason: parsed.data.reason });
   if (error) return failure(error);
   refresh();
   return { ok: true };

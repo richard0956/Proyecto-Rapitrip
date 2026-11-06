@@ -6,9 +6,12 @@
  *   errorGrave   Norma 5.2.1    un error que detiene pedidos, pagos o entregas se corrige en 4 horas.
  *   errorLeve    Norma 5.2.2    un error de una función secundaria se corrige en 3 días hábiles.
  *   aviso        Norma 3.3.4    un incidente que expone datos personales se notifica a los afectados en 72 horas.
+ *   reporte      Norma 8.2.1    una inconsistencia del catálogo reportada se revisa en 24 horas.
+ *   correccion   Norma 8.2.2    una inconsistencia confirmada la corrige el comercio en 24 horas.
+ *   medida       Control 8.2.1  ante la reincidencia, la administración decide una medida en 5 días hábiles.
  * Días hábiles: de lunes a viernes, en hora de Managua (UTC−6, sin horario de verano). No descuenta feriados.
  */
-export type SlaKind = "incidencia" | "devolucion" | "eliminacion" | "errorGrave" | "errorLeve" | "aviso";
+export type SlaKind = "incidencia" | "devolucion" | "eliminacion" | "errorGrave" | "errorLeve" | "aviso" | "reporte" | "correccion" | "medida";
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -22,6 +25,9 @@ export const slaRules: Record<SlaKind, { label: string; norm: string } & ({ ms: 
   errorGrave: { label: "4 horas", norm: "Norma 5.2.1", ms: 4 * HOUR },
   errorLeve: { label: "3 días hábiles", norm: "Norma 5.2.2", businessDays: 3 },
   aviso: { label: "72 horas para avisar a los afectados", norm: "Norma 3.3.4", ms: 72 * HOUR },
+  reporte: { label: "24 horas para revisarlo", norm: "Norma 8.2.1", ms: 24 * HOUR },
+  correccion: { label: "24 horas para corregirlo", norm: "Norma 8.2.2", ms: 24 * HOUR },
+  medida: { label: "5 días hábiles para decidir la medida", norm: "Control 8.2.1", businessDays: 5 },
 };
 
 /** Suma días hábiles (lunes a viernes, hora de Managua) conservando la hora del día. */
@@ -70,4 +76,12 @@ export function slaState(kind: SlaKind, from: Date | string, now: Date = new Dat
 
 export function isOverdue(kind: SlaKind, from: Date | string, now: Date = new Date()): boolean {
   return slaDeadline(kind, from).getTime() <= now.getTime();
+}
+
+/** Para plazos con fecha ya calculada (como la liquidación, que depende del convenio de cada comercio). */
+export function dueState(due: Date | string, now: Date = new Date(), warnWithinMs = DAY): SlaState {
+  const deadline = typeof due === "string" ? new Date(due) : due;
+  const left = deadline.getTime() - now.getTime();
+  if (left <= 0) return { tone: "danger", text: `Vencida hace ${span(-left)}`, overdue: true };
+  return { tone: left <= warnWithinMs ? "warning" : "positive", text: `Toca en ${span(left)}`, overdue: false };
 }

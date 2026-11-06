@@ -1,15 +1,16 @@
 import { canManageRole, invitableRoles } from "@rapitrip/supabase";
 import { appRoleSchema } from "@rapitrip/validation";
 import { Alert, cn } from "@rapitrip/ui";
-import { MailPlus, Users } from "lucide-react";
+import { CalendarCheck, MailPlus, Users } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/shell";
 import { first, type SearchParams } from "@/lib/filters";
-import { formatDate, roleLabel } from "@/lib/format";
+import { formatDate, formatDateTime, roleLabel } from "@/lib/format";
 import { requireConsoleAccess } from "@/lib/guard";
 import { personalRoles, platformScope } from "@/lib/staff";
 import { serverSupabase } from "@/lib/supabase";
-import { cancelInvitation, inviteStaff } from "./actions";
+import { AccessReview, type AccessReviewRow, type RoleCount } from "./access-review";
+import { cancelInvitation, inviteStaff, recordAccessReview } from "./actions";
 import { InviteButton } from "./invite-button";
 import { InvitationsList, type InvitationRow } from "./invitations-list";
 import { UsersWorkspace, type StaffRow } from "./users-workspace";
@@ -19,13 +20,17 @@ const DAY_MS = 86_400_000;
 /** Usuarios y roles: las cuentas con rol a todo el ancho y, en su propia pestaña, las invitaciones pendientes. Cada cuenta abre su ficha. */
 export default async function UsuariosPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await requireConsoleAccess("admin");
-  const view = first((await searchParams).vista) === "invitaciones" ? "invitaciones" : "cuentas";
+  const requested = first((await searchParams).vista);
+  const view = requested === "invitaciones" ? "invitaciones" : requested === "revision" ? "revision" : "cuentas";
   const supabase = await serverSupabase();
-  const [accounts, invitations, commerces] = await Promise.all([
+  const [accounts, invitations, commerces, reviewStatus, reviews] = await Promise.all([
     supabase.from("accounts_staff").select("*").order("granted_at", { ascending: false }),
     supabase.from("invitations_list").select("*").eq("status", "pendiente").order("created_at", { ascending: false }),
     supabase.from("commerces_list").select("id, name"),
+    supabase.rpc("access_review_status"),
+    supabase.rpc("access_reviews"),
   ]);
+  if (reviewStatus.error || reviews.error) console.error("[usuarios:revision]", reviewStatus.error?.message, reviews.error?.message);
   const loadFailed = accounts.error || invitations.error;
   if (loadFailed) console.error("[usuarios]", accounts.error?.message, invitations.error?.message);
 
@@ -58,9 +63,24 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Sea
   });
   const inviteRoles = invitableRoles(session.role).map((value) => ({ value, label: roleLabel[value] ?? value }));
 
+  // Norma 1.1.6: estado de la revisión trimestral y cuentas por rol (las de cliente no son del equipo).
+  const status = (reviewStatus.data ?? {}) as { last_at?: string | null; due_at?: string; overdue?: boolean };
+  const reviewOverdue = status.overdue ?? true;
+  const roleCounts: RoleCount[] = [...new Set(rows.map((row) => row.role))].map((role) => ({
+    role: roleLabel[role] ?? role,
+    active: rows.filter((row) => row.role === role && row.status === "activo").length,
+    suspended: rows.filter((row) => row.role === role && row.status === "suspendido").length,
+  }));
+  const reviewRows: AccessReviewRow[] = (reviews.data ?? []).map((row) => {
+    const snapshot = (row.snapshot ?? {}) as Record<string, Record<string, number>>;
+    const active = Object.values(snapshot).reduce((sum, byStatus) => sum + Number(byStatus.activo ?? 0), 0);
+    return { id: row.id, reviewedAt: formatDateTime(row.reviewed_at), reviewer: row.reviewer_name ?? "Administración", findings: row.findings, changes: row.changes, summary: `${active} roles activos` };
+  });
+
   const tabs = [
     { key: "cuentas", label: "Cuentas", count: rows.length, icon: <Users className="size-4" aria-hidden="true" />, href: "/admin/usuarios" },
     { key: "invitaciones", label: "Invitaciones pendientes", count: invitationRows.length, icon: <MailPlus className="size-4" aria-hidden="true" />, href: "/admin/usuarios?vista=invitaciones" },
+    { key: "revision", label: "Revisión de accesos", count: reviewOverdue ? 1 : 0, icon: <CalendarCheck className="size-4" aria-hidden="true" />, href: "/admin/usuarios?vista=revision" },
   ] as const;
 
   return (
@@ -87,13 +107,15 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Sea
             >
               {tab.icon}
               {tab.label}
-              <span className={cn("rounded-full px-2 py-0.5 text-[11.5px] tabular-nums", active ? "bg-white/20" : tab.key === "invitaciones" && tab.count > 0 ? "bg-durazno text-durazno-texto" : "bg-crema text-tinta-suave")}>{tab.count}</span>
+              <span className={cn("rounded-full px-2 py-0.5 text-[11.5px] tabular-nums", active ? "bg-white/20" : tab.key !== "cuentas" && tab.count > 0 ? "bg-durazno text-durazno-texto" : "bg-crema text-tinta-suave")}>{tab.key === "revision" ? (reviewOverdue ? "Toca" : "Al día") : tab.count}</span>
             </Link>
           );
         })}
       </nav>
 
-      {view === "cuentas" ? <UsersWorkspace rows={rows} /> : <InvitationsList invitations={invitationRows} cancel={cancelInvitation} invite={inviteRoles.length > 0 ? <InviteButton roles={inviteRoles} invite={inviteStaff} /> : null} />}
+      {view === "revision" ? (
+        <AccessReview lastAt={status.last_at ? formatDateTime(status.last_at) : null} dueAt={formatDate(status.due_at)} overdue={reviewOverdue} counts={roleCounts} history={reviewRows} record={recordAccessReview} />
+      ) : view === "cuentas" ? <UsersWorkspace rows={rows} /> : <InvitationsList invitations={invitationRows} cancel={cancelInvitation} invite={inviteRoles.length > 0 ? <InviteButton roles={inviteRoles} invite={inviteStaff} /> : null} />}
     </>
   );
 }

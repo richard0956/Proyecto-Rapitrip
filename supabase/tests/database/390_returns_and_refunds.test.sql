@@ -110,9 +110,11 @@ select public.set_order_status(current_setting('t.e')::uuid, 'entregado');
 select public.set_order_status(current_setting('t.p')::uuid, 'entregado');
 select public.register_courier_cash(current_setting('t.b')::uuid);
 select public.register_courier_cash(current_setting('t.e')::uuid);
+select set_config('t.hb', public.start_cash_handoff_for(current_setting('t.courier')::uuid, current_setting('t.s1')::uuid, array[current_setting('t.b')::uuid])::text, true);
 reset role;
+select set_config('t.btot', (select total::text from sales.orders where id = current_setting('t.b')::uuid), true);
 select tests.authenticate_as((select id from tu where k = 'caj'));
-select public.receive_courier_cash(current_setting('t.b')::uuid);
+select public.confirm_cash_handoff(current_setting('t.hb')::uuid, current_setting('t.btot')::numeric);
 reset role;
 
 -- Devoluciones: solo el cliente, con fotos de su carpeta, dentro de 3 días

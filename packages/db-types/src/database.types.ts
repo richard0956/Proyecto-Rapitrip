@@ -18,14 +18,14 @@ export type Database = {
                   ]
                 },"cash_sessions_list": {
                   Row: {
-                    "cash_expected": number | null,"cash_total": number | null,"cashier_id": string | null,"closed_at": string | null,"counted_amount": number | null,"difference": number | null,"expected_amount": number | null,"id": string | null,"note": string | null,"opened_at": string | null,"opening_amount": number | null,"sales_count": number | null,"sales_total": number | null
+                    "cash_expected": number | null,"cash_total": number | null,"cashier_id": string | null,"closed_at": string | null,"counted_amount": number | null,"difference": number | null,"expected_amount": number | null,"id": string | null,"note": string | null,"opened_at": string | null,"opening_amount": number | null,"register_id": string | null,"register_name": string | null,"sales_count": number | null,"sales_total": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "cash_expected"?: never,"cash_total"?: never,"cashier_id"?: string | null,"closed_at"?: string | null,"counted_amount"?: number | null,"difference"?: number | null,"expected_amount"?: number | null,"id"?: string | null,"note"?: string | null,"opened_at"?: string | null,"opening_amount"?: number | null,"sales_count"?: never,"sales_total"?: never
+                           "cash_expected"?: never,"cash_total"?: never,"cashier_id"?: string | null,"closed_at"?: string | null,"counted_amount"?: number | null,"difference"?: number | null,"expected_amount"?: number | null,"id"?: string | null,"note"?: string | null,"opened_at"?: string | null,"opening_amount"?: number | null,"register_id"?: string | null,"register_name"?: never,"sales_count"?: never,"sales_total"?: never
                          }
                         Update: {
-                           "cash_expected"?: never,"cash_total"?: never,"cashier_id"?: string | null,"closed_at"?: string | null,"counted_amount"?: number | null,"difference"?: number | null,"expected_amount"?: number | null,"id"?: string | null,"note"?: string | null,"opened_at"?: string | null,"opening_amount"?: number | null,"sales_count"?: never,"sales_total"?: never
+                           "cash_expected"?: never,"cash_total"?: never,"cashier_id"?: string | null,"closed_at"?: string | null,"counted_amount"?: number | null,"difference"?: number | null,"expected_amount"?: number | null,"id"?: string | null,"note"?: string | null,"opened_at"?: string | null,"opening_amount"?: number | null,"register_id"?: string | null,"register_name"?: never,"sales_count"?: never,"sales_total"?: never
                          }
                         Relationships: [
                     
@@ -96,14 +96,14 @@ export type Database = {
                   ]
                 },"couriers_list": {
                   Row: {
-                    "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"phone": string | null,"push_enabled": boolean | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
+                    "available": boolean | null,"available_since": string | null,"created_at": string | null,"department": string | null,"full_name": string | null,"id": string | null,"latitude": number | null,"location_updated_at": string | null,"longitude": number | null,"phone": string | null,"push_enabled": boolean | null,"status": string | null,"user_id": string | null,"vehicle_class": string | null,"vehicle_type": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"latitude"?: number | null,"location_updated_at"?: string | null,"longitude"?: number | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Update: {
-                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
+                           "available"?: boolean | null,"available_since"?: string | null,"created_at"?: string | null,"department"?: string | null,"full_name"?: string | null,"id"?: string | null,"latitude"?: number | null,"location_updated_at"?: string | null,"longitude"?: number | null,"phone"?: string | null,"push_enabled"?: never,"status"?: string | null,"user_id"?: string | null,"vehicle_class"?: string | null,"vehicle_type"?: string | null
                          }
                         Relationships: [
                     
@@ -578,9 +578,32 @@ export type Database = {
 "cancel_order_offer":
 { Args: { "p_offer": string }; Returns: undefined
                            },
+"cash_accountability_list":
+{ Args: { "p_status"?: string }; Returns: {
+              "amount": number,"created_at": string,"decided_at": string,"decision": string,"decision_note": string,"detail": string,"id": string,"kind": string,"order_number": number,"person_name": string,"register_name": string,"responsible": string,"status": string
+            }[]
+                           },
+"cash_handoffs_history":
+{ Args: { "p_limit"?: number,"p_session"?: string }; Returns: {
+              "cashier_name": string,"counted": number,"courier_name": string,"created_at": string,"declared": number,"difference": number,"expires_at": string,"handoff_id": string,"note": string,"order_numbers": (number)[],"orders_count": number,"register_name": string,"resolved_at": string,"session_id": string,"status": string
+            }[]
+                           },
+"cash_registers_admin":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "active": boolean,"cashier_id": string,"cashier_name": string,"code": string,"last_closed_at": string,"last_counted": number,"name": string,"open_cashier_name": string,"open_session": string,"opened_at": string,"register_id": string
+            }[]
+                           },
 "cash_session_incidents_for":
 { Args: { "p_session": string }; Returns: {
               "commerce_name": string,"detail": string,"kind": string,"order_number": number
+            }[]
+                           },
+"cash_settings":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"cashier_pending_handoffs":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "courier_name": string,"created_at": string,"expires_at": string,"handoff_id": string,"order_numbers": (number)[],"orders_count": number
             }[]
                            },
 "catalog_categories":
@@ -594,6 +617,24 @@ export type Database = {
 "catalog_products":
 { Args: { "p_category"?: string,"p_limit"?: number,"p_offset"?: number,"p_query"?: string,"p_store"?: string }; Returns: {
               "category_id": string,"category_name": string,"cover_path": string,"id": string,"min_price": number,"name": string,"store_id": string,"store_name": string
+            }[]
+                           },
+"catalog_recurrences":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "commerce_id": string,"commerce_name": string,"confirmed": number,"flagged_at": string,"last_measure": string,"last_measure_at": string
+            }[]
+                           },
+"catalog_reports_for_ops":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "commerce_id": string,"commerce_name": string,"corrected_at": string,"correction_note": string,"created_at": string,"description": string,"fix_due_at": string,"id": string,"kind": string,"product_id": string,"product_name": string,"review_note": string,"reviewed_at": string,"source": string,"status": string,"store_name": string
+            }[]
+                           },
+"catalog_review_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"catalog_reviews":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": string,"notes": string,"reviewed_at": string,"reviewer_name": string,"stale": Json
             }[]
                            },
 "catalog_search_products":
@@ -638,6 +679,9 @@ export type Database = {
 "confirm_anonymization":
 { Args: { "p_holder_request"?: boolean,"p_reason": string,"p_user": string }; Returns: undefined
                            },
+"confirm_cash_handoff":
+{ Args: { "p_counted": number,"p_handoff": string,"p_note"?: string }; Returns: Json
+                           },
 "count_stock":
 { Args: { "p_quantity": number,"p_reason": string,"p_variant": string }; Returns: number
                            },
@@ -654,6 +698,9 @@ export type Database = {
                            },
 "courier_cash_code":
 { Args: { "p_order": string }; Returns: string
+                           },
+"courier_cash_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "courier_daily":
 { Args: { "p_courier": string,"p_from": string,"p_to": string }; Returns: {
@@ -711,10 +758,21 @@ export type Database = {
 "courier_set_available":
 { Args: { "p_available": boolean }; Returns: undefined
                            },
+"courier_start_cash_handoff":
+{ Args: { "p_orders"?: (string)[],"p_session": string }; Returns: string
+                           },
 "courier_stats":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "active_orders": number,"avg_minutes": number,"cash_pending": number,"cash_pending_orders": number,"courier_id": string,"deliveries": number,"km": number
             }[]
+                           },
+"couriers_cash_overview":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "blocked": string,"courier_id": string,"custody_orders": number,"custody_total": number,"full_name": string,"has_account": boolean,"oldest_delivered_at": string,"pending_expires_at": string,"pending_handoff": string,"pending_register": string
+            }[]
+                           },
+"create_cash_register":
+{ Args: { "p_cashier"?: string,"p_code": string,"p_name": string }; Returns: string
                            },
 "create_checkout":
 { Args: { "p_address": string,"p_client_ref"?: string,"p_department"?: string,"p_groups": Json,"p_latitude"?: number,"p_longitude"?: number,"p_notes"?: string,"p_payment_method": string,"p_phone": string }; Returns: Json
@@ -748,6 +806,9 @@ export type Database = {
                            },
 "create_variant":
 { Args: { "p_name": string,"p_price": number,"p_product": string,"p_sku": string }; Returns: string
+                           },
+"decide_cash_accountability":
+{ Args: { "p_decision": string,"p_id": string,"p_note": string }; Returns: undefined
                            },
 "decide_return":
 { Args: { "p_decision": string,"p_note": string,"p_request": string }; Returns: undefined
@@ -788,6 +849,14 @@ export type Database = {
 "get_client_detail":
 { Args: { "p_user": string }; Returns: Json
                            },
+"get_invoice":
+{ Args: { "p_invoice": string }; Returns: Json
+                           },
+"invoice_ledger":
+{ Args: { "p_commerce"?: string,"p_from": string,"p_kind"?: string,"p_limit"?: number,"p_method"?: string,"p_to": string }; Returns: {
+              "commerce_id": string,"commerce_name": string,"credit_for_number": string,"id": string,"issued_at": string,"kind": string,"number": string,"order_id": string,"order_number": number,"payment_method": string,"payment_status": string,"total": number
+            }[]
+                           },
 "list_anonymization_candidates":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -821,6 +890,12 @@ export type Database = {
 "lookup_auth_user":
 { Args: { "p_email": string }; Returns: Json
                            },
+"mark_catalog_notice_read":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
+"mark_catalog_report_fixed":
+{ Args: { "p_id": string,"p_note": string }; Returns: undefined
+                           },
 "mark_evidence_purged":
 { Args: { "p_ids": (string)[] }; Returns: number
                            },
@@ -832,6 +907,16 @@ export type Database = {
                            },
 "mark_outbox":
 { Args: { "p_error"?: string,"p_id": string,"p_ok": boolean }; Returns: undefined
+                           },
+"my_cash_registers":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "assigned_to_me": boolean,"code": string,"last_counted": number,"name": string,"register_id": string
+            }[]
+                           },
+"my_catalog_notices":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "created_at": string,"fix_due_at": string,"id": string,"kind": string,"message": string,"read_at": string,"report_id": string,"report_status": string
+            }[]
                            },
 "my_delivery_code":
 { Args: { "p_order": string }; Returns: string
@@ -846,6 +931,9 @@ export type Database = {
               "decided_at": string,"decision_note": string,"payment_method": string,"photo_count": number,"reason": string,"request_id": string,"requested_at": string,"status": string
             }[]
                            },
+"my_settlement_status":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "offer_order_to_courier":
 { Args: { "p_courier": string,"p_order": string }; Returns: string
                            },
@@ -854,11 +942,21 @@ export type Database = {
               "active_orders": number,"courier_id": string,"department": string,"full_name": string,"vehicle_class": string
             }[]
                            },
+"open_cash_points":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "cashier_name": string,"opened_at": string,"register_code": string,"register_name": string,"session_id": string
+            }[]
+                           },
 "open_cash_session":
-{ Args: { "p_opening": number }; Returns: string
+{ Args: { "p_opening": number,"p_register"?: string }; Returns: string
                            },
 "order_distance_km":
 { Args: { "p_order": string }; Returns: number
+                           },
+"order_invoices":
+{ Args: { "p_order": string }; Returns: {
+              "credit_for": string,"id": string,"issued_at": string,"kind": string,"number": string,"total": number
+            }[]
                            },
 "order_pickup_code":
 { Args: { "p_order": string }; Returns: string
@@ -867,6 +965,9 @@ export type Database = {
 { Args: { "p_order": string }; Returns: {
               "dest_latitude": number,"dest_longitude": number,"store_latitude": number,"store_longitude": number,"store_name": string
             }[]
+                           },
+"order_settlement":
+{ Args: { "p_order": string }; Returns: Json
                            },
 "orders_by_status":
 { Args: { "p_from": string,"p_store"?: string,"p_to": string }; Returns: {
@@ -930,8 +1031,22 @@ export type Database = {
 "reclassify_order":
 { Args: { "p_order": string,"p_reason": string }; Returns: undefined
                            },
+"reconciliation_summary":
+{ Args: { "p_month": string }; Returns: Json
+                           },
+"reconciliations":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "corrections": string,"differences": string,"done_at": string,"done_by_name": string,"id": string,"month": string,"totals": Json
+            }[]
+                           },
 "record_access_review":
 { Args: { "p_changes"?: string,"p_findings": string }; Returns: string
+                           },
+"record_catalog_measure":
+{ Args: { "p_commerce": string,"p_measure": string,"p_note"?: string }; Returns: string
+                           },
+"record_catalog_review":
+{ Args: { "p_notes"?: string }; Returns: Json
                            },
 "record_checkout_payment_session":
 { Args: { "p_checkout": string,"p_currency": string,"p_session": string }; Returns: Json
@@ -945,11 +1060,20 @@ export type Database = {
 "record_order_checkout_session":
 { Args: { "p_currency": string,"p_order": string,"p_session": string }; Returns: Json
                            },
+"record_reconciliation":
+{ Args: { "p_corrections"?: string,"p_differences": string,"p_month": string }; Returns: string
+                           },
+"record_settlement":
+{ Args: { "p_commerce": string,"p_reference"?: string }; Returns: Json
+                           },
 "register_courier_cash":
 { Args: { "p_order": string }; Returns: string
                            },
 "register_push_subscription":
 { Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string,"p_user_agent"?: string }; Returns: string
+                           },
+"reject_cash_handoff":
+{ Args: { "p_handoff": string,"p_reason": string }; Returns: undefined
                            },
 "reject_commerce_request":
 { Args: { "p_reason": string,"p_request": string }; Returns: undefined
@@ -976,6 +1100,9 @@ export type Database = {
 { Args: { "p_days"?: number,"p_min"?: number }; Returns: {
               "commerce_id": string,"rejections": number,"store_name": string
             }[]
+                           },
+"report_catalog_issue":
+{ Args: { "p_description": string,"p_kind": string,"p_product": string }; Returns: string
                            },
 "report_incident":
 { Args: { "p_description": string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion" }; Returns: string
@@ -1006,6 +1133,9 @@ export type Database = {
               "decided_at": string,"decision_note": string,"order_number": number,"payment_method": string,"photos": (string)[],"reason": string,"request_id": string,"requested_at": string,"status": string,"store_name": string,"total": number
             }[]
                            },
+"review_catalog_report":
+{ Args: { "p_confirmed": boolean,"p_id": string,"p_note": string }; Returns: undefined
+                           },
 "revoke_courier_account":
 { Args: { "p_courier": string,"p_reason": string }; Returns: undefined
                            },
@@ -1030,6 +1160,12 @@ export type Database = {
                            },
 "set_address_department":
 { Args: { "p_department": string,"p_id": string }; Returns: undefined
+                           },
+"set_cash_settings":
+{ Args: { "p_confirm_minutes": number,"p_max_hold_amount": number,"p_max_hold_hours": number }; Returns: undefined
+                           },
+"set_commerce_agreement":
+{ Args: { "p_commerce": string,"p_commission_pct": number,"p_period_days": number,"p_return_cost_bearer": string }; Returns: undefined
                            },
 "set_commerce_status":
 { Args: { "p_commerce": string,"p_reason": string,"p_status": string }; Returns: undefined
@@ -1100,13 +1236,36 @@ export type Database = {
 "set_variant_status":
 { Args: { "p_status": string,"p_variant": string }; Returns: undefined
                            },
+"settlement_preview":
+{ Args: { "p_commerce": string }; Returns: {
+              "amount": number,"commission": number,"delivered_at": string,"number": number,"order_id": string,"subtotal": number
+            }[]
+                           },
+"settlements_history":
+{ Args: { "p_commerce"?: string }; Returns: {
+              "commerce_id": string,"commerce_name": string,"commission": number,"created_at": string,"gross": number,"id": string,"net": number,"number": number,"orders_count": number,"reference": string,"reversals": number
+            }[]
+                           },
+"settlements_overview":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "commerce_id": string,"commerce_name": string,"commission_pct": number,"due_at": string,"last_settled_at": string,"pending_amount": number,"pending_orders": number,"pending_reversals": number,"period_days": number,"return_cost_bearer": string
+            }[]
+                           },
 "staff_report_incident":
 { Args: { "p_affected"?: string,"p_data_involved"?: string,"p_description": string,"p_occurred_at"?: string,"p_severity": "baja"|"media"|"alta","p_type": "seguridad"|"interrupcion","p_where"?: string }; Returns: string
+                           },
+"stale_catalogs":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "commerce_id": string,"days": number,"last_update": string,"name": string
+            }[]
                            },
 "stalled_orders":
 { Args: Record<PropertyKey, never>; Returns: {
               "id": string,"minutes": number,"number": string,"since": string,"status": string,"store_name": string
             }[]
+                           },
+"start_cash_handoff_for":
+{ Args: { "p_courier": string,"p_orders"?: (string)[],"p_session": string }; Returns: string
                            },
 "store_top_products":
 { Args: { "p_from": string,"p_per_store"?: number,"p_to": string }; Returns: {
@@ -1129,6 +1288,9 @@ export type Database = {
                            },
 "unregister_push_subscription":
 { Args: { "p_endpoint": string }; Returns: undefined
+                           },
+"update_cash_register":
+{ Args: { "p_active": boolean,"p_cashier": string,"p_id": string,"p_name": string }; Returns: undefined
                            },
 "update_courier":
 { Args: { "p_document_path"?: string,"p_full_name": string,"p_id": string,"p_phone": string,"p_vehicle_type": string }; Returns: undefined

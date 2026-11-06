@@ -64,7 +64,7 @@ describe("placeCheckout", () => {
     rpc.mockResolvedValueOnce(placed({ payment_status: "pendiente" }));
     invoke.mockResolvedValueOnce({ data: { url: "https://stripe.test/cs_1" }, error: null });
     const result = await placeCheckout(purchase({ payment_method: "tarjeta" }));
-    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { checkout_id: CHECKOUT } });
+    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { checkout_id: CHECKOUT, theme: "light" } });
     expect(result).toMatchObject({ ok: true, payUrl: "https://stripe.test/cs_1" });
   });
 
@@ -73,7 +73,7 @@ describe("placeCheckout", () => {
     rpc.mockResolvedValueOnce(placed({ payment_status: "no_aplica", orders: [{ order_id: ORDER }] }));
     invoke.mockResolvedValueOnce({ data: { url: "https://stripe.test/cs_2" }, error: null });
     const result = await placeCheckout(purchase({ payment_method: "tarjeta", groups: [{ store_id: A, items: [{ variant_id: V, quantity: 1 }] }] }));
-    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { order_id: ORDER } });
+    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { order_id: ORDER, theme: "light" } });
     expect(result).toMatchObject({ ok: true, payUrl: "https://stripe.test/cs_2" });
   });
 
@@ -195,7 +195,7 @@ describe("startCheckoutPayment / startCardPayment", () => {
   it("abre el pago de toda la compra", async () => {
     invoke.mockResolvedValueOnce({ data: { url: "https://stripe.test/cs_3" }, error: null });
     expect(await startCheckoutPayment(CHECKOUT)).toEqual({ ok: true, url: "https://stripe.test/cs_3" });
-    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { checkout_id: CHECKOUT } });
+    expect(invoke).toHaveBeenCalledWith("stripe-checkout", { body: { checkout_id: CHECKOUT, theme: "light" } });
   });
 
   it("traduce los errores de la función de borde", async () => {

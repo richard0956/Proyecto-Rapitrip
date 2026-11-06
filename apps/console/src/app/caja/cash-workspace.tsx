@@ -8,20 +8,24 @@ import { ReasonDialog } from "@/components/reason-dialog";
 import { SearchableSelect } from "@/components/searchable-select";
 import type { ActionResult } from "@/lib/action-error";
 import { formatMoney } from "@/lib/money";
-import type { CashIncident, CloseResult } from "./actions";
+import type { CashIncident, CloseResult, HandoffResult } from "./actions";
+import { HandoffCard, type Handoff, type HandoffDone } from "./handoff-card";
+
+export type { Handoff, HandoffDone };
 
 export type CatalogRow = { storeId: string; storeName: string; variantId: string; product: string; variant: string; sku: string; price: number; quantity: number | null };
 export type Sale = { id: string; number: number; store: string; voided: boolean; method: "efectivo" | "tarjeta"; total: number; at: string };
-export type Shift = { id: string; openedAt: string; opening: number; closed: boolean; difference: number | null; note: string | null; salesCount: number; salesTotal: number; cashExpected: number };
+export type Shift = { id: string; openedAt: string; opening: number; closed: boolean; difference: number | null; note: string | null; salesCount: number; salesTotal: number; register: string | null };
+export type Register = { id: string; name: string; code: string; mine: boolean; lastCounted: number | null };
 export type CashReturn = { requestId: string; orderNumber: number; store: string; total: number; decidedAt: string };
-export type PendingCash = { orderId: string; orderNumber: number; store: string; total: number; code: string; deliveredAt: string };
 
 type Actions = {
-  openCashSession: (opening: number) => Promise<ActionResult>;
+  openCashSession: (input: { opening: number | null; registerId: string | null }) => Promise<ActionResult>;
   closeCashSession: (input: { counted: number; note?: string }) => Promise<CloseResult>;
   createCounterSale: (input: { store: string; method: "efectivo" | "tarjeta"; reference?: string; items: { variant_id: string; quantity: number }[] }) => Promise<ActionResult>;
   voidCounterSale: (id: string, reason: string) => Promise<ActionResult>;
-  receiveCourierCash: (orderId: string) => Promise<ActionResult>;
+  confirmCashHandoff: (input: { id: string; counted: number; note?: string }) => Promise<HandoffResult>;
+  rejectCashHandoff: (id: string, reason: string) => Promise<ActionResult>;
   returnCashToCustomer: (requestId: string) => Promise<ActionResult>;
   loadCashIncidents: (sessionId: string) => Promise<{ ok: true; incidents: CashIncident[] } | { ok: false; error: string }>;
 };
@@ -33,8 +37,23 @@ const Feedback = ({ message }: { message: Message }) => (message ? <Alert tone={
  * Con el turno abierto: arriba la barra del turno (cifras, «Nueva venta» y «Cerrar caja»); «Nueva venta» se despliega cuando se
  * va a cobrar; debajo, las ventas del turno con filtros y, al lado, lo que entra o sale de caja por repartidores y devoluciones.
  */
-export function CashWorkspace({ shift, history, catalog, sales, pendingCash, pendingReturns, actions }: { shift: Shift | null; history: Shift[]; catalog: CatalogRow[]; sales: Sale[]; pendingCash: PendingCash[]; pendingReturns: CashReturn[]; actions: Actions }) {
-  const [lastClosed, setLastClosed] = useState<CashIncident[] | null>(null);
+type Props = {
+  shift: Shift | null;
+  history: Shift[];
+  catalog: CatalogRow[];
+  sales: Sale[];
+  handoffs: Handoff[];
+  handoffsDone: HandoffDone[];
+  registers: Register[];
+  looseCounted: number | null;
+  pendingReturns: CashReturn[];
+  actions: Actions;
+};
+
+export type ClosedSummary = { expected: number; counted: number; difference: number; incidents: CashIncident[] };
+
+export function CashWorkspace({ shift, history, catalog, sales, handoffs, handoffsDone, registers, looseCounted, pendingReturns, actions }: Props) {
+  const [lastClosed, setLastClosed] = useState<ClosedSummary | null>(null);
   const [selling, setSelling] = useState(false);
   return shift ? (
     <div className="flex flex-col gap-5">
@@ -43,16 +62,17 @@ export function CashWorkspace({ shift, history, catalog, sales, pendingCash, pen
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <SalesCard sales={sales} voidSale={actions.voidCounterSale} />
         <div className="flex flex-col gap-5 xl:sticky xl:top-6">
-          <CourierCashCard pending={pendingCash} receive={actions.receiveCourierCash} />
+          <HandoffCard pending={handoffs} done={handoffsDone} confirm={actions.confirmCashHandoff} reject={actions.rejectCashHandoff} />
           <CashReturnsCard pending={pendingReturns} giveBack={actions.returnCashToCustomer} />
         </div>
       </div>
     </div>
   ) : (
     <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-      <OpenCard open={actions.openCashSession} />
+      <OpenCard open={actions.openCashSession} registers={registers} looseCounted={looseCounted} />
       <div className="flex flex-col gap-5">
-        {lastClosed ? <IncidentsCard incidents={lastClosed} /> : null}
+        {lastClosed ? <ClosedCard summary={lastClosed} /> : null}
+        {lastClosed && lastClosed.incidents.length > 0 ? <IncidentsCard incidents={lastClosed.incidents} /> : null}
         <HistoryCard history={history} />
       </div>
     </div>
@@ -61,47 +81,6 @@ export function CashWorkspace({ shift, history, catalog, sales, pendingCash, pen
 
 /** Contador de pendientes: naranja si hay algo por hacer. */
 const CountBadge = ({ count }: { count: number }) => <span className={cn("rounded-full px-2.5 py-0.5 text-[12px] font-extrabold tabular-nums", count > 0 ? "bg-durazno text-durazno-texto" : "bg-crema text-tinta-suave")}>{count}</span>;
-
-function CourierCashCard({ pending, receive }: { pending: PendingCash[]; receive: Actions["receiveCourierCash"] }) {
-  const router = useRouter();
-  const [message, setMessage] = useState<Message>(null);
-  const [busy, setBusy] = useState<string | null>(null);
-
-  async function accept(orderId: string) {
-    setBusy(orderId);
-    setMessage(null);
-    const result = await receive(orderId);
-    setBusy(null);
-    if (!result.ok) return setMessage({ ok: false, text: result.error });
-    router.refresh();
-  }
-
-  return (
-    <Card className="p-5">
-      <CardHeader title="Efectivo de repartidores" subtitle="Recibe el efectivo físico que entregó cada repartidor." actions={<CountBadge count={pending.length} />} />
-      {pending.length === 0 ? (
-        <p className="text-[13px] text-tinta-suave">No hay efectivo pendiente de recibir.</p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-borde">
-          {pending.map((item) => (
-            <li key={item.orderId} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-              <span className="min-w-0">
-                <span className="block font-bold text-tinta">Pedido {item.orderNumber} · {formatMoney(item.total)}</span>
-                <span className="block truncate text-xs text-tinta-suave">{item.store} · código {item.code} · entregado {item.deliveredAt}</span>
-              </span>
-              <Button variant="secondary" onClick={() => accept(item.orderId)} disabled={busy !== null} className="min-h-9 px-3" aria-label={`Confirmar efectivo del pedido ${item.orderNumber}, ${formatMoney(item.total)}`}>
-                {busy === item.orderId ? "Confirmando…" : "Confirmar Efectivo"}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="mt-3.5">
-        <Feedback message={message} />
-      </div>
-    </Card>
-  );
-}
 
 function CashReturnsCard({ pending, giveBack }: { pending: CashReturn[]; giveBack: Actions["returnCashToCustomer"] }) {
   const router = useRouter();
@@ -180,17 +159,45 @@ function IncidentsCard({ incidents }: { incidents: CashIncident[] }) {
   );
 }
 
-function OpenCard({ open }: { open: Actions["openCashSession"] }) {
+/** Resultado del arqueo: se muestra después de cerrar, porque el cajero cuenta sin ver lo esperado. */
+function ClosedCard({ summary }: { summary: ClosedSummary }) {
+  return (
+    <Card className="p-5">
+      <CardHeader title="Arqueo del último cierre" subtitle={summary.difference === 0 ? "La caja cuadró." : "La diferencia quedó registrada a tu nombre y la revisa administración."} />
+      <dl className="grid grid-cols-3 gap-2.5 text-sm">
+        <div className="rounded-2xl bg-menta px-3 py-2.5">
+          <dt className="text-micro font-bold uppercase text-hoja">Esperado</dt>
+          <dd className="font-extrabold tabular-nums text-tinta">{formatMoney(summary.expected)}</dd>
+        </div>
+        <div className="rounded-2xl bg-menta px-3 py-2.5">
+          <dt className="text-micro font-bold uppercase text-hoja">Contado</dt>
+          <dd className="font-extrabold tabular-nums text-tinta">{formatMoney(summary.counted)}</dd>
+        </div>
+        <div className={cn("rounded-2xl px-3 py-2.5", summary.difference === 0 ? "bg-menta" : "bg-durazno")}>
+          <dt className={cn("text-micro font-bold uppercase", summary.difference === 0 ? "text-hoja" : "text-durazno-texto")}>Diferencia</dt>
+          <dd className="font-extrabold tabular-nums text-tinta">{formatMoney(summary.difference)}</dd>
+        </div>
+      </dl>
+    </Card>
+  );
+}
+
+/** Abrir turno en una caja física. Si la caja ya tuvo cierres, el saldo inicial es lo contado en el último y no se escribe. */
+function OpenCard({ open, registers, looseCounted }: { open: Actions["openCashSession"]; registers: Register[]; looseCounted: number | null }) {
   const router = useRouter();
+  const [registerId, setRegisterId] = useState<string>(registers[0]?.id ?? "");
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState<Message>(null);
   const [pending, start] = useTransition();
+  const register = registers.find((item) => item.id === registerId) ?? null;
+  // Saldo fijo: el del último cierre de la caja o, si la caja es nueva, el último cierre del cajero sin caja.
+  const carried = register ? (register.lastCounted ?? looseCounted) : looseCounted;
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setMessage(null);
     start(async () => {
-      const result = await open(Number(amount));
+      const result = await open({ opening: carried === null ? Number(amount) : null, registerId: register?.id ?? null });
       if (!result.ok) return setMessage({ ok: false, text: result.error });
       router.refresh();
     });
@@ -198,11 +205,32 @@ function OpenCard({ open }: { open: Actions["openCashSession"] }) {
 
   return (
     <Card className="p-5">
-      <CardHeader title="Abrir caja" subtitle="No hay un turno abierto. Cuenta el efectivo con el que empiezas." />
+      <CardHeader title="Abrir caja" subtitle="No hay un turno abierto. Elige tu caja y cuenta el efectivo con el que empiezas." />
       <form onSubmit={submit} className="flex flex-col gap-3.5" noValidate>
-        <Field label="Efectivo inicial en caja" type="number" inputMode="decimal" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        {registers.length > 0 ? (
+          <label className="flex flex-col gap-1.5 text-sm font-bold text-tinta">
+            Caja
+            <select value={registerId} onChange={(e) => setRegisterId(e.target.value)} className="min-h-11 rounded-campo border border-borde-campo bg-papel px-3 text-sm font-semibold text-tinta">
+              {registers.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name} · {item.code}
+                  {item.mine ? " (asignada a ti)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <Alert tone="info">No tienes una caja física disponible. El turno se abrirá sin caja; administración puede registrarlas en Configuración → Cajas.</Alert>
+        )}
+        {carried !== null ? (
+          <p className="rounded-campo bg-menta px-3.5 py-2.5 text-sm text-tinta">
+            Empiezas con <span className="font-extrabold tabular-nums">{formatMoney(carried)}</span>, lo contado en el último cierre{register?.lastCounted != null ? " de esta caja" : ""}.
+          </p>
+        ) : (
+          <Field label="Efectivo inicial en caja" type="number" inputMode="decimal" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        )}
         <Feedback message={message} />
-        <Button variant="primary" type="submit" disabled={pending || amount === ""} className="self-start">
+        <Button variant="primary" type="submit" disabled={pending || (carried === null && amount === "")} className="self-start">
           {pending ? "Abriendo…" : "Abrir caja"}
         </Button>
       </form>
@@ -404,7 +432,7 @@ function SalePanel({ catalog, create, onClose }: { catalog: CatalogRow[]; create
 }
 
 /** Barra del turno abierto: sus cifras y las dos acciones del cajero (vender y cerrar). */
-function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, onClosed }: { shift: Shift; sales: Sale[]; selling: boolean; onToggleSale: () => void; close: Actions["closeCashSession"]; loadIncidents: Actions["loadCashIncidents"]; onClosed: (incidents: CashIncident[]) => void }) {
+function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, onClosed }: { shift: Shift; sales: Sale[]; selling: boolean; onToggleSale: () => void; close: Actions["closeCashSession"]; loadIncidents: Actions["loadCashIncidents"]; onClosed: (summary: ClosedSummary) => void }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [counted, setCounted] = useState("");
@@ -412,6 +440,7 @@ function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, o
   const [message, setMessage] = useState<Message>(null);
   const [pending, start] = useTransition();
   const card = sales.filter((sale) => !sale.voided && sale.method === "tarjeta").reduce((sum, sale) => sum + sale.total, 0);
+  const cash = sales.filter((sale) => !sale.voided && sale.method === "efectivo").reduce((sum, sale) => sum + sale.total, 0);
 
   function dismiss() {
     setOpen(false);
@@ -426,10 +455,12 @@ function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, o
     start(async () => {
       const result = await close({ counted: Number(counted), note });
       if (!result.ok) return setMessage({ ok: false, text: result.error });
+      let incidents: CashIncident[] = [];
       if (result.incidentsCount > 0) {
         const detail = await loadIncidents(shift.id);
-        if (detail.ok) onClosed(detail.incidents);
+        if (detail.ok) incidents = detail.incidents;
       }
+      onClosed({ expected: result.expected, counted: result.counted, difference: result.difference, incidents });
       setOpen(false);
       router.refresh();
     });
@@ -446,7 +477,9 @@ function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, o
           </span>
           <div className="min-w-0">
             <h2 className="text-base font-bold tracking-tight text-tinta">Turno abierto</h2>
-            <p className="truncate text-[12.5px] text-tinta-suave">Desde {shift.openedAt}</p>
+            <p className="truncate text-[12.5px] text-tinta-suave">
+              {shift.register ?? "Sin caja física"} · desde {shift.openedAt}
+            </p>
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -474,13 +507,13 @@ function ShiftBar({ shift, sales, selling, onToggleSale, close, loadIncidents, o
           <dd className="mt-0.5 whitespace-nowrap text-[18px] font-extrabold tabular-nums text-tinta">{formatMoney(card)}</dd>
         </div>
         <div className="rounded-2xl bg-menta px-4 py-3">
-          <dt className="text-micro font-bold uppercase text-hoja">Efectivo esperado</dt>
-          <dd className="mt-0.5 whitespace-nowrap text-[18px] font-extrabold tabular-nums text-tinta">{formatMoney(shift.cashExpected)}</dd>
+          <dt className="text-micro font-bold uppercase text-hoja">En efectivo</dt>
+          <dd className="mt-0.5 whitespace-nowrap text-[18px] font-extrabold tabular-nums text-tinta">{formatMoney(cash)}</dd>
         </div>
       </dl>
       <Dialog open={open} onClose={dismiss} title="Cerrar caja">
         <form onSubmit={submit} className="flex flex-col gap-3.5" noValidate>
-          <p className="text-sm text-tinta-suave">Cuenta el efectivo que hay en caja. Se espera {formatMoney(shift.cashExpected)}.</p>
+          <p className="text-sm text-tinta-suave">Cuenta todo el efectivo de la gaveta y escribe el total. El arqueo es a ciegas: verás lo esperado y la diferencia después de cerrar. Una diferencia queda a tu nombre.</p>
           <Field label="Efectivo contado" type="number" inputMode="decimal" min="0" step="0.01" value={counted} onChange={(e) => setCounted(e.target.value)} />
           <Field label="Nota" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} hint="Obligatoria si hay diferencia o incidencias" />
           <Feedback message={message} />

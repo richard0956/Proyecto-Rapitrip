@@ -1,9 +1,10 @@
 import { getSessionInfo } from "@rapitrip/supabase";
-import { ChevronDown, CircleHelp, FileText, Info, LogIn, Mail, MessageSquareHeart, ShieldCheck, Store } from "lucide-react";
+import { ChevronDown, CircleHelp, FileText, Info, LogIn, Mail, MessageCircle, MessageSquareHeart, ShieldCheck, Store } from "lucide-react";
 import Link from "next/link";
 import { createElement } from "react";
 import { RETURN_WINDOW_DAYS } from "@/lib/returns";
 import { serverSupabase } from "@/lib/supabase";
+import { whatsappLink } from "@/lib/whatsapp";
 import { SectionCard } from "../section-card";
 import { sendFeedback } from "./actions";
 import { FeedbackForm } from "./feedback-form";
@@ -12,6 +13,9 @@ export const metadata = { title: "Ayuda" };
 
 /** Correo de contacto; solo se muestra si está configurado. */
 const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
+
+/** Chat de soporte por WhatsApp; solo se muestra si hay número configurado. */
+const supportLink = whatsappLink(undefined, "Hola, necesito ayuda con Rapitrip.");
 
 /** Preguntas frecuentes: solo lo que la tienda hace hoy, sin plazos ni promesas que el sistema no cumple. */
 const faq = [
@@ -34,6 +38,10 @@ const faq = [
   {
     q: "¿Para qué es el código de entrega?",
     a: "Cuando tu pedido va en camino, en su detalle aparece un código de 4 dígitos. Dáselo al repartidor al recibir: así confirmamos que el pedido llegó a la persona correcta.",
+  },
+  {
+    q: "¿Dónde veo mi factura?",
+    a: "En el detalle de tu pedido, en «Facturas»: ahí descargas en PDF la factura de venta (tus productos) y la de servicio (la entrega). También te las avisamos en el correo del pedido. Son comprobantes internos de Rapitrip, sin validez fiscal. Si el pedido se cancela o se devuelve, aparece una nota de crédito que anula la factura.",
   },
   {
     q: "¿Puedo devolver un producto?",
@@ -98,6 +106,12 @@ export default async function AyudaPage() {
             </li>
           ))}
         </ul>
+        {supportLink ? (
+          <a href={supportLink} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center gap-3 rounded-2xl bg-panel px-4 py-3.5 text-[14px] font-semibold text-white hover:opacity-95 focus-visible:outline-2 focus-visible:outline-hoja">
+            <MessageCircle aria-hidden="true" className="size-4 shrink-0 text-esmeralda" />
+            Escríbenos por WhatsApp
+          </a>
+        ) : null}
         {contactEmail ? (
           <a href={`mailto:${contactEmail}`} className="mt-3 flex items-center gap-3 rounded-2xl bg-panel px-4 py-3.5 text-[14px] font-semibold text-white hover:opacity-95 focus-visible:outline-2 focus-visible:outline-hoja">
             <Mail aria-hidden="true" className="size-4 shrink-0 text-esmeralda" />

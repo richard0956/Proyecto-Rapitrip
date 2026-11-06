@@ -116,11 +116,49 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
             steps: ["En «Catálogo maestro» revisa los más vendidos y el punto de reorden.", "Corrige nombres o la clasificación de un producto, u ocúltalo con motivo."],
             href: "/admin/catalogo",
           },
+          {
+            id: "control-catalogo",
+            title: "Control de catálogos y reincidencias",
+            summary: "Reportes de clientes, revisión semanal y la medida ante comercios que reinciden.",
+            steps: [
+              "En «Control de catálogos», revisa los reportes en 24 horas: confirma o descarta con lo que encontraste.",
+              "Cada semana registra la revisión de catálogos sin actualizar: se avisa a cada comercio.",
+              "En «Reincidencias», decide la medida en 5 días hábiles; queda registrada y se le comunica al comercio.",
+            ],
+            href: "/admin/control-catalogo",
+            tip: "Un comercio reincide con dos inconsistencias confirmadas en 90 días (Control 8.2.1).",
+          },
         ],
       },
       {
         title: "Operación y dinero",
         topics: [
+          {
+            id: "liquidaciones",
+            title: "Liquidaciones y conciliación mensual",
+            summary: "Lo que se le paga a cada comercio, las reversiones por devoluciones y el cierre de cada mes.",
+            steps: [
+              "En «Liquidaciones» fija el convenio de cada comercio: comisión, cada cuántos días (máximo 15) y quién asume las devoluciones.",
+              "Cuando toque, registra la liquidación con la referencia del pago: entran los pedidos entregados y cobrados, menos la comisión y las reversiones pendientes.",
+              "Una devolución aprobada de un pedido ya liquidado genera su reversión, que se descuenta sola en la siguiente liquidación.",
+              "Cada mes, en «Conciliación mensual», revisa las cifras y lo que no cuadra, y registra las diferencias y correcciones.",
+            ],
+            href: "/admin/liquidaciones",
+            tip: "Las liquidaciones y conciliaciones registradas no se modifican: son la evidencia de la Política 9.",
+          },
+          {
+            id: "facturas",
+            title: "Libro de facturas",
+            summary: "Las facturas y notas de crédito que Rapitrip emite por cada pedido, para su registro contable.",
+            steps: [
+              "Cada pedido web genera una factura de venta (los productos) y, si cobra envío, una de servicio. Se emiten cuando el pedido pasa a «por confirmar».",
+              "Al cancelar o rechazar un pedido, o aprobar su devolución, se emite una nota de crédito por cada factura. La original nunca se modifica.",
+              "En «Libro de facturas» filtra por fechas, comercio, método de pago y tipo, revisa lo facturado, lo acreditado y el neto, y descarga el CSV (las notas van en negativo).",
+              "Cada documento tiene su PDF; también aparece en la ficha del pedido.",
+            ],
+            href: "/admin/facturas",
+            tip: "Son comprobantes internos, sin validez fiscal. El comercio solo ve la factura de venta de sus pedidos.",
+          },
           {
             id: "pedidos-admin",
             title: "Pedidos y excepciones",
@@ -181,8 +219,8 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
           {
             id: "abrir",
             title: "Abrir la caja",
-            summary: "Sin turno abierto no se puede vender.",
-            steps: ["Entra a «Caja y venta».", "Cuenta el efectivo con el que empiezas y escríbelo.", "Pulsa «Abrir caja»."],
+            summary: "Sin turno abierto no se puede vender. Cada cajero abre su turno en su propia caja física.",
+            steps: ["Entra a «Caja y venta».", "Elige tu caja: si ya tuvo cierres, empiezas con lo contado en el último; si es nueva, cuenta el efectivo y escríbelo.", "Pulsa «Abrir caja»."],
             href: "/caja",
           },
           {
@@ -201,9 +239,14 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
           {
             id: "repartidores-caja",
             title: "Recibir el efectivo de los repartidores",
-            summary: "Lo que cobraron al entregar llega a tu caja.",
-            steps: ["Revisa «Efectivo de repartidores»: pedido, monto y código.", "Cuenta el dinero que te entrega el repartidor.", "Pulsa «Confirmar Efectivo»: se suma a lo esperado en tu turno."],
+            summary: "El repartidor toca «Efectivo entregado» y su entrega aparece en tu caja con un tiempo límite.",
+            steps: [
+              "En «Efectivo de repartidores» verás quién entrega y de qué pedidos (sin el monto: cuentas a ciegas).",
+              "Cuenta el dinero delante del repartidor, pulsa «Contar y confirmar» y escribe el total. Si no coincide, la diferencia queda a su cargo.",
+              "Si no te dio el efectivo, pulsa «No lo recibí» y explica por qué.",
+            ],
             href: "/caja",
+            tip: "Si no confirmas ni rechazas a tiempo, la entrega vence y queda registrada a tu nombre y al del repartidor.",
           },
           {
             id: "devoluciones-caja",
@@ -215,8 +258,8 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
           {
             id: "cerrar",
             title: "Cerrar la caja",
-            summary: "Al terminar, se cuenta lo que hay y se compara con lo esperado.",
-            steps: ["Pulsa «Cerrar caja».", "Cuenta el efectivo y escríbelo.", "Si no cuadra con lo esperado, la nota es obligatoria: explica la diferencia."],
+            summary: "Al terminar, cuentas la gaveta sin ver lo esperado; el resultado aparece después de cerrar.",
+            steps: ["Confirma o rechaza antes las entregas de repartidores que esperan.", "Pulsa «Cerrar caja», cuenta el efectivo y escríbelo.", "Si hay incidencias, la nota es obligatoria. Una diferencia queda a tu nombre y la revisa administración."],
             href: "/caja",
           },
         ],
@@ -235,6 +278,17 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
       {
         title: "Despacho",
         topics: [
+          {
+            id: "catalogos",
+            title: "Control de catálogos",
+            summary: "Reportes de clientes sobre productos que no coinciden y la revisión semanal.",
+            steps: [
+              "Abre «Control de catálogos» → «Reportes»; revisa cada uno en 24 horas.",
+              "Compara con el comercio y confirma (se le avisa y tiene 24 horas para corregir) o descarta.",
+              "Una vez por semana, en «Revisión semanal», registra la revisión: se avisa a los comercios sin actualizar en más de 2 días.",
+            ],
+            href: "/coordinacion/catalogos",
+          },
           {
             id: "lista",
             title: "La lista de pedidos",
@@ -273,7 +327,7 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
       {
         title: "Seguimiento",
         topics: [
-          { id: "efectivo-coord", title: "Efectivo de repartidores", summary: "Lo que cobraron y aún no entregan en caja.", steps: ["Abre «Efectivo de repartidores».", "Recuérdales rendir lo pendiente en caja."], href: "/coordinacion/efectivo" },
+          { id: "efectivo-coord", title: "Efectivo de repartidores", summary: "Quién tiene efectivo, cada entrega a caja y las faltas registradas.", steps: ["Abre «Efectivo de repartidores».", "Quien pasa el monto o las horas máximas no recibe pedidos en efectivo: recuérdale entregar en caja.", "Para un repartidor sin cuenta, registra su cobro y pulsa «Enviar a caja»."], href: "/coordinacion/efectivo" },
           { id: "resumen-coord", title: "Resumen del día e informe", summary: "Pedidos por etapa, ventas por medio de pago y excepciones.", steps: ["Abre «Resumen».", "Filtra por tienda o repartidor.", "Descarga el informe del día en CSV."], href: "/coordinacion/resumen" },
           reportIncident("coordinacion"),
         ],
@@ -321,6 +375,21 @@ export const helpByArea: Record<ConsoleArea, HelpGuide> = {
             ],
             href: "/comercio/catalogo",
             tip: "Un producto archivado ya no se edita ni vuelve a publicarse.",
+          },
+          {
+            id: "mis-liquidaciones",
+            title: "Tus liquidaciones",
+            summary: "Lo que Rapitrip te paga por tus pedidos entregados y cobrados.",
+            steps: ["Abre «Liquidaciones».", "Arriba ves lo que tienes por cobrar y tu convenio; abajo, cada liquidación recibida con su referencia.", "Si devuelven un pedido ya liquidado, se descuenta en la siguiente liquidación (según tu convenio)."],
+            href: "/comercio/liquidaciones",
+          },
+          {
+            id: "avisos-catalogo",
+            title: "Avisos de Rapitrip sobre tu catálogo",
+            summary: "Inconsistencias que te reportan y catálogos sin actualizar.",
+            steps: ["Los avisos salen arriba en tu inicio y en «Catálogo».", "Si te confirman una inconsistencia, corrígela en 24 horas y pulsa «Ya lo corregí» con lo que cambiaste.", "Actualiza precios y disponibilidad por lo menos una vez al día."],
+            href: "/comercio/catalogo",
+            tip: "Dos inconsistencias confirmadas en 90 días llevan a una medida de la administración.",
           },
           { id: "inventario", title: "Inventario", summary: "Existencias por variante y alertas de reposición.", steps: ["Abre «Inventario».", "Registra el conteo de cada variante cuando cambien tus existencias.", "Revisa las variantes en punto de reorden o agotadas."], href: "/comercio/inventario" },
         ],

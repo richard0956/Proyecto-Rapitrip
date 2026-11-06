@@ -27,6 +27,26 @@ function money(value: unknown): string {
   return Number.isFinite(n) ? `C$ ${n.toFixed(2)}` : "";
 }
 
+type DocRef = { kind: string; number: string };
+const DOC_LABELS: Record<string, string> = {
+  venta: "factura de venta",
+  servicio: "factura de servicio",
+  nota_credito_venta: "nota de crédito de venta",
+  nota_credito_servicio: "nota de crédito de servicio",
+};
+
+/** Documentos que la base de datos agregó al correo (facturas o notas de crédito); ignora lo que no tenga la forma esperada. */
+function docRefs(value: unknown): DocRef[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    const doc = item as Partial<DocRef> | null;
+    return doc && typeof doc.number === "string" && typeof doc.kind === "string" ? [{ kind: doc.kind, number: doc.number }] : [];
+  });
+}
+
+const docLabel = (doc: DocRef) => DOC_LABELS[doc.kind] ?? "documento";
+const FISCAL_NOTE = "Son comprobantes internos de Rapitrip, sin validez fiscal.";
+
 function orderUrl(data: Record<string, unknown>): string {
   const base = String(data.store_url ?? "").replace(/\/$/, "");
   return base && data.order_id ? `${base}/pedidos/${data.order_id}` : "";
@@ -75,23 +95,34 @@ Tu cuenta de la tienda sigue siendo solo para comprar.`;
     case "order_received": {
       const subject = `Recibimos tu pedido ${data.number} en ${data.store_name}`;
       const url = orderUrl(data);
-      const text = `Tu pedido ${data.number} en ${data.store_name} (total ${money(data.total)}) está esperando la confirmación del comercio.${url ? ` Sigue su estado: ${url}` : ""}`;
+      const invoices = docRefs(data.invoices);
+      const invoiceText = invoices.length > 0 ? ` Emitimos ${invoices.map((doc) => `${docLabel(doc)} ${doc.number}`).join(" y ")}${url ? "; las descargas en PDF desde tu pedido" : ""}. ${FISCAL_NOTE}` : "";
+      const text = `Tu pedido ${data.number} en ${data.store_name} (total ${money(data.total)}) está esperando la confirmación del comercio.${url ? ` Sigue su estado: ${url}` : ""}${invoiceText}`;
       const html = layout(subject,
         `<p>Tu pedido <strong>${escapeHtml(data.number)}</strong> en <strong>${escapeHtml(data.store_name)}</strong> `
         + `(total ${escapeHtml(money(data.total))}) está esperando la confirmación del comercio.</p>`
-        + (url ? `<p><a href="${escapeHtml(url)}">Seguir mi pedido</a></p>` : ""));
+        + (url ? `<p><a href="${escapeHtml(url)}">Seguir mi pedido</a></p>` : "")
+        + (invoices.length > 0
+          ? `<p>Emitimos:</p><ul>${invoices.map((doc) => `<li>${escapeHtml(docLabel(doc))} <strong>${escapeHtml(doc.number)}</strong></li>`).join("")}</ul>`
+            + `<p style="color:#666;font-size:13px">${url ? "Puedes descargarlas en PDF desde tu pedido. " : ""}${escapeHtml(FISCAL_NOTE)}</p>`
+          : ""));
       return { subject, html, text };
     }
     case "order_cancelled": {
       const rejected = data.status === "rechazado";
       const subject = `Tu pedido ${data.number} fue ${rejected ? "rechazado" : "cancelado"}`;
       const reason = data.reason ? ` Motivo: ${data.reason}` : "";
-      const text = `Tu pedido ${data.number} en ${data.store_name} fue ${rejected ? "rechazado" : "cancelado"}.${reason}`
+      const notes = docRefs(data.credit_notes);
+      const notesText = notes.length > 0 ? ` Anulamos tus facturas con ${notes.map((doc) => `${docLabel(doc)} ${doc.number}`).join(" y ")}.` : "";
+      const text = `Tu pedido ${data.number} en ${data.store_name} fue ${rejected ? "rechazado" : "cancelado"}.${reason}${notesText}`
         + (data.payment_method === "tarjeta" ? " Si ya habías pagado con tarjeta, el reembolso se procesa automáticamente." : "");
       const html = layout(subject,
         `<p>Tu pedido <strong>${escapeHtml(data.number)}</strong> en <strong>${escapeHtml(data.store_name)}</strong> `
         + `fue ${rejected ? "rechazado" : "cancelado"}.</p>`
         + (data.reason ? `<p>Motivo: ${escapeHtml(data.reason)}</p>` : "")
+        + (notes.length > 0
+          ? `<p>Anulamos tus facturas con:</p><ul>${notes.map((doc) => `<li>${escapeHtml(docLabel(doc))} <strong>${escapeHtml(doc.number)}</strong></li>`).join("")}</ul>`
+          : "")
         + (data.payment_method === "tarjeta" ? `<p>Si ya habías pagado con tarjeta, el reembolso se procesa automáticamente.</p>` : ""));
       return { subject, html, text };
     }

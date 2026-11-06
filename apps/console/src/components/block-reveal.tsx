@@ -55,7 +55,9 @@ export function BlockReveal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const pace = paceFor(usePathname());
   const paceRef = useRef(pace);
-  paceRef.current = pace;
+  useLayoutEffect(() => {
+    paceRef.current = pace;
+  });
 
   // Antes del primer pintado: marca los bloques como pendientes para que no se vea ni un cuadro sin animar.
   useLayoutEffect(() => {

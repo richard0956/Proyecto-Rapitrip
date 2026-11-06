@@ -1,4 +1,4 @@
-import { buildCheckoutParams, buildPurchaseCheckoutParams, StripeError, type Purchase, type stripeRequest } from "../_shared/stripe.ts";
+import { buildCheckoutParams, buildPurchaseCheckoutParams, StripeError, type CheckoutTheme, type Purchase, type stripeRequest } from "../_shared/stripe.ts";
 
 /**
  * Cliente de Supabase reducido a lo que usa esta función (así se puede probar con uno de mentira).
@@ -10,6 +10,8 @@ export type QueryClient = { from(table: string): any; rpc(name: string, args: Re
 export type Deps = {
   storeUrl: string;
   currency: string;
+  /** Tema de la tienda del cliente: la página de pago de Stripe lo sigue (claro por defecto). */
+  theme?: CheckoutTheme;
   /** Con la identidad de quien llama: lee solo lo suyo (RLS). */
   asCaller: QueryClient;
   /** Con la clave de servicio: registra la sesión y fija monto y moneda esperados. */
@@ -62,7 +64,7 @@ export async function payOrder(deps: Deps, orderId: string): Promise<Outcome> {
   const params = buildCheckoutParams(
     { id: order.id, number: order.number, storeName: order.store_name, deliveryFee: order.delivery_fee },
     items.map((i) => ({ productName: i.product_name, variantName: i.variant_name, unitPrice: i.unit_price, quantity: i.quantity })),
-    { currency: deps.currency, storeUrl: deps.storeUrl },
+    { currency: deps.currency, storeUrl: deps.storeUrl, theme: deps.theme },
   );
   const session = await createSession(deps, params);
   if (!session) return { status: 502, body: { error: "no se pudo iniciar el pago" } };
@@ -114,7 +116,7 @@ export async function payPurchase(deps: Deps, checkoutId: string): Promise<Outco
   };
   if (purchase.orders.some((order) => order.items.length === 0)) return { status: 409, body: { error: "un pedido de la compra no tiene productos" } };
 
-  const session = await createSession(deps, buildPurchaseCheckoutParams(purchase, { currency: deps.currency, storeUrl: deps.storeUrl }));
+  const session = await createSession(deps, buildPurchaseCheckoutParams(purchase, { currency: deps.currency, storeUrl: deps.storeUrl, theme: deps.theme }));
   if (!session) return { status: 502, body: { error: "no se pudo iniciar el pago" } };
 
   const { data: recorded, error } = await deps.admin.rpc("record_checkout_payment_session", { p_checkout: checkoutId, p_session: session.id, p_currency: deps.currency });

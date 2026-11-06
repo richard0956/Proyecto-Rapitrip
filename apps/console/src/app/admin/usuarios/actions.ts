@@ -64,3 +64,18 @@ export async function inviteStaff(input: unknown): Promise<ActionResult> {
   revalidatePath("/admin/usuarios");
   return { ok: true, message: "Invitación enviada." };
 }
+
+/** Norma 1.1.6: deja constancia de la revisión trimestral de accesos. La base de datos guarda además la foto de cuentas por rol. */
+export async function recordAccessReview(input: unknown): Promise<ActionResult> {
+  const parsed = z
+    .object({ findings: z.string().trim().min(10, "Describe lo que revisaste (mínimo 10 caracteres).").max(2000), changes: z.string().trim().max(2000).optional() })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa los datos." };
+  await requireConsoleAccess("admin");
+  const supabase = await serverSupabase();
+  const { error } = await supabase.rpc("record_access_review", { p_findings: parsed.data.findings, ...(parsed.data.changes ? { p_changes: parsed.data.changes } : {}) });
+  if (error) return failure(error);
+  revalidatePath("/admin/usuarios");
+  revalidatePath("/admin");
+  return { ok: true };
+}

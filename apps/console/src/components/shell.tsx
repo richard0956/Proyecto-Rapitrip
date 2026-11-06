@@ -16,7 +16,9 @@ export async function Shell({ nav, name, role, children }: { nav: NavSection[]; 
     .filter((section) => section.items.length > 0);
   const photo = await myPhotoUrl();
   return (
-    <div className="min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
+    // `overflow-clip` (no `hidden`: no crea contenedor de scroll y deja funcionar el `sticky` del menú) evita que algo que se
+    // desborde dentro de la pantalla, como una pieza fuera de vista de un gráfico, alargue el scroll con un vacío debajo del contenido.
+    <div className="min-h-dvh overflow-clip lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
       <SessionActivity />
       <Sidebar sections={sections} name={name} photo={photo} roleLabel={role ? (roleLabel[role] ?? role) : ""} sessionMinutes={SESSION_INACTIVITY_MINUTES} signOut={signOut} />
       <div className="relative">

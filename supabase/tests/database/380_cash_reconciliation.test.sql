@@ -99,16 +99,18 @@ select throws_ok(format($$select public.register_courier_cash(%L)$$, current_set
 reset role;
 
 select tests.authenticate_as((select id from tu where k = 'coo'));
-select throws_ok(format($$select public.receive_courier_cash(%L)$$, current_setting('t.oc')), '42501', null::text,
-  'solo el cajero recibe el efectivo físico');
+select set_config('t.h', public.start_cash_handoff_for(current_setting('t.courier')::uuid, current_setting('t.s2')::uuid)::text, true);
+select throws_ok(format($$select public.confirm_cash_handoff(%L, 150)$$, current_setting('t.h')), '42501', null::text,
+  'solo el cajero confirma el efectivo físico');
 reset role;
+select set_config('t.octot', (select total::text from sales.orders where id = current_setting('t.oc')::uuid), true);
 select tests.authenticate_as((select id from tu where k = 'caj'));
-select lives_ok(format($$select public.receive_courier_cash(%L)$$, current_setting('t.oc')), 'el cajero recibe el efectivo del repartidor');
+select lives_ok(format($$select public.confirm_cash_handoff(%L, %s)$$, current_setting('t.h'), current_setting('t.octot')), 'el cajero cuenta y confirma el efectivo del repartidor');
 reset role;
 select is((select cash_received_session::text from sales.orders where id = current_setting('t.oc')::uuid), current_setting('t.s2'),
   'el efectivo recibido queda en el turno abierto del cajero');
 select tests.authenticate_as((select id from tu where k = 'caj'));
-select throws_ok(format($$select public.receive_courier_cash(%L)$$, current_setting('t.oc')), '23505', null::text,
+select throws_ok(format($$select public.confirm_cash_handoff(%L, 150)$$, current_setting('t.h')), '23505', null::text,
   'el mismo efectivo no se recibe dos veces');
 reset role;
 

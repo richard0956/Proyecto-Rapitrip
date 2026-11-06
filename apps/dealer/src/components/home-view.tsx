@@ -1,11 +1,13 @@
 "use client";
 
 import { Alert, Reveal } from "@rapitrip/ui";
-import { BellRing, ChevronRight, PackageSearch } from "lucide-react";
+import { Banknote, BellRing, ChevronRight, PackageSearch } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { friendlyError } from "@/lib/api-error";
+import { parseCashStatus, type CashStatus } from "@/lib/cash";
 import { getSupabase } from "@/lib/client";
+import { formatMoney } from "@/lib/money";
 import { playOfferAlert } from "@/lib/offer-alert";
 import { usePrefs } from "@/lib/prefs";
 import { readPushStatus, type PushStatus } from "@/lib/push-client";
@@ -36,13 +38,17 @@ export function HomeView() {
   const [notice, setNotice] = useState<Notice>(null);
   const [busy, setBusy] = useState<"disponible" | "oferta" | null>(null);
   const [push, setPush] = useState<PushStatus>("cargando");
+  const [cash, setCash] = useState<CashStatus | null>(null);
 
   const load = useCallback(async () => {
-    const [meResult, offersResult, ordersResult] = await Promise.all([
+    const [meResult, offersResult, ordersResult, cashResult] = await Promise.all([
       supabase.from("courier_me").select("*").maybeSingle(),
       supabase.rpc("courier_offers"),
       supabase.rpc("courier_orders"),
+      supabase.rpc("courier_cash_status"),
     ]);
+    // El efectivo es un aviso más: si falla, el resto de la portada sigue.
+    if (!cashResult.error) setCash(parseCashStatus(cashResult.data));
     const failure = meResult.error ?? offersResult.error ?? ordersResult.error;
     if (failure) {
       if (guard(failure)) return;
@@ -156,6 +162,12 @@ export function HomeView() {
               </Reveal>
             ) : null}
 
+            {cash && (cash.total > 0 || cash.pending) ? (
+              <Reveal>
+                <CashStrip cash={cash} />
+              </Reveal>
+            ) : null}
+
             {offer ? <OfferCard key={offer.offer_id} offer={offer} busy={busy === "oferta"} onAccept={() => answer(offer, true)} onReject={(reason) => answer(offer, false, reason)} /> : null}
 
             <Tray>
@@ -187,6 +199,26 @@ export function HomeView() {
         )}
       </div>
     </div>
+  );
+}
+
+/** Efectivo a cargo del repartidor: un acceso directo a «Entregar en caja». Naranja si ya no recibe pedidos en efectivo. */
+function CashStrip({ cash }: { cash: CashStatus }) {
+  const text = cash.pending ? `Esperando que ${cash.pending.register} confirme tu entrega` : cash.block ? "Entrégalo en caja para recibir pedidos en efectivo" : "Entrégalo en caja y toca «Efectivo entregado»";
+  return (
+    <Link
+      href="/efectivo"
+      className="flex items-center gap-3.5 rounded-[1.75rem] bg-superficie p-4 shadow-[0_18px_40px_-30px_rgb(6_54_42/0.45)] ring-1 ring-selva/[0.06] transition-transform duration-500 ease-fluido active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
+    >
+      <span aria-hidden="true" className={cash.block ? "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-durazno text-durazno-texto" : "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-menta text-hoja"}>
+        <Banknote className="size-6" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-bold text-tinta">Llevas {formatMoney(cash.total)} en efectivo</span>
+        <span className="mt-0.5 block text-[12.5px] text-tinta-suave">{text}</span>
+      </span>
+      <ChevronRight aria-hidden="true" className="size-5 shrink-0 text-tinta-suave" />
+    </Link>
   );
 }
 

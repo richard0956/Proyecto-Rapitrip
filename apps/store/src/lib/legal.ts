@@ -216,3 +216,97 @@ export const privacySections: LegalSection[] = [
     body: ["Si cambiamos esta política publicaremos la nueva versión con su fecha. Si el cambio es importante, te lo avisaremos."],
   },
 ];
+
+/** Versión de los términos del comercio afiliado. Se guarda en la solicitud para saber exactamente qué texto aceptó cada negocio. */
+export const MERCHANT_TERMS_VERSION = "2026-11";
+
+/** Compromisos del comercio afiliado. Cada sección cita la política del manual de TI de la que sale. */
+export const merchantTermsSections: LegalSection[] = [
+  {
+    id: "alcance",
+    title: "1. Qué aceptas al enviar la solicitud",
+    body: [
+      "Estos términos regulan cómo trabajará tu negocio como comercio afiliado de Rapitrip. Al marcar la casilla del formulario declaras que los leíste, que los datos que enviaste son verdaderos y que te comprometes a cumplirlos si tu solicitud es aprobada.",
+      "Enviar la solicitud no te afilia: la administración la revisa y puede aprobarla o rechazarla indicando el motivo. La afiliación solo existe con el convenio firmado.",
+    ],
+  },
+  {
+    id: "cuenta",
+    title: "2. Tu cuenta de la consola (Política 2)",
+    body: [],
+    items: [
+      "Si te aprueban, recibes una invitación al correo que indicaste para la consola. Esa cuenta es aparte de tu cuenta de la tienda y no se mezclan.",
+      "La cuenta es propia del negocio y no se comparte entre personas. Cada persona que trabaje por el comercio debe usar su acceso.",
+      "Solo puedes consultar y modificar los productos, pedidos y datos de tu propio negocio; la plataforma te niega el acceso a los de otros comercios.",
+      "Debes cerrar tu sesión al terminar si usas un dispositivo compartido.",
+      "Si el convenio termina o dejas de operar, la administración inhabilita tu cuenta en un plazo máximo de 24 horas, una vez resueltas las liquidaciones pendientes.",
+    ],
+  },
+  {
+    id: "catalogo",
+    title: "3. Catálogo, precios e inventario (Política 8)",
+    items: [
+      "Publicas cada producto con nombre, descripción, precio y disponibilidad, y respondes por la calidad, la legalidad y la veracidad de lo que ofreces.",
+      "Los precios y las descripciones deben corresponder a lo que realmente vendes. Cobras al cliente el mismo precio publicado al momento del pedido.",
+      "Marcas como no disponible todo producto agotado, antes de que un cliente pueda elegirlo, y actualizas la disponibilidad al menos una vez al día.",
+      "Retiras del catálogo, o marcas como no disponible, los productos que dejes de ofrecer en un máximo de 24 horas.",
+      "Si un cliente reporta una inconsistencia y se confirma, tienes 24 horas adicionales para corregirla. La reincidencia se reporta a la administración, que decide la medida que corresponde en un máximo de 5 días hábiles.",
+    ],
+    body: [],
+  },
+  {
+    id: "pedidos",
+    title: "4. Pedidos (Política 6)",
+    items: [
+      "Confirmas la disponibilidad de cada pedido en un máximo de 15 minutos desde que lo recibes.",
+      "Si no puedes completar un pedido como se pidió, lo comunicas con el motivo antes de empezar a prepararlo. El equipo de ventas decide con el cliente si se cancela, se modifica o se sustituye.",
+      "Actualizas el estado del pedido en cada etapa de su preparación, hasta que queda listo para el repartidor. Un pedido sin cambios por más de 30 minutos lo revisa el equipo de ventas y te contacta.",
+    ],
+    body: [],
+  },
+  {
+    id: "entrega",
+    title: "5. Entrega al repartidor (Política 7)",
+    items: [
+      "Entregas al repartidor los productos que corresponden al pedido. Desde ese momento el pedido queda bajo custodia del repartidor hasta la entrega o una devolución autorizada.",
+      "Cualquier incidencia entre la recogida y la entrega se reporta por la plataforma y la resuelve el equipo de Rapitrip.",
+    ],
+    body: [],
+  },
+  {
+    id: "pagos",
+    title: "6. Cobros, liquidaciones y devoluciones (Política 9)",
+    items: [
+      "Rapitrip registra cada liquidación a tu comercio con el pedido, el monto y la fecha, con la periodicidad de tu convenio, que nunca excede 15 días.",
+      "Una liquidación puede adelantarse antes de que el cliente confirme la recepción. Si se acepta una devolución sobre un pedido ya liquidado, se genera una reversión por el monto correspondiente.",
+      "La reversión se descuenta de tu siguiente liquidación pendiente, sin exigirte devolver el dinero de inmediato. En tu convenio se define quién asume el costo de la devolución según su causa.",
+      "Rapitrip no guarda los datos de tarjeta de los clientes.",
+    ],
+    body: [],
+  },
+  {
+    id: "datos",
+    title: "7. Datos de clientes (Políticas 1 y 3)",
+    items: [
+      "Solo ves el nombre, la dirección de entrega y el contenido de los pedidos de tu comercio. No ves datos de pago ni el historial de compras de otros comercios.",
+      "No puedes copiar, exportar, fotografiar ni guardar fuera de la plataforma datos de clientes que no correspondan a un pedido activo con tu comercio.",
+      "Los datos del cliente se usan solo para cumplir el pedido, nunca para publicidad propia ni para compartir con terceros.",
+    ],
+    body: [],
+  },
+  {
+    id: "incidentes",
+    title: "8. Incidentes de seguridad (Política 1)",
+    body: [
+      "Si pierdes un dispositivo, sospechas que alguien entró a tu cuenta o recibes mensajes que parecen suplantar a Rapitrip, debes avisar de inmediato a la administración por «Ayuda». La administración puede cambiar tus credenciales y cerrar tus sesiones para contener el incidente. Rapitrip nunca te pedirá tu contraseña.",
+    ],
+  },
+  {
+    id: "incumplimiento",
+    title: "9. Incumplimiento y cierre",
+    body: [
+      "Si incumples estos términos o el convenio, la administración puede advertirte, suspender tu comercio o dar de baja tu cuenta. Puedes pedir la baja cuando quieras; se resuelven antes las liquidaciones y los pedidos pendientes.",
+      "Los cambios a estos términos se publican en esta página con una nueva versión; se te pedirá aceptarla cuando corresponda. Cada solicitud guarda la versión y la fecha en que la aceptaste.",
+    ],
+  },
+];

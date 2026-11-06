@@ -371,3 +371,19 @@ Todo lo que hace el repartidor desde su teléfono se ve y se gestiona desde las 
 **Comercio:** con el pedido **listo**, el **código de recogida** (`order_pickup_code`) para mostrárselo al repartidor; ya recogido, la **foto de recogida**. El comercio no ve la de entrega (muestra el domicilio del cliente).
 
 **Pruebas:** 222 en la consola y 169 en la tienda (Vitest). La compilación de la consola atrapó un error que los tipos no ven (un archivo de acciones del servidor solo puede exportar funciones): el esquema de las reglas vive en `lib/evidence-settings.ts`.
+
+## 20. Facturas de Rapitrip (migraciones 94 y 95)
+
+Registro contable propio, **sin validez fiscal** (cada documento lo dice). Diseño: `docs/informe/2026-11-05-facturacion-design.md`.
+
+**Base de datos:** `sales.invoices` (libro inmutable: un trigger rechaza `update`, `delete` y `truncate`), `sales.document_counters` (numeración consecutiva sin huecos: `RT-V-`, `RT-S-`, `RT-NCV-`, `RT-NCS-`) y `sales.invoice_buyers` (nombre y correo del comprador, aparte para borrarlos al anonimizar la cuenta sin tocar el documento ni su `sha256`).
+- **Emisión:** un *constraint trigger* diferido sobre `sales.order_events` (al final de la transacción, cuando `create_checkout` ya fijó el envío). Al pasar un pedido **web** a «por_confirmar» emite la factura de venta (`subtotal`) y, si `delivery_fee > 0`, la de servicio. Idempotente. Las ventas de mostrador no se facturan.
+- **Notas de crédito:** al cancelar o rechazar un pedido ya facturado y al aprobar una devolución (`return_requests`); una por factura, por su total.
+- **Lectura:** `order_invoices(pedido)`, `get_invoice(id)` e `invoice_ledger(desde, hasta, comercio, método, tipo, límite)`. Cliente: lo suyo; comercio: solo venta y sus notas, sin datos del comprador ni referencia de pago; administración: todo.
+- **Correo (migración 95):** los correos «pedido recibido» y «pedido cancelado» llevan los números de las facturas y de las notas.
+
+**Función de borde `invoice-pdf`:** `POST {invoice_id}` con la sesión de quien pide; llama a `get_invoice` y arma el PDF con `pdf-lib` (`_shared/invoice_pdf.ts`). En pagos con tarjeta agrega el enlace al recibo de Stripe si se puede consultar.
+
+**Tienda:** tarjeta «Facturas» en `/pedidos/[id]` y descarga en `/pedidos/[id]/facturas/[factura]`. **Consola:** tarjeta en el pedido del comercio, ficha de pedido y **Libro de facturas** (`/admin/facturas`, con CSV en `/admin/facturas/exportar`) en administración; PDF en `/facturas/[factura]`.
+
+**Pruebas:** `690_invoices.test.sql` (36), `700_invoice_emails.test.sql` (7), `invoice_pdf_test.ts` y plantillas (Deno), y las de la tienda y la consola.

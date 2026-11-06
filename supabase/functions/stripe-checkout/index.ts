@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { stripeRequest } from "../_shared/stripe.ts";
+import { asCheckoutTheme, stripeRequest } from "../_shared/stripe.ts";
 import { payOrder, payPurchase, type Deps } from "./handler.ts";
 
 const storeUrl = (Deno.env.get("STORE_URL") ?? "").replace(/\/$/, "");
@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
   const deps: Deps = {
     storeUrl,
     currency: (Deno.env.get("PAYMENT_CURRENCY") ?? "nio").toLowerCase(),
+    theme: asCheckoutTheme(body?.theme),
     asCaller: createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authorization } }, auth: { persistSession: false } }),
     admin: createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } }),
     stripe: stripeRequest,

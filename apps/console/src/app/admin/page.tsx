@@ -1,5 +1,5 @@
 import { Alert, Card, CardHeader, DataTable, DonutChart, EmptyState, HBarList, KpiCard, LineChart, buttonStyles } from "@rapitrip/ui";
-import { Ban, Banknote, FileText, Mail, PackageCheck, ShieldCheck, Timer, TriangleAlert } from "lucide-react";
+import { Ban, Banknote, CalendarCheck, FileText, Mail, PackageCheck, ShieldCheck, Timer, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { AttentionRow } from "@/components/attention-row";
 import { FilterChips } from "@/components/filter-chips";
@@ -54,7 +54,9 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
     supabase.rpc("stalled_orders"),
   ]);
   // Plazos del manual de políticas de TI que ya vencieron (las eliminaciones las atiende solo la dirección).
-  const overdueSla = await overdueSummary(supabase, { includeDeletions: session.role === "superadmin" });
+  const [overdueSla, reviewStatus] = await Promise.all([overdueSummary(supabase, { includeDeletions: session.role === "superadmin" }), supabase.rpc("access_review_status")]);
+  // Norma 1.1.6: la revisión trimestral de accesos.
+  const reviewOverdue = Boolean((reviewStatus.data as { overdue?: boolean } | null)?.overdue);
   const queryErrors = [stores, current, previous, byStatus, byStore, overdue, rejections, pending, storeOwners, commerceNames, stalled].flatMap((result) => (result.error ? [result.error.message] : []));
   if (queryErrors.length > 0) console.error("[inicio:cifras]", queryErrors.join(" | "));
   const failed = queryErrors.length > 0 || [requests, invitations, incidents, commerces].some((value) => value === null);
@@ -106,6 +108,14 @@ export default async function AdminHome({ searchParams }: { searchParams: Search
     overdueSla.devoluciones ? { href: "/admin/devoluciones", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.devoluciones, "devolución pasó", "devoluciones pasaron")} los 3 días hábiles para decidir` } : null,
     overdueSla.eliminaciones ? { href: "/admin/datos-personales", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.eliminaciones, "solicitud de eliminación pasó", "solicitudes de eliminación pasaron")} los 30 días` } : null,
     overdueSla.incidentes ? { href: "/admin/incidentes", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.incidentes, "falla del sistema pasó", "fallas del sistema pasaron")} su plazo de corrección` } : null,
+    overdueSla.avisos ? { href: "/admin/incidentes", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.avisos, "incidente de seguridad lleva", "incidentes de seguridad llevan")} más de 72 horas sin aviso a los afectados` } : null,
+    overdueSla.liquidaciones ? { href: "/admin/liquidaciones", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.liquidaciones, "comercio pasó", "comercios pasaron")} el plazo de su liquidación` } : null,
+    overdueSla.efectivo ? { href: "/admin/efectivo", icon: <Banknote className="size-[18px]" />, text: overdueSla.efectivoVencidas ? `${plural(overdueSla.efectivoVencidas, "falta de efectivo pasó", "faltas de efectivo pasaron")} los 5 días hábiles sin medida` : `${plural(overdueSla.efectivo, "falta de efectivo espera", "faltas de efectivo esperan")} una medida` } : null,
+    overdueSla.conciliacion ? { href: `/admin/liquidaciones?vista=conciliacion&mes=${overdueSla.conciliacion}`, icon: <CalendarCheck className="size-[18px]" />, text: "Falta la conciliación del mes anterior" } : null,
+    overdueSla.reportes ? { href: "/admin/control-catalogo", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.reportes, "reporte de catálogo lleva", "reportes de catálogo llevan")} más de 24 horas sin revisar` } : null,
+    overdueSla.medidas ? { href: "/admin/control-catalogo", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.medidas, "comercio reincidente espera", "comercios reincidentes esperan")} una medida hace más de 5 días hábiles` } : null,
+    overdueSla.revisionCatalogo ? { href: "/admin/control-catalogo", icon: <CalendarCheck className="size-[18px]" />, text: "Toca la revisión semanal de catálogos" } : null,
+    reviewOverdue ? { href: "/admin/usuarios?vista=revision", icon: <CalendarCheck className="size-[18px]" />, text: "Toca la revisión trimestral de accesos" } : null,
     overdueSla.incidencias ? { href: "/coordinacion", icon: <Timer className="size-[18px]" />, text: `${plural(overdueSla.incidencias, "aviso de repartidor lleva", "avisos de repartidores llevan")} más de 30 minutos sin resolver` } : null,
   ].filter((item) => item !== null);
 

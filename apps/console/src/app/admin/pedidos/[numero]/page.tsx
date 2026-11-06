@@ -1,9 +1,11 @@
 import { Alert, Badge, Card, buttonStyles, cn } from "@rapitrip/ui";
-import { ArrowLeft, Banknote, ClipboardList, History, MapPin, Package, Phone, ShieldAlert, Store, StickyNote, Truck, UserRound } from "lucide-react";
+import { ArrowLeft, Banknote, ClipboardList, FileText, History, MapPin, Package, Phone, ShieldAlert, Store, StickyNote, Truck, UserRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { InvoicesList } from "@/components/invoices-list";
 import { requireConsoleAccess } from "@/lib/guard";
+import { sortInvoices } from "@/lib/invoices";
 import { formatMoney } from "@/lib/money";
 import { orderStatusLabel, orderStatusTone, orderStatuses, paymentLabel, type OrderStatus } from "@/lib/orders";
 import { formatStoreDateTime } from "@/lib/stores";
@@ -30,14 +32,21 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ nu
   if (!order.error && (!row?.id || !status)) notFound();
 
   const id = row?.id ?? "";
-  const [delivery, items, courier, cashier] = row?.id
+  const [delivery, items, courier, cashier, settlement] = row?.id
     ? await Promise.all([
         supabase.from("order_delivery_list").select("address, phone, notes").eq("order_id", id).maybeSingle(),
         supabase.from("order_items_list").select("product_name, variant_name, quantity, line_total").eq("order_id", id),
         row.courier_id ? supabase.from("couriers_list").select("full_name, phone").eq("id", row.courier_id).maybeSingle() : Promise.resolve({ data: null, error: null }),
         row.cashier_id ? supabase.from("accounts_staff").select("full_name").eq("user_id", row.cashier_id).eq("role", "cajero").maybeSingle() : Promise.resolve({ data: null, error: null }),
+        // Norma 9.1.4: el neto del pedido a partir del cobro, la liquidación y la reversión.
+        supabase.rpc("order_settlement", { p_order: id }),
       ])
-    : [{ data: null, error: null }, { data: [], error: null }, { data: null, error: null }, { data: null, error: null }];
+    : [{ data: null, error: null }, { data: [], error: null }, { data: null, error: null }, { data: null, error: null }, { data: null, error: null }];
+  const money = (settlement.data ?? null) as { charged?: number; subtotal?: number; delivery_fee?: number; settled?: number | null; commission?: number | null; settlement_number?: number | null; settled_at?: string | null; reversed?: number | null; net_to_commerce?: number } | null;
+  // Facturas y notas de crédito del pedido (las ventas de mostrador no se facturan).
+  const invoiceRows = row?.id && row.channel !== "mostrador" ? await supabase.rpc("order_invoices", { p_order: row.id }) : { data: [], error: null };
+  if (invoiceRows.error) console.error("[admin:pedido:facturas]", invoiceRows.error.message);
+  const invoices = sortInvoices(invoiceRows.data ?? []).map((invoice) => ({ id: invoice.id, kind: invoice.kind, number: invoice.number, issuedLabel: formatStoreDateTime(invoice.issued_at), totalLabel: formatMoney(Number(invoice.total)) }));
   const failed = order.error || delivery.error || items.error || courier.error || cashier.error;
   if (failed) console.error("[admin:pedido]", delivery.error?.message, items.error?.message, courier.error?.message, cashier.error?.message);
 
@@ -166,7 +175,35 @@ export default async function PedidoAdminPage({ params }: { params: Promise<{ nu
                 <Heading icon={<Banknote className="size-[18px]" />} tone="lavanda" title="Pago" />
                 <p className="text-sm font-bold text-tinta">{paymentLabel(row.payment_method, row.payment_status)}</p>
                 <p className="mt-1 text-[12.5px] text-tinta-suave">{row.payment_method === "efectivo" ? "Se cobra al entregar o en caja." : "Cobro con tarjeta por la pasarela de pago."}</p>
+                {money && !isCounter ? (
+                  <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 border-t border-borde pt-3 text-[12.5px]">
+                    <dt className="text-tinta-suave">Cobrado al cliente</dt>
+                    <dd className="text-right font-semibold tabular-nums text-tinta">{formatMoney(money.charged ?? 0)}</dd>
+                    <dt className="text-tinta-suave">{money.settlement_number ? `Liquidado (N.° ${money.settlement_number})` : "Liquidado al comercio"}</dt>
+                    <dd className="text-right font-semibold tabular-nums text-tinta">{money.settled === null || money.settled === undefined ? "Pendiente" : formatMoney(money.settled)}</dd>
+                    {money.reversed !== null && money.reversed !== undefined ? (
+                      <>
+                        <dt className="text-tinta-suave">Reversión por devolución</dt>
+                        <dd className="text-right font-semibold tabular-nums text-tinta">−{formatMoney(money.reversed)}</dd>
+                      </>
+                    ) : null}
+                    <dt className="font-bold text-tinta">Neto para el comercio</dt>
+                    <dd className="text-right font-bold tabular-nums text-tinta">{formatMoney(money.net_to_commerce ?? 0)}</dd>
+                  </dl>
+                ) : null}
               </Card>
+              {!isCounter ? (
+                <Card className="p-5">
+                  <Heading icon={<FileText className="size-[18px]" />} tone="menta" title="Facturas" subtitle="Comprobantes internos de Rapitrip, sin validez fiscal." />
+                  {invoiceRows.error ? (
+                    <p className="text-[13px] text-tinta-suave">No pudimos cargar las facturas.</p>
+                  ) : invoices.length > 0 ? (
+                    <InvoicesList invoices={invoices} />
+                  ) : (
+                    <p className="text-[13px] text-tinta-suave">Todavía no hay facturas: se emiten cuando el pedido pasa a «por confirmar».</p>
+                  )}
+                </Card>
+              ) : null}
               {canCancel ? (
                 <Card className="p-5">
                   <Heading icon={<ClipboardList className="size-[18px]" />} tone="durazno" title="Acciones" subtitle="Solo como excepción: el pedido queda cancelado con su motivo." />

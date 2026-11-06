@@ -269,13 +269,17 @@ export function OrderView({ id }: { id: string }) {
             <CardHeader title="Entrega registrada" subtitle="Gracias. Quedó guardada con foto, código y hora." />
             {cashCode ? (
               <div className="flex flex-col gap-2 rounded-panel bg-menta p-4 text-center">
-                <p className="text-xs font-bold text-hoja">Código de efectivo para el cajero</p>
+                <p className="text-xs font-bold text-hoja">Código de cobro</p>
                 <p className="font-mono text-3xl font-extrabold tracking-widest text-tinta">{cashCode}</p>
                 <Button variant="secondary" className="min-h-12" onClick={copyCode}>
                   <Copy className="size-4" aria-hidden="true" />
                   {copied ? "Copiado" : "Copiar código"}
                 </Button>
-                <p className="text-xs text-tinta-suave">Lleva el efectivo ({formatMoney(cashTotal)}) a la caja y entrega este código.</p>
+                <p className="text-xs text-tinta-suave">El efectivo ({formatMoney(cashTotal)}) queda a tu cargo hasta que un cajero lo cuente y lo confirme.</p>
+                <Link href="/efectivo" className={cn(buttonStyles({ variant: "primary" }), "min-h-12")}>
+                  <Banknote className="size-4" aria-hidden="true" />
+                  Entregar en caja
+                </Link>
               </div>
             ) : null}
           </Card>

@@ -1,0 +1,47 @@
+name: deploy-supabase
+
+# Despliega la base de datos (migraciones) y las Edge Functions de producción cuando el CI de `main` termina en verde.
+# Las apps (tienda, consola y repartidor) no pasan por aquí: las despliega Vercel desde el repositorio. Ver docs/despliegue.md.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-supabase
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Con `workflow_run` solo se despliega si el CI salió bien; el disparo manual siempre corre.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: zhbupsxupwrlsklrbdvd
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # El commit que pasó el CI, no el último de `main`.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Enlazar con producción
+        run: supabase link --project-ref "$PROJECT_REF"
+
+      - name: Migraciones pendientes (vista previa)
+        run: supabase db push --dry-run
+
+      - name: Aplicar migraciones
+        run: supabase db push
+
+      - name: Desplegar Edge Functions
+        run: supabase functions deploy --project-ref "$PROJECT_REF"

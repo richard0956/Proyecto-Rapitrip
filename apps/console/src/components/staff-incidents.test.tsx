@@ -55,7 +55,7 @@ describe("StaffIncidents", () => {
   });
 
   it("las pantallas de cada rol salen de su menú, sin la propia de reportes", () => {
-    expect(placesFor("comercio")).toEqual(["Inicio", "Pedidos", "Mis tiendas", "Catálogo", "Inventario", "Mi cuenta", "Inicio de sesión", "Otra pantalla"]);
+    expect(placesFor("comercio")).toEqual(["Inicio", "Pedidos", "Mis tiendas", "Catálogo", "Inventario", "Liquidaciones", "Mi cuenta", "Inicio de sesión", "Otra pantalla"]);
     expect(placesFor("caja")).not.toContain("Reportar incidente");
   });
 });

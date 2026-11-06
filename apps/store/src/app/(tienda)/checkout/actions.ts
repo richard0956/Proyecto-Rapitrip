@@ -1,10 +1,12 @@
 "use server";
 
 import { failure, isSessionExpired } from "@rapitrip/supabase";
+import { cookies } from "next/headers";
 import { deliveryGroupQuoteSchema, purchaseSchema } from "@rapitrip/validation";
 import { z } from "zod";
 import type { GroupQuote } from "@/lib/delivery-class";
 import { departmentOfPoint } from "@/lib/department";
+import { THEME_COOKIE } from "@/lib/theme";
 import { expiredMessage } from "@/lib/result";
 import { requireCustomer } from "@/lib/session";
 import { serverSupabase } from "@/lib/supabase";
@@ -14,12 +16,21 @@ const extras = z.object({
   save_address_as: z.string().trim().min(1).max(40).nullable().optional(),
 });
 
+/** El tema que el cliente está viendo, para que la página de pago de Stripe lo siga. Sin cookie (o fuera de una petición), claro. */
+async function checkoutTheme(): Promise<"light" | "dark"> {
+  try {
+    return (await cookies()).get(THEME_COOKIE)?.value === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
 /** Inicia el pago con tarjeta de un pedido propio. Lo usan el checkout y la pantalla del pedido (reintento). */
 export async function startCardPayment(orderId: string): Promise<{ ok: true; url: string } | { ok: false; error: string; expired?: boolean }> {
   if (!z.string().uuid().safeParse(orderId).success) return { ok: false, error: "Pedido inválido." };
   await requireCustomer(`/pedidos/${orderId}`);
   const supabase = await serverSupabase();
-  const { data, error } = await supabase.functions.invoke("stripe-checkout", { body: { order_id: orderId } });
+  const { data, error } = await supabase.functions.invoke("stripe-checkout", { body: { order_id: orderId, theme: await checkoutTheme() } });
   if (error || !data?.url) {
     let message = "No pudimos iniciar el pago. Inténtalo de nuevo desde tu pedido.";
     // La función responde con mensajes pensados para el cliente cuando el pedido ya no espera pago.
@@ -41,7 +52,7 @@ export async function startCheckoutPayment(checkoutId: string): Promise<{ ok: tr
   if (!z.string().uuid().safeParse(checkoutId).success) return { ok: false, error: "Compra inválida." };
   await requireCustomer(`/compras/${checkoutId}`);
   const supabase = await serverSupabase();
-  const { data, error } = await supabase.functions.invoke("stripe-checkout", { body: { checkout_id: checkoutId } });
+  const { data, error } = await supabase.functions.invoke("stripe-checkout", { body: { checkout_id: checkoutId, theme: await checkoutTheme() } });
   if (error || !data?.url) {
     let message = "No pudimos iniciar el pago. Inténtalo de nuevo desde tu compra.";
     const context = (error as { context?: Response } | null)?.context;

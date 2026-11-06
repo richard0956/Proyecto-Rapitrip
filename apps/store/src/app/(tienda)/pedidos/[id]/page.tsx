@@ -7,6 +7,7 @@ import { notFound, redirect } from "next/navigation";
 import { isUuid } from "@/lib/catalog";
 import { withinReturnWindow, type ReturnStatus } from "@/lib/returns";
 import { classLabel, etaText } from "@/lib/delivery-class";
+import { sortInvoices } from "@/lib/invoices";
 import { formatMoney } from "@/lib/money";
 import { awaitingPaymentConfirmation, customerCanCancel, isFinalStatus, isOrderStatus, orderStatusHint, orderStatusLabel, orderStatusTone, progressIndex, remainingText } from "@/lib/orders";
 import { requireCustomer } from "@/lib/session";
@@ -16,6 +17,7 @@ import { cancelOrder, requestReturn } from "../actions";
 import { AutoRefresh } from "./auto-refresh";
 import { DeliveryCodeCard } from "./delivery-code-card";
 import { DeliveryProof, type DeliveryProofData } from "./delivery-proof";
+import { InvoicesCard } from "./invoices-card";
 import { OrderActions } from "./order-actions";
 import { OrderProgress } from "./order-progress";
 import { ReturnForm } from "./return-form";
@@ -52,6 +54,16 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
 
   const { data: returnRows } = await supabase.rpc("my_return_request", { p_order: id });
   const returnRequest = returnRows?.[0] ?? null;
+
+  // Facturas y notas de crédito que Rapitrip emitió para este pedido (existen desde que pasa a «por confirmar»).
+  const { data: invoiceRows } = await supabase.rpc("order_invoices", { p_order: id });
+  const invoices = sortInvoices(invoiceRows ?? []).map((row) => ({
+    id: row.id,
+    kind: row.kind,
+    number: row.number,
+    issuedLabel: fecha.format(new Date(row.issued_at)),
+    totalLabel: formatMoney(row.total),
+  }));
 
   // En camino, el cliente ve el código que le dirá al repartidor; ya entregado, ve la foto de su entrega (se conserva 3 meses).
   const { data: deliveryCode } = status === "en_camino" ? await supabase.rpc("my_delivery_code", { p_order: id }) : { data: null };
@@ -149,6 +161,8 @@ export default async function PedidoPage({ params, searchParams }: { params: Pro
               Pago: {order.payment_method === "tarjeta" ? "tarjeta" : "efectivo contra entrega"} · {order.payment_status === "pagado" ? "pagado" : order.payment_status === "fallido" ? "fallido" : "pendiente"}
             </p>
           </Card>
+
+          <InvoicesCard orderId={order.id!} invoices={invoices} />
 
           <Card className="p-6">
             <h2 className="text-base font-bold text-tinta">Entrega</h2>

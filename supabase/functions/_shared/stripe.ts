@@ -57,11 +57,57 @@ export function toMinorUnits(amount: number | string): number {
   return Math.round(value * 100);
 }
 
-export type CheckoutOrder = { id: string; number: number; storeName: string; deliveryFee: number | string };
+export type CheckoutTheme = "light" | "dark";
+
+/**
+ * Colores de la página de pago por tema. Stripe solo admite un color liso de fondo (no degradados), así que se usa el tono medio del
+ * degradado del hero de la tienda: verde profundo en claro y azul Medianoche en oscuro. Con un fondo oscuro Stripe pasa solo a su
+ * aspecto oscuro y elige el color del texto.
+ */
+const checkoutColors: Record<CheckoutTheme, { background: string; button: string }> = {
+  light: { background: "#0d5644", button: "#0b7a57" },
+  dark: { background: "#0b2236", button: "#24c08e" },
+};
+
+export const asCheckoutTheme = (value: unknown): CheckoutTheme => (value === "dark" ? "dark" : "light");
+
+/**
+ * Marca de la página de pago de Stripe (Checkout alojado): fondo del tema de la tienda y el logo de Rapitrip (la R sobre su baldosa
+ * y el nombre en blanco). Los archivos de imagen se resuelven así: `STRIPE_LOGO_FILE` / `STRIPE_ICON_FILE` (ids `file_…` subidos a
+ * Stripe, con propósito `business_logo` / `business_icon`; sirven también en local) o, si no están, la URL pública de la tienda (solo
+ * https: Stripe descarga la imagen y desde `localhost` no la alcanza). `adaptive_pricing` va apagado para que el cliente vea y pague
+ * siempre en córdobas, sin que Stripe le muestre una conversión a su moneda.
+ */
+export function brandingParams(storeUrl: string, theme: CheckoutTheme = "light", env: (name: string) => string | undefined = (name) => Deno.env.get(name)): Record<string, string> {
+  const colors = checkoutColors[theme];
+  const params: Record<string, string> = {
+    "adaptive_pricing[enabled]": "false",
+    "branding_settings[display_name]": "Rapitrip",
+    "branding_settings[button_color]": colors.button,
+    "branding_settings[background_color]": colors.background,
+    "branding_settings[border_style]": "rounded",
+    "branding_settings[font_family]": "inter",
+  };
+  const image = (kind: "logo" | "icon", fileName: string) => {
+    const file = env(kind === "logo" ? "STRIPE_LOGO_FILE" : "STRIPE_ICON_FILE");
+    if (file) {
+      params[`branding_settings[${kind}][type]`] = "file";
+      params[`branding_settings[${kind}][file]`] = file;
+    } else if (storeUrl.startsWith("https://")) {
+      params[`branding_settings[${kind}][type]`] = "url";
+      params[`branding_settings[${kind}][url]`] = `${storeUrl}/brand/${fileName}`;
+    }
+  };
+  image("logo", "stripe-logo.png");
+  image("icon", "stripe-icono.png");
+  return params;
+}
+
+export type CheckoutOrder ={ id: string; number: number; storeName: string; deliveryFee: number | string };
 export type CheckoutItem = { productName: string; variantName: string; unitPrice: number | string; quantity: number };
 
 /** Parámetros de una sesión de Stripe Checkout para un pedido. Los renglones suman exactamente el total del pedido. */
-export function buildCheckoutParams(order: CheckoutOrder, items: CheckoutItem[], opts: { currency: string; storeUrl: string; nowSeconds?: number }): Record<string, string> {
+export function buildCheckoutParams(order: CheckoutOrder, items: CheckoutItem[], opts: { currency: string; storeUrl: string; theme?: CheckoutTheme; nowSeconds?: number }): Record<string, string> {
   const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
   const params: Record<string, string> = {
     mode: "payment",
@@ -74,6 +120,7 @@ export function buildCheckoutParams(order: CheckoutOrder, items: CheckoutItem[],
     // Stripe exige que la sesión dure al menos 30 minutos; un pago tardío se reembolsa solo (ver apply_stripe_event).
     expires_at: String(now + 31 * 60),
     locale: "es",
+    ...brandingParams(opts.storeUrl, opts.theme),
   };
   let index = 0;
   const line = (name: string, unitAmount: number, quantity: number) => {
@@ -96,7 +143,7 @@ export type Purchase = { id: string; orders: PurchaseOrder[] };
  * Parámetros de UNA sesión de Stripe Checkout para toda una compra (varios pedidos). Los renglones suman exactamente la suma
  * de los totales de los pedidos: los productos de cada uno y su envío como renglón aparte. La sesión se identifica por la compra.
  */
-export function buildPurchaseCheckoutParams(purchase: Purchase, opts: { currency: string; storeUrl: string; nowSeconds?: number }): Record<string, string> {
+export function buildPurchaseCheckoutParams(purchase: Purchase, opts: { currency: string; storeUrl: string; theme?: CheckoutTheme; nowSeconds?: number }): Record<string, string> {
   const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
   const numbers = purchase.orders.map((order) => order.number).join(", ");
   const params: Record<string, string> = {
@@ -110,6 +157,7 @@ export function buildPurchaseCheckoutParams(purchase: Purchase, opts: { currency
     // Stripe exige que la sesión dure al menos 30 minutos; un pago tardío se reembolsa solo (ver apply_stripe_checkout_event).
     expires_at: String(now + 31 * 60),
     locale: "es",
+    ...brandingParams(opts.storeUrl, opts.theme),
   };
   let index = 0;
   const line = (name: string, unitAmount: number, quantity: number) => {
