@@ -2,34 +2,8 @@ import { Reveal } from "@rapitrip/ui";
 import { ChevronRight, Sparkle, Truck } from "lucide-react";
 import Link from "next/link";
 import type { CatalogProduct } from "@/lib/catalog";
-import { formatMoney } from "@/lib/money";
 import { HeroDuo } from "./hero-duo";
 import { ProductImage } from "./product-image";
-
-/** Tarjeta celeste de la esquina: la mejor oferta del momento, como la tarjeta de oferta de la referencia. */
-function FeaturedDeal({ product }: { product: CatalogProduct }) {
-  return (
-    <Link
-      href={`/productos/${product.id}`}
-      className="group block w-[220px] rounded-3xl bg-gradient-to-b from-[#cfe9f7] via-[#e8f4fa] to-superficie dark:from-[#14304f] dark:via-[#0f1d33] p-3 shadow-flota ring-1 ring-superficie transition-transform duration-500 ease-fluido hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja"
-    >
-      <div className="relative">
-        <ProductImage path={product.cover_path} alt={product.name} fit="contain" className="aspect-[4/3] w-full rounded-2xl !bg-transparent" />
-        {product.discount_pct > 0 ? <span className="absolute left-1 top-1 rounded-full bg-selva px-2 py-1 text-[11px] font-extrabold leading-none text-sobre-acento">-{product.discount_pct}%</span> : null}
-      </div>
-      <p className="mt-2 truncate px-1 text-[14.5px] font-semibold text-tinta">{product.name}</p>
-      <p className="flex items-baseline justify-between gap-2 px-1 pb-1">
-        <span className="text-[17px] font-extrabold tracking-tight text-tinta">{formatMoney(product.min_price)}</span>
-        {product.compare_price !== null ? (
-          <span className="text-[12px] text-tinta-suave line-through">
-            <span className="sr-only">Antes </span>
-            {formatMoney(product.compare_price)}
-          </span>
-        ) : null}
-      </p>
-    </Link>
-  );
-}
 
 /**
  * Pieza central del héroe, delante de la marca (como la persona de la referencia). Con una foto propia en `public/hero` la usa;
@@ -59,9 +33,9 @@ function CenterPiece({ photo, picks }: { photo: string | null; picks: CatalogPro
 
 /**
  * Héroe de la portada: panel verde completo en diagonal (azul noche en oscuro), con destellos esmeralda, «Rapitrip» enorme arriba con la
- * etiqueta inclinada, la pieza central delante de las letras, el llamado abajo a la izquierda y la oferta abajo a la derecha.
+ * etiqueta inclinada, la pieza central delante de las letras, el llamado abajo a la izquierda.
  */
-export function HomeHero({ featured, picks, photo }: { featured: CatalogProduct | null; picks: CatalogProduct[]; photo: string | null }) {
+export function HomeHero({ picks, photo }: { picks: CatalogProduct[]; photo: string | null }) {
   return (
     <section
       aria-labelledby="titulo"
@@ -77,7 +51,7 @@ export function HomeHero({ featured, picks, photo }: { featured: CatalogProduct 
       <Sparkle aria-hidden="true" className="absolute left-[3%] top-[10%] hidden size-5 fill-esmeralda text-esmeralda lg:block" />
 
       {/* El centrado va en un contenedor aparte: la animación de Reveal usa `transform` y pisaría el -translate-x. */}
-      <div className={`relative z-10 mt-4 lg:absolute lg:inset-y-0 lg:left-[480px] lg:mt-0 lg:flex lg:items-center lg:justify-center lg:pb-6 lg:pt-4 ${featured ? "lg:right-[290px]" : "lg:right-10"}`}>
+      <div className={`relative z-10 mt-4 lg:absolute lg:inset-y-0 lg:left-[480px] lg:mt-0 lg:flex lg:items-center lg:justify-center lg:pb-6 lg:pt-4 lg:right-10`}>
         <Reveal index={1} className="w-full">
           <CenterPiece photo={photo} picks={picks} />
         </Reveal>
@@ -98,12 +72,6 @@ export function HomeHero({ featured, picks, photo }: { featured: CatalogProduct 
           </span>
         </Link>
       </Reveal>
-
-      {featured ? (
-        <Reveal index={2} className="relative z-20 mt-8 self-start lg:absolute lg:bottom-10 lg:right-10 lg:mt-0">
-          <FeaturedDeal product={featured} />
-        </Reveal>
-      ) : null}
     </section>
   );
 }

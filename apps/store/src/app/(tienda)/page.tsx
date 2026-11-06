@@ -97,9 +97,8 @@ export default async function Home() {
   // Solo cuenta como «más vendido» lo que de verdad se vendió en los últimos 30 días.
   const topSold = bestSellers.filter((product) => product.sold_units > 0).slice(0, 10);
   const popular = [...categories].filter((category) => category.product_count > 0).sort((a, b) => b.product_count - a.product_count).slice(0, 8);
-  const featured = deals[0] ?? null;
   // Productos con foto para la composición central del héroe (sin repetir la oferta destacada).
-  const picks = [...deals.slice(1), ...topSold, ...recent].filter((product, index, all) => product.cover_path && all.findIndex((p) => p.id === product.id) === index);
+  const picks = [...deals, ...topSold, ...recent].filter((product, index, all) => product.cover_path && all.findIndex((p) => p.id === product.id) === index);
 
   return (
     <main className="mx-auto flex max-w-[1180px] flex-col gap-6 sm:gap-8">
@@ -108,7 +107,7 @@ export default async function Home() {
           <AddressNudge />
         </Reveal>
       ) : null}
-      <HomeHero featured={featured} picks={picks} photo={heroPhoto} />
+      <HomeHero picks={picks} photo={heroPhoto} />
 
       {popular.length > 0 ? (
         <Tray>
