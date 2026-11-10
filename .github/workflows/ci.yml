@@ -54,9 +54,6 @@ jobs:
       - name: Pruebas de Edge Functions
         run: pnpm fn:test
 
-      - name: Pruebas de paquetes
-        run: pnpm test
-
       - name: Los tipos generados están al día
         run: |
           pnpm db:types
@@ -94,7 +91,7 @@ jobs:
         run: pnpm lint
 
       - name: Pruebas unitarias y de componentes
-        run: pnpm test
+        run: pnpm --workspace-concurrency=1 -r --if-present test --maxWorkers=2 --minWorkers=1
 
       - name: Compilar la consola
         run: pnpm --filter @rapitrip/console build
