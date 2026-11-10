@@ -69,7 +69,7 @@ export function AddressPicker({ signedIn, addresses, setDefault, compact = false
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls={panelId}
-          aria-label={current ? `Entregar en ${current.label}: ${current.address}` : `Entregar en: ${title}`}
+          aria-label={current ? `Entregar en ${current.label}: ${current.address}` : `Ubicación. Entregar en: ${title}`}
           title={current ? `${current.label} · ${current.address}` : title}
           className="flex h-full min-w-0 items-center gap-1.5 rounded-full pl-4 pr-2.5 text-[13px] font-semibold text-tinta transition-colors duration-500 ease-fluido hover:bg-superficie/70 dark:hover:bg-selva/10 focus-visible:outline-2 focus-visible:outline-hoja"
         >

@@ -94,13 +94,13 @@ jobs:
         run: pnpm --workspace-concurrency=1 -r --if-present test --maxWorkers=2 --minWorkers=1
 
       - name: Compilar la consola
-        run: pnpm --filter @rapitrip/console build
+        run: pnpm --dir apps/console build
 
       - name: Compilar la tienda
-        run: pnpm --filter @rapitrip/store build
+        run: pnpm --dir apps/store build
 
       - name: Compilar la app del repartidor
-        run: pnpm --filter @rapitrip/courier build
+        run: pnpm --dir apps/dealer build
 
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium
@@ -172,13 +172,13 @@ jobs:
           echo "Las Edge Functions no respondieron a tiempo"; cat functions.log; exit 1
 
       - name: Compilar la consola
-        run: pnpm --filter @rapitrip/console build
+        run: pnpm --dir apps/console build
 
       - name: Compilar la tienda
-        run: pnpm --filter @rapitrip/store build
+        run: pnpm --dir apps/store build
 
       - name: Compilar la app del repartidor
-        run: pnpm --filter @rapitrip/courier build
+        run: pnpm --dir apps/dealer build
 
       - name: Instalar Chromium
         run: pnpm --filter @rapitrip/e2e exec playwright install --with-deps chromium

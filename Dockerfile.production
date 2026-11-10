@@ -18,8 +18,7 @@ COPY packages/supabase/package.json ./packages/supabase/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/validation/package.json ./packages/validation/package.json
 COPY e2e/package.json ./e2e/package.json
-RUN pnpm --filter '@rapitrip/store...' --filter '@rapitrip/console...' \
-    --filter '@rapitrip/courier...' install --frozen-lockfile --network-concurrency=8 --fetch-timeout=300000
+RUN pnpm install --frozen-lockfile --network-concurrency=8 --fetch-timeout=300000
 
 COPY tsconfig.base.json ./
 COPY apps ./apps

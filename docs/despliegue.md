@@ -13,7 +13,7 @@ El despliegue usa el mismo commit que aprobó el CI. Además, omite revisiones q
 
 ## 1. Servicios de Railway
 
-Crea o reutiliza un proyecto de Railway con tres servicios vacíos en el entorno de producción. En los tres conserva la raíz del repositorio como directorio de construcción, porque las aplicaciones comparten los paquetes del monorepo. El archivo `railway.json` selecciona `Dockerfile.production` y comprueba `/api/health` antes de dar por listo cada despliegue.
+Crea o reutiliza un proyecto de Railway con tres servicios vacíos en el entorno de producción. En los tres conserva la raíz del repositorio como directorio de construcción, porque las aplicaciones comparten los paquetes del monorepo. Configura Dockerfile.production como archivo de construcción y /api/health como comprobación HTTP, con un tiempo de espera de 180 segundos y reinicio ON_FAILURE (hasta cinco intentos). Estos ajustes quedan guardados en cada servicio de Railway.
 
 | Servicio | Variable APP_NAME | Directorio de la aplicación |
 |---|---|---|
@@ -21,7 +21,7 @@ Crea o reutiliza un proyecto de Railway con tres servicios vacíos en el entorno
 | Consola | console | apps/console |
 | Repartidor | dealer | apps/dealer |
 
-No configures un comando de inicio personalizado: la imagen ya contiene el servidor de producción de Next.js y escucha en el PORT que Railway le asigne. Asimismo, asigna un dominio HTTPS a cada servicio para configurar las URL públicas antes de compilar.
+En cada servicio agrega también RAILWAY_DOCKERFILE_PATH=Dockerfile.production. No configures un comando de inicio personalizado: la imagen ya contiene el servidor de producción de Next.js y escucha en el PORT que Railway le asigne. Asimismo, asigna un dominio HTTPS a cada servicio para configurar las URL públicas antes de compilar.
 
 El flujo de GitHub sube el código de la revisión aprobada mediante la CLI de Railway. Por ello, deja desactivado el autodespliegue nativo por push de estos servicios; así, la publicación sigue el orden CI, Supabase y aplicaciones. Si actualmente usas Vercel, conserva el despliegue existente mientras verificas Railway y desactiva su publicación automática cuando completes el cambio.
 
@@ -71,11 +71,13 @@ DEPLOY_PLATFORM debe ser una variable del repositorio para que GitHub pueda eval
 
 Antes de aplicar migraciones, el flujo comprueba que existan los secretos y los identificadores requeridos. A su vez, el entorno production puede conservar sus revisores y las reglas de protección que ya utilices.
 
+El token personal de Supabase se genera desde Account → Access Tokens. Para limitarlo al proyecto, permite la lectura de Project Settings, API Keys y API Key Secrets, que utiliza supabase link, y la escritura de Edge Functions. SUPABASE_DB_PASSWORD es la contraseña de PostgreSQL del proyecto, no la contraseña de tu cuenta ni una clave API. Consulta la [guía de tokens de Supabase](https://supabase.com/docs/guides/platform/personal-access-tokens) para revisar los permisos.
+
 ## 4. Qué comprueba el CI
 
 El archivo `.github/workflows/ci.yml` conserva las pruebas de pgTAP, Deno, Vitest, tipos, lint, compilación y Playwright. Además, construye una imagen de producción por aplicación y comprueba que `/api/health` responda HTTP 200 con un puerto distinto del predeterminado, sin una sesión ni conexión de red.
 
-Node 24 y pnpm 11.6.0 se utilizan en las comprobaciones y en las imágenes. Asimismo, Supabase CLI queda fijada a 2.120.0, porque el flujo existente utiliza los comandos de esa versión y la versión 3 cambia el destino de algunas operaciones y su confirmación. Las pruebas con Chromium se ejecutan en Ubuntu 24.04, compatible con la versión de Playwright del proyecto.
+Node 24 y pnpm 11.6.0 se utilizan en las comprobaciones y en las imágenes. Asimismo, Supabase CLI queda fijada a 2.120.0, porque el flujo existente utiliza los comandos de esa versión y la versión 3 cambia el destino de algunas operaciones y su confirmación. Las pruebas con Chromium se ejecutan en Ubuntu 24.04, compatible con la versión de Playwright del proyecto. Los comandos de construcción y de arranque apuntan a las carpetas de las aplicaciones para conservar su funcionamiento aunque cambie el nombre de un paquete.
 
 La URL de salud confirma que el servidor responde; por ello, no consulta la base de datos ni exige iniciar sesión. Las pruebas de operaciones verifican por separado los flujos con el backend.
 
@@ -96,4 +98,4 @@ Cada servicio publica su versión por separado. Si uno falla, revisa su trabajo 
 
 ## Referencias
 
-La configuración sigue la documentación de [Dockerfiles en Railway](https://docs.railway.com/builds/dockerfiles), [despliegue con la CLI](https://docs.railway.com/cli/up) y [configuración como código](https://docs.railway.com/config-as-code/reference). El pin de Supabase evita introducir los [cambios de la CLI v3](https://supabase.com/changelog/supabase-cli-v3) dentro del flujo existente.
+La configuración sigue la documentación de [Dockerfiles en Railway](https://docs.railway.com/builds/dockerfiles), [despliegue con la CLI](https://docs.railway.com/cli/up) y [ajustes de construcción](https://docs.railway.com/builds/build-configuration). El pin de Supabase evita introducir los [cambios de la CLI v3](https://supabase.com/changelog/supabase-cli-v3) dentro del flujo existente.

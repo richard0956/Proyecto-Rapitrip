@@ -21,8 +21,7 @@ COPY packages/ui/package.json ./packages/ui/package.json
 COPY packages/validation/package.json ./packages/validation/package.json
 COPY e2e/package.json ./e2e/package.json
 RUN --mount=type=cache,id=rapitrip-pnpm,target=/pnpm/store \
-    pnpm --filter '@rapitrip/store...' --filter '@rapitrip/console...' \
-    --filter '@rapitrip/courier...' install --frozen-lockfile --store-dir /pnpm/store
+    pnpm install --frozen-lockfile --store-dir /pnpm/store
 
 COPY --chown=node:node tsconfig.base.json ./
 COPY --chown=node:node apps ./apps

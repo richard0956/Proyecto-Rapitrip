@@ -1,7 +1,6 @@
 # El paquete que se sube a Railway contiene únicamente el código de las apps.
 **
 !Dockerfile.production
-!railway.json
 !.dockerignore
 !package.json
 !pnpm-lock.yaml

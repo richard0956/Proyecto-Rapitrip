@@ -2,7 +2,6 @@
 **
 !Dockerfile
 !Dockerfile.production
-!railway.json
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml

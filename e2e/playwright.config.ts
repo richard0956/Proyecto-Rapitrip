@@ -13,7 +13,7 @@ const env = {
 };
 
 /** En CI las apps ya vienen compiladas (`pnpm build`); en local se usa `dev` para no compilar antes de cada prueba. */
-const serve = (app: string) => `pnpm --filter @rapitrip/${app} ${ci ? "start" : "dev"}`;
+const serve = (app: string) => `pnpm --dir ../apps/${app === "courier" ? "dealer" : app} ${ci ? "start" : "dev"}`;
 
 export default defineConfig({
   testDir: "./tests",
