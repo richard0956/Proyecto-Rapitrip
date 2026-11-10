@@ -79,6 +79,8 @@ El archivo `.github/workflows/ci.yml` conserva las pruebas de pgTAP, Deno, Vites
 
 Node 24 y pnpm 11.6.0 se utilizan en las comprobaciones y en las imágenes. Asimismo, Supabase CLI queda fijada a 2.120.0, porque el flujo existente utiliza los comandos de esa versión y la versión 3 cambia el destino de algunas operaciones y su confirmación. Las pruebas con Chromium se ejecutan en Ubuntu 24.04, compatible con la versión de Playwright del proyecto. Los comandos de construcción y de arranque apuntan a las carpetas de las aplicaciones para conservar su funcionamiento aunque cambie el nombre de un paquete.
 
+Las fuentes Plus Jakarta Sans y Bricolage Grotesque están guardadas en packages/ui/fonts con sus licencias; por tanto, las compilaciones utilizan next/font/local y no necesitan descargar fuentes desde Google.
+
 La URL de salud confirma que el servidor responde; por ello, no consulta la base de datos ni exige iniciar sesión. Las pruebas de operaciones verifican por separado los flujos con el backend.
 
 ## 5. Construcción y operación
