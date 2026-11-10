@@ -57,6 +57,9 @@ reset role;
 
 -- Estados y fechas puestos a mano (sin disparadores): la prueba es de las cifras, no de la máquina de estados
 set session_replication_role = replica;
+-- Todas las ventas de la prueba deben quedar dentro del período fijo, independientemente del día de ejecución.
+update sales.orders set created_at = '2026-10-10 12:00:00+00'
+where store_id in (current_setting('t.sa')::uuid, current_setting('t.sb')::uuid);
 update sales.orders set status = 'confirmado' where id in (current_setting('t.a1')::uuid, current_setting('t.b1')::uuid);
 update sales.orders set status = 'cancelado' where id = current_setting('t.a2')::uuid;
 update sales.orders set status = 'rechazado' where id in (current_setting('t.b2')::uuid, current_setting('t.b3')::uuid, current_setting('t.b4')::uuid);

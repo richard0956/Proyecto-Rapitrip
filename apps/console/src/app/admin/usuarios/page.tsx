@@ -17,6 +17,12 @@ import { UsersWorkspace, type StaffRow } from "./users-workspace";
 
 const DAY_MS = 86_400_000;
 
+async function loadInvitations(supabase: Awaited<ReturnType<typeof serverSupabase>>) {
+  const result = await supabase.from("invitations_list").select("*").eq("status", "pendiente").order("created_at", { ascending: false });
+  // La hora pertenece a la lectura del servidor; el render utiliza esa misma instantánea.
+  return { ...result, fetchedAt: Date.now() };
+}
+
 /** Usuarios y roles: las cuentas con rol a todo el ancho y, en su propia pestaña, las invitaciones pendientes. Cada cuenta abre su ficha. */
 export default async function UsuariosPage({ searchParams }: { searchParams: SearchParams }) {
   const session = await requireConsoleAccess("admin");
@@ -25,7 +31,7 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Sea
   const supabase = await serverSupabase();
   const [accounts, invitations, commerces, reviewStatus, reviews] = await Promise.all([
     supabase.from("accounts_staff").select("*").order("granted_at", { ascending: false }),
-    supabase.from("invitations_list").select("*").eq("status", "pendiente").order("created_at", { ascending: false }),
+    loadInvitations(supabase),
     supabase.from("commerces_list").select("id, name"),
     supabase.rpc("access_review_status"),
     supabase.rpc("access_reviews"),
@@ -55,7 +61,7 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Sea
     ];
   });
 
-  const now = Date.now();
+  const now = invitations.fetchedAt;
   const invitationRows: InvitationRow[] = (invitations.data ?? []).flatMap((row) => {
     if (!row.id || !row.email) return [];
     const daysLeft = row.expires_at ? Math.max(0, Math.ceil((new Date(row.expires_at).getTime() - now) / DAY_MS)) : null;

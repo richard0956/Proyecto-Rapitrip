@@ -5,6 +5,6 @@ packages:
 
 allowBuilds:
   esbuild: true
-
-onlyBuiltDependencies:
-  - supabase
+  # pnpm instala el binario opcional de este resolver sin ejecutar su postinstall.
+  unrs-resolver: false
+  supabase: true

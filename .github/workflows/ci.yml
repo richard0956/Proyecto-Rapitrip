@@ -5,20 +5,27 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11.6.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - uses: denoland/setup-deno@v2
@@ -29,7 +36,10 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.120.0
+
+      - name: Configurar el backend aislado de CI
+        run: node scripts/ci/configure-supabase.mjs
 
       # Aplica migraciones y seeds de prueba. Auth debe correr porque crea el esquema `auth`.
       - name: Levantar Supabase local
@@ -57,7 +67,7 @@ jobs:
         run: supabase stop --no-backup
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
       # Valores de relleno: estas comprobaciones no necesitan backend. Los flujos con Supabase se corren a mano (e2e/README.md).
@@ -68,11 +78,11 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.6.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -113,25 +123,28 @@ jobs:
   # administración y un pedido de punta a punta entre los cuatro. Necesita las Edge Functions sirviéndose, porque las cuentas de caja,
   # coordinación y administración se crean aceptando invitaciones (`accept-invitation`). Los E2E de Stripe quedan fuera: usan claves de prueba personales.
   e2e-operaciones:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.6.0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.120.0
+
+      - name: Configurar el backend aislado de CI
+        run: node scripts/ci/configure-supabase.mjs
 
       - name: Levantar Supabase local
         run: supabase start
@@ -189,3 +202,52 @@ jobs:
       - name: Detener Supabase
         if: always()
         run: supabase stop --no-backup
+
+  containers:
+    name: container-${{ matrix.app }}
+    needs: frontend
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [store, console, dealer]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Construir la imagen de producción
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.production
+          load: true
+          push: false
+          tags: rapitrip-ci:${{ matrix.app }}
+          build-args: |
+            APP_NAME=${{ matrix.app }}
+            NEXT_PUBLIC_SUPABASE_URL=https://ci.example.supabase.co
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=ci-placeholder
+            NEXT_PUBLIC_SITE_URL=https://${{ matrix.app }}.example.com
+          cache-from: type=gha,scope=production-${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=production-${{ matrix.app }}
+
+      - name: Comprobar el arranque sin sesión ni backend
+        env:
+          IMAGE: rapitrip-ci:${{ matrix.app }}
+        run: |
+          docker run -d --name rapitrip-smoke --network none -e PORT=8080 "$IMAGE"
+          for attempt in $(seq 1 30); do
+            if docker exec rapitrip-smoke node /app/scripts/docker/healthcheck-production.mjs; then
+              echo "La imagen responde HTTP 200 en /api/health con PORT=8080"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs rapitrip-smoke
+          exit 1
+
+      - name: Detener el contenedor de prueba
+        if: always()
+        run: docker rm -f rapitrip-smoke || true

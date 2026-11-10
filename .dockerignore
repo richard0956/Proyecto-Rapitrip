@@ -1,0 +1,28 @@
+# Solo se envía a Docker el código que necesitan las aplicaciones.
+**
+!Dockerfile
+!Dockerfile.production
+!railway.json
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!apps/
+!apps/**
+!packages/
+!packages/**
+!e2e/
+!e2e/package.json
+!scripts/
+!scripts/docker/
+!scripts/docker/**
+
+# Las dependencias de Windows y los archivos locales se generan dentro de Docker.
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+**/*.tsbuildinfo
+**/next-env.d.ts
+**/*.log
+**/.git

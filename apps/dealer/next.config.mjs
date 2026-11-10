@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+
 const isProd = process.env.NODE_ENV === "production";
 
 let supabaseOrigin = "";
@@ -27,6 +29,10 @@ const csp = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...(process.env.DOCKER_BUILD === "true" ? {
+    output: "standalone",
+    outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
+  } : {}),
   transpilePackages: ["@rapitrip/ui", "@rapitrip/supabase", "@rapitrip/validation", "@rapitrip/db-types"],
   poweredByHeader: false,
   // Se abre en http://127.0.0.1 (cookies y redirecciones de Supabase); sin esto Next bloquea la hidratación en desarrollo.

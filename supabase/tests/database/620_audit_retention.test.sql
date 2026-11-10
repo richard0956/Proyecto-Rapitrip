@@ -10,6 +10,10 @@ insert into audit.login_events (occurred_at, result) values
   (now() - interval '2 days', 'exitoso');
 select set_config('t.recent_login', (select id::text from audit.login_events where occurred_at > now() - interval '3 days' order by id desc limit 1), true);
 
+-- El trigger de DELETE se ejecuta por fila: la prueba debe incluir un incidente real.
+insert into audit.it_incidents (type, origin, severity, description)
+values ('seguridad', 'manual', 'baja', 'Incidente de prueba para verificar la retención.');
+
 -- La protección sigue igual fuera del mantenimiento -----------------------------------------------------------------------
 select throws_ok($$delete from audit.events where action = 'test.old'$$, '42501', null::text, 'un DELETE común sigue bloqueado, aunque sea de un registro viejo');
 select throws_ok($$update audit.events set action = 'x' where action = 'test.old'$$, '42501', null::text, 'UPDATE sigue bloqueado');
