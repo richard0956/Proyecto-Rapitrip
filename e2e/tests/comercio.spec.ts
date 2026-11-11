@@ -200,8 +200,8 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await page.getByRole("button", { name: "Suspender vendedor" }).click();
     await page.getByLabel("Motivo").fill("incumplimiento del convenio");
     await page.getByRole("button", { name: "Suspender", exact: true }).click();
-    await expect(page.getByText("Suspendido", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Reactivar comercio" })).toBeVisible();
+    await expect(page.getByText("Suspendido", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reactivar vendedor" })).toBeVisible();
 
     // El comercio suspendido deja de ver sus tiendas y no puede crear otras.
     const { data: stores } = await owner.client.from("stores_list").select("id");

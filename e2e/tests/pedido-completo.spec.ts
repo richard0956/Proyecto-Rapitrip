@@ -79,8 +79,8 @@ test.describe("@backend pedido de punta a punta", () => {
     await expect(admin).toHaveURL(new RegExp(`/admin/pedidos/${number}$`), { timeout: 30_000 });
     await expect(admin.getByRole("heading", { level: 1, name: `Pedido ${number}` })).toBeVisible({ timeout: 30_000 });
     await expect(admin.getByText("Entregado", { exact: true }).first()).toBeVisible();
-    await expect(admin.getByText("Efectivo · cobrado")).toBeVisible();
-    await expect(admin.getByText(courierName)).toBeVisible();
+    await expect(admin.getByText("Efectivo · cobrado").first()).toBeVisible();
+    await expect(admin.getByText(courierName).first()).toBeVisible();
     await expectNoViolations(admin);
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
   });

@@ -13,14 +13,14 @@ export function AccessShell({ children }: { children: ReactNode }) {
   return (
     <main className="group/acceso relative isolate min-h-dvh overflow-clip">
       <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[62%] -z-10 size-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-menta/70 blur-3xl" />
-      <div className="mx-auto flex min-h-dvh w-full max-w-[460px] flex-col justify-center gap-4 px-4 max-lg:group-has-[input:focus]/acceso:justify-start pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] lg:grid lg:max-w-[960px] lg:grid-cols-2 lg:content-center lg:items-center lg:gap-6 [&>*:last-child]:lg:col-span-2 [&>*:last-child]:lg:justify-self-center">
+      <div className="mx-auto flex min-h-dvh w-full max-w-[460px] flex-col justify-center gap-4 px-4 max-lg:group-has-[form:focus-within]/acceso:justify-start pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] lg:grid lg:max-w-[960px] lg:grid-cols-2 lg:content-center lg:items-center lg:gap-6 [&>*:last-child]:lg:col-span-2 [&>*:last-child]:lg:justify-self-center">
         <GreenPanel labelledBy="acceso-marca">
           {/* El logo va sobre su fondo claro, igual que en el encabezado de la tienda: la «R» del emblema es oscura. */}
           <span className="inline-flex rounded-2xl bg-superficie px-3.5 py-2.5 shadow-[0_12px_24px_-14px_rgb(0_0_0/0.5)]">
             <BrandMark priority className="text-[28px]" />
           </span>
-          {/* En el teléfono, mientras se escribe, el panel queda solo con el logo: así el formulario sube y el teclado no lo tapa. */}
-          <div className="max-lg:group-has-[input:focus]/acceso:hidden">
+          {/* En el teléfono, el panel queda compacto mientras el formulario tiene foco, incluido el botón: así no se desplaza al pasar del campo a «Ingresar». */}
+          <div className="max-lg:group-has-[form:focus-within]/acceso:hidden">
             <div className="mt-4">
               <PanelTag icon={<Bike aria-hidden="true" className="size-3.5" />}>Repartidores</PanelTag>
             </div>
@@ -41,7 +41,7 @@ export function AccessShell({ children }: { children: ReactNode }) {
           </div>
         </GreenPanel>
         {children}
-        <Lema className="self-center max-lg:group-has-[input:focus]/acceso:hidden" />
+        <Lema className="self-center max-lg:group-has-[form:focus-within]/acceso:hidden" />
       </div>
     </main>
   );

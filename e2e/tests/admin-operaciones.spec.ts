@@ -127,8 +127,10 @@ test.describe("@backend administración · dashboard de inicio", () => {
     // Solicitudes: una tabla con filtros por estado y búsqueda, no dos secciones
     await page.goto(`${CONSOLE_URL}/admin/solicitudes`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solicitudes", { timeout: 30_000 });
-    await expect(page.getByRole("tab", { name: /Pendientes/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /Aprobadas/ })).toBeVisible();
+    const status = page.getByRole("combobox", { name: "Estado de la solicitud" });
+    await expect(status).toBeVisible();
+    await expect(status.getByRole("option", { name: /Pendientes/ })).toHaveCount(1);
+    await expect(status.getByRole("option", { name: /Aprobadas/ })).toHaveCount(1);
     await expect(page.getByLabel("Buscar negocio")).toBeVisible();
     await expectNoViolations(page);
   });

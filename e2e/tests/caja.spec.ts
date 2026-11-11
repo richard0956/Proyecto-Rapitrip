@@ -82,7 +82,7 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     const close = page.getByRole("dialog");
     await close.getByLabel("Efectivo contado").fill("790");
     await close.getByRole("button", { name: "Cerrar caja" }).click();
-    await expect(close.getByRole("alert")).toContainText("diferencia");
+    await expect(close.getByRole("alert")).toContainText("explica el motivo");
     await close.getByLabel("Nota").fill("faltan 10 de un vuelto mal dado");
     await close.getByRole("button", { name: "Cerrar caja" }).click();
 
