@@ -61,6 +61,8 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     // Venta con tarjeta en terminal: 1 café; luego se anula
     await add.click();
     await page.getByRole("tab", { name: "Tarjeta (terminal)" }).click();
+    await expect(page.getByRole("button", { name: "Cobrar" })).toBeDisabled();
+    await page.getByLabel("Voucher del terminal").fill(`E2E-${unique}`);
     await page.getByRole("button", { name: "Cobrar" }).click();
     await expect(page.getByText(/Ventas \(2\)/)).toBeVisible();
     expect(await stockOf(shop.owner, shop.variantId)).toBe(7);

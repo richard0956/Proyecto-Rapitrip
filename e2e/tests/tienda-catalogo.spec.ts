@@ -72,17 +72,17 @@ test.describe("tienda · catálogo y carrito", () => {
 
     test("filtra por tipo de vendedor y por tienda", async ({ page }) => {
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Vendedor", { exact: true }).selectOption("empresa");
+      await page.getByRole("combobox", { name: "Vendedor", exact: true }).selectOption("empresa");
       await expect(cards(page)).toHaveCount(5);
 
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Tienda", { exact: true }).selectOption(STORE_ID);
+      await page.getByRole("combobox", { name: "Tienda", exact: true }).selectOption(STORE_ID);
       await expect(cards(page)).toHaveCount(3);
     });
 
     test("ordena por precio", async ({ page }) => {
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Ordenar", { exact: true }).selectOption("precio_desc");
+      await page.getByRole("combobox", { name: "Ordenar", exact: true }).selectOption("precio_desc");
       await expect(page).toHaveURL(/orden=precio_desc/);
       await expect(cards(page).first()).toHaveText("Café instantáneo");
     });
@@ -135,7 +135,7 @@ test.describe("tienda · catálogo y carrito", () => {
     await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await page.goto(`${STORE_URL}/carrito`);
     await expect(page.getByRole("link", { name: "Café molido" })).toBeVisible();
-    await expect(page.getByText("Total", { exact: true })).toBeVisible();
+    await expect(page.getByText("Subtotal", { exact: true })).toBeVisible();
     await expectNoViolations(page);
 
     await page.reload();
@@ -143,11 +143,11 @@ test.describe("tienda · catálogo y carrito", () => {
     await page.getByRole("button", { name: "Más" }).click();
     await expect(page.getByRole("group", { name: "Cantidad de Café molido" })).toContainText("3");
 
-    await page.getByRole("link", { name: "Pagar" }).click();
+    await page.getByRole("link", { name: "Continuar con la compra" }).click();
     await expect(page).toHaveURL(/\/ingresar\?next=%2Fcheckout/);
 
     await page.goto(`${STORE_URL}/carrito`);
-    await page.getByRole("button", { name: /Quitar/ }).click();
+    await page.getByRole("button", { name: "Quitar", exact: true }).click();
     await expect(page.getByRole("link", { name: "Café molido" })).toHaveCount(0);
   });
 

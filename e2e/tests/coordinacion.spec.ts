@@ -60,7 +60,7 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await expect(page.getByText(/El repartidor cobra.*en efectivo/)).toBeVisible();
     await expect(page.getByRole("button", { name: "Despachar", exact: true })).toBeDisabled();
     await expect(page.getByText("Asigna un repartidor para poder despachar.")).toBeVisible();
-    await page.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto` });
+    await page.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto · sin cuenta` });
     await page.getByRole("button", { name: "Asignar repartidor" }).click();
     await expect(page.getByText("Repartidor asignado.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Despachar", exact: true })).toBeEnabled();
