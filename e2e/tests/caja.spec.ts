@@ -87,7 +87,7 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     await close.getByRole("button", { name: "Cerrar caja" }).click();
 
     await expect(page.getByText("No hay un turno abierto")).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/Diferencia.*10/)).toBeVisible();
+    await expect(page.getByText(/Diferencia.*10/).first()).toBeVisible();
     await expectNoViolations(page);
   });
 });

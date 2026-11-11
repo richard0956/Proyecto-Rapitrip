@@ -71,7 +71,9 @@ test.describe("@backend coordinación · despacho y entrega", () => {
     await expect(page.getByText(`Pedido ${n1}: entregado.`)).toBeVisible();
     await expect.poll(() => orderState(client, first), { timeout: 15_000 }).toBe("entregado/pagado");
     // Volver a la lista lleva a la pestaña del estado actual del pedido.
-    await page.getByRole("main").getByRole("link", { name: "Pedidos", exact: true }).click();
+    const back = page.getByRole("main").getByRole("link", { name: "Pedidos", exact: true });
+    await expect(back).toHaveAttribute("href", "/coordinacion?vista=terminados");
+    await back.click();
     await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
 
     // Cancelar el segundo (en preparación) exige motivo y devuelve el stock
