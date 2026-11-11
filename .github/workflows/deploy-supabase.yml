@@ -1,7 +1,6 @@
-name: deploy-supabase
+name: deploy-production
 
-# Despliega la base de datos (migraciones) y las Edge Functions de producción cuando el CI de `main` termina en verde.
-# Las apps (tienda, consola y repartidor) no pasan por aquí: las despliega Vercel desde el repositorio. Ver docs/despliegue.md.
+# El backend se actualiza primero; Railway recibe después el mismo commit aprobado.
 on:
   workflow_run:
     workflows: [ci]
@@ -9,30 +8,91 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 concurrency:
-  group: deploy-supabase
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
+  release:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+      current: ${{ steps.commit.outputs.current }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Seleccionar la revisión aprobada
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            result=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$sha&event=push&per_page=1" --jq '.workflow_runs[0].conclusion')
+            if [ "$result" != "success" ]; then
+              echo "::error::Esta revisión de main todavía no tiene un CI correcto."
+              exit 1
+            fi
+          fi
+          latest=$(git ls-remote origin refs/heads/main | cut -f1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$sha" = "$latest" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "Se omite esta revisión porque main ya contiene una más reciente."
+          fi
+
   deploy:
-    # Con `workflow_run` solo se despliega si el CI salió bien; el disparo manual siempre corre.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    needs: release
+    if: needs.release.outputs.current == 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: production
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-      PROJECT_REF: zhbupsxupwrlsklrbdvd
+      PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF || 'zhbupsxupwrlsklrbdvd' }}
     steps:
       - uses: actions/checkout@v4
         with:
-          # El commit que pasó el CI, no el último de `main`.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ needs.release.outputs.sha }}
+
+      - name: Comprobar la configuración antes de modificar producción
+        env:
+          DEPLOY_PLATFORM: ${{ vars.DEPLOY_PLATFORM }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+          RAILWAY_STORE_SERVICE_ID: ${{ vars.RAILWAY_STORE_SERVICE_ID }}
+          RAILWAY_CONSOLE_SERVICE_ID: ${{ vars.RAILWAY_CONSOLE_SERVICE_ID }}
+          RAILWAY_DEALER_SERVICE_ID: ${{ vars.RAILWAY_DEALER_SERVICE_ID }}
+        run: |
+          required=(SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD)
+          if [ "$DEPLOY_PLATFORM" = "railway" ]; then
+            required+=(RAILWAY_TOKEN RAILWAY_PROJECT_ID RAILWAY_ENVIRONMENT_ID RAILWAY_STORE_SERVICE_ID RAILWAY_CONSOLE_SERVICE_ID RAILWAY_DEALER_SERVICE_ID)
+          fi
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Falta configurar $name en el entorno production de GitHub."
+              exit 1
+            fi
+          done
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # El proyecto utiliza v2; v3 cambia los destinos y la confirmación en CI.
+          version: 2.120.0
 
       - name: Enlazar con producción
         run: supabase link --project-ref "$PROJECT_REF"
@@ -41,7 +101,50 @@ jobs:
         run: supabase db push --dry-run
 
       - name: Aplicar migraciones
-        run: supabase db push
+        run: supabase db push --yes
 
       - name: Desplegar Edge Functions
         run: supabase functions deploy --project-ref "$PROJECT_REF"
+
+  railway:
+    name: railway-${{ matrix.app }}
+    needs: [release, deploy]
+    if: vars.DEPLOY_PLATFORM == 'railway'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: store
+            service_var: RAILWAY_STORE_SERVICE_ID
+          - app: console
+            service_var: RAILWAY_CONSOLE_SERVICE_ID
+          - app: dealer
+            service_var: RAILWAY_DEALER_SERVICE_ID
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_SERVICE_ID: ${{ vars[matrix.service_var] }}
+      RELEASE_SHA: ${{ needs.release.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Instalar la CLI de Railway
+        run: npm install --global @railway/cli@5.71.0
+
+      - name: Construir y desplegar el contenedor aprobado
+        run: >-
+          railway up
+          --project "$RAILWAY_PROJECT_ID"
+          --environment "$RAILWAY_ENVIRONMENT_ID"
+          --service "$RAILWAY_SERVICE_ID"
+          --message "$RELEASE_SHA"

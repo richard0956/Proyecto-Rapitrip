@@ -38,7 +38,10 @@ select set_config('t.o' || n, public.create_order(current_setting('t.s')::uuid, 
 reset role;
 set session_replication_role = replica;
 update sales.orders set status = 'entregado', payment_status = 'pagado', delivered_at = now() - interval '10 minutes',
-       courier_id = current_setting('t.cr')::uuid, payment_ref = 'CE-68000' || right(id::text, 1), cash_collected = total
+       courier_id = current_setting('t.cr')::uuid,
+       payment_ref = case id when current_setting('t.o1')::uuid then 'CE-680001'
+                            when current_setting('t.o2')::uuid then 'CE-680002' else 'CE-680003' end,
+       cash_collected = total
  where id in (current_setting('t.o1')::uuid, current_setting('t.o2')::uuid, current_setting('t.o3')::uuid);
 update sales.orders set status = 'entregado', payment_status = 'pagado', delivered_at = now(), courier_id = current_setting('t.cx')::uuid,
        payment_ref = 'CE-680X05', cash_collected = total

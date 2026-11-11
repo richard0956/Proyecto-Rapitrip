@@ -670,6 +670,11 @@ export type Database = {
               "auth": string,"endpoint": string,"expires_at": string,"kind": string,"offer_id": string,"outbox_id": string,"p256dh": string,"subscription_id": string
             }[]
                            },
+"claim_whatsapp_outbox":
+{ Args: { "p_limit"?: number }; Returns: {
+              "attempts": number,"data": Json,"id": string,"template": string,"to_phone": string
+            }[]
+                           },
 "close_cash_session":
 { Args: { "p_counted": number,"p_note"?: string }; Returns: Json
                            },
@@ -907,6 +912,9 @@ export type Database = {
                            },
 "mark_outbox":
 { Args: { "p_error"?: string,"p_id": string,"p_ok": boolean }; Returns: undefined
+                           },
+"mark_whatsapp_outbox":
+{ Args: { "p_error"?: string,"p_id": string,"p_ok": boolean,"p_skip"?: boolean }; Returns: undefined
                            },
 "my_cash_registers":
 { Args: Record<PropertyKey, never>; Returns: {

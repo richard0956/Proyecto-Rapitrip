@@ -219,7 +219,7 @@ export default async function Home() {
         <div aria-hidden="true" className="absolute -bottom-32 left-1/3 -z-10 size-80 rounded-full bg-marino/60 blur-3xl dark:bg-marino/15" />
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto]">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-esmeralda ring-1 ring-white/15">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-nav-texto ring-1 ring-white/15">
               <Store aria-hidden="true" className="size-3.5" /> Para comercios
             </p>
             <h2 id="vende" className="mt-4 text-[28px] font-extrabold leading-tight tracking-tight sm:text-[36px]">

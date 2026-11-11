@@ -59,32 +59,30 @@ test.describe("tienda · catálogo y carrito", () => {
 
     test("busca por nombre y filtra por rango de precio", async ({ page }) => {
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Buscar", { exact: true }).fill("arroz");
-      await page.getByRole("button", { name: "Aplicar filtros" }).click();
+      await page.getByRole("searchbox", { name: "Buscar productos", exact: true }).fill("arroz");
+      await page.getByRole("searchbox", { name: "Buscar productos", exact: true }).press("Enter");
       await expect(page.getByRole("status").filter({ hasText: "1 producto" })).toBeVisible();
 
       await page.goto(`${STORE_URL}/catalogo`);
       await page.getByLabel("Precio mínimo").fill("100");
       await page.getByLabel("Precio máximo").fill("200");
-      await page.getByRole("button", { name: "Aplicar filtros" }).click();
+      await page.getByRole("button", { name: "Aplicar", exact: true }).click();
       await expect(cards(page)).toHaveText(["Café en grano", "Café instantáneo", "Café molido"]);
     });
 
     test("filtra por tipo de vendedor y por tienda", async ({ page }) => {
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByRole("radio", { name: "Empresa" }).check();
-      await page.getByRole("button", { name: "Aplicar filtros" }).click();
+      await page.getByRole("combobox", { name: "Vendedor", exact: true }).selectOption("empresa");
       await expect(cards(page)).toHaveCount(5);
 
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Tienda", { exact: true }).selectOption(STORE_ID);
-      await page.getByRole("button", { name: "Aplicar filtros" }).click();
+      await page.getByRole("combobox", { name: "Tienda", exact: true }).selectOption(STORE_ID);
       await expect(cards(page)).toHaveCount(3);
     });
 
     test("ordena por precio", async ({ page }) => {
       await page.goto(`${STORE_URL}/catalogo`);
-      await page.getByLabel("Ordenar por").selectOption("precio_desc");
+      await page.getByRole("combobox", { name: "Ordenar", exact: true }).selectOption("precio_desc");
       await expect(page).toHaveURL(/orden=precio_desc/);
       await expect(cards(page).first()).toHaveText("Café instantáneo");
     });
@@ -106,21 +104,21 @@ test.describe("tienda · catálogo y carrito", () => {
       await expect(page.getByRole("heading", { level: 1, name: "Café en grano" })).toBeVisible();
     });
 
-    test("de otra tienda: avisa antes de vaciar el carrito", async ({ page }) => {
+    test("conserva en el carrito productos de dos tiendas", async ({ page }) => {
       await page.goto(`${STORE_URL}/tiendas/${STORE2_ID}`);
       await page.getByRole("button", { name: "Agregar Frijoles rojos al carrito" }).click();
       await page.goto(`${STORE_URL}/catalogo`);
       await page.getByRole("button", { name: "Agregar Capuchino al carrito" }).click();
-      await expect(page.getByRole("dialog", { name: "Tu carrito es de otra tienda" })).toBeVisible();
+      await page.goto(`${STORE_URL}/carrito`);
+      await expect(page.getByRole("link", { name: "Frijoles rojos", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Capuchino", exact: true })).toBeVisible();
     });
 
-    test("@a11y en móvil el panel de filtros se abre con su botón", async ({ page }) => {
+    test("@a11y en móvil la barra de filtros permite llegar al precio", async ({ page }) => {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`${STORE_URL}/catalogo`);
-      const toggle = page.getByRole("button", { name: /^Filtros/ });
-      await expect(toggle).toHaveAttribute("aria-expanded", "false");
-      await toggle.click();
-      await expect(toggle).toHaveAttribute("aria-expanded", "true");
+      await expect(page.getByRole("search", { name: "Filtros del catálogo" })).toBeVisible();
+      await page.getByLabel("Precio mínimo").scrollIntoViewIfNeeded();
       await expect(page.getByLabel("Precio mínimo")).toBeVisible();
       await expectNoViolations(page);
     });
@@ -137,7 +135,7 @@ test.describe("tienda · catálogo y carrito", () => {
     await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await page.goto(`${STORE_URL}/carrito`);
     await expect(page.getByRole("link", { name: "Café molido" })).toBeVisible();
-    await expect(page.getByText("Total", { exact: true })).toBeVisible();
+    await expect(page.getByText("Subtotal", { exact: true })).toBeVisible();
     await expectNoViolations(page);
 
     await page.reload();
@@ -145,11 +143,11 @@ test.describe("tienda · catálogo y carrito", () => {
     await page.getByRole("button", { name: "Más" }).click();
     await expect(page.getByRole("group", { name: "Cantidad de Café molido" })).toContainText("3");
 
-    await page.getByRole("link", { name: "Pagar" }).click();
+    await page.getByRole("link", { name: "Continuar con la compra" }).click();
     await expect(page).toHaveURL(/\/ingresar\?next=%2Fcheckout/);
 
     await page.goto(`${STORE_URL}/carrito`);
-    await page.getByRole("button", { name: /Quitar/ }).click();
+    await page.getByRole("button", { name: "Quitar", exact: true }).click();
     await expect(page.getByRole("link", { name: "Café molido" })).toHaveCount(0);
   });
 

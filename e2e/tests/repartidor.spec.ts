@@ -59,7 +59,7 @@ test.describe("@backend app del repartidor", () => {
     await page.goto(`${COURIER_URL}/ingresar`);
     await page.getByLabel("Correo").fill(courierEmail);
     await page.getByLabel("Contraseña").fill(PASSWORD);
-    await page.getByRole("button", { name: "Ingresar", exact: true }).click();
+    await page.getByRole("button", { name: "Ingresar", exact: true }).tap();
     await expect(page).toHaveURL(`${COURIER_URL}/`, { timeout: 30_000 });
     await page.getByRole("button", { name: "Empezar" }).click();
     await expect(page.getByText("Estoy disponible")).toBeVisible({ timeout: 30_000 });

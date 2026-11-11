@@ -31,7 +31,7 @@ test.describe("@backend pedido de punta a punta", () => {
     await signIn(commerce, shop.account.email, shop.account.password);
     await fillCode(commerce, totp(shop.ownerSecret));
     await expect(commerce).toHaveURL(/\/comercio$/, { timeout: 30_000 });
-    await expect(commerce.getByText("Pedidos por confirmar")).toBeVisible();
+    await expect(commerce.getByRole("link", { name: /pedidos? espera[n]? tu confirmación/ })).toBeVisible();
     await commerce.goto(`${CONSOLE_URL}/comercio/pedidos`);
     await commerce.getByRole("button", { name: order }).click();
     await commerce.getByRole("button", { name: "Confirmar", exact: true }).click();
@@ -60,7 +60,7 @@ test.describe("@backend pedido de punta a punta", () => {
     await expect(coordination).toHaveURL(/\/coordinacion\/resumen$/, { timeout: 30_000 });
     await coordination.goto(`${CONSOLE_URL}/coordinacion/pedidos/${number}`);
     await expect(coordination.getByText("Barrio Central, casa 4", { exact: true })).toBeVisible();
-    await coordination.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto` });
+    await coordination.getByLabel("Asignar directamente (excepción)").selectOption({ label: `${courierName} · moto · sin cuenta` });
     await coordination.getByRole("button", { name: "Asignar repartidor" }).click();
     await expect(coordination.getByText("Repartidor asignado.")).toBeVisible();
     await coordination.getByRole("button", { name: "Despachar", exact: true }).click();
@@ -79,8 +79,8 @@ test.describe("@backend pedido de punta a punta", () => {
     await expect(admin).toHaveURL(new RegExp(`/admin/pedidos/${number}$`), { timeout: 30_000 });
     await expect(admin.getByRole("heading", { level: 1, name: `Pedido ${number}` })).toBeVisible({ timeout: 30_000 });
     await expect(admin.getByText("Entregado", { exact: true }).first()).toBeVisible();
-    await expect(admin.getByText("Efectivo · cobrado")).toBeVisible();
-    await expect(admin.getByText(courierName)).toBeVisible();
+    await expect(admin.getByText("Efectivo · cobrado").first()).toBeVisible();
+    await expect(admin.getByText(courierName).first()).toBeVisible();
     await expectNoViolations(admin);
     expect(await stockOf(shop.owner, shop.variantId)).toBe(8);
   });

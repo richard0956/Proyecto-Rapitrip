@@ -31,6 +31,13 @@ select set_config('t.single', public.create_order(current_setting('t.a')::uuid, 
 select set_config('t.co', public.create_checkout(format('[{"store_id":"%s","items":[{"variant_id":"%s","quantity":2}]},{"store_id":"%s","items":[{"variant_id":"%s","quantity":1}]}]',
   current_setting('t.a'), current_setting('t.va'), current_setting('t.b'), current_setting('t.vb'))::jsonb, 'tarjeta', 'Barrio Central, casa 4', '88881111', null, null, 12.136400, -86.251400)::jsonb ->> 'checkout_id', true);
 
+-- now() es igual durante toda la transacción: se distingue la fecha del pedido previo para probar el orden, sin depender del UUID.
+reset role;
+set session_replication_role = replica;
+update sales.orders set created_at = now() - interval '1 minute' where id = current_setting('t.single')::uuid;
+set session_replication_role = origin;
+select tests.authenticate_as((select id from tu where k = 'cli'));
+
 select is((select count(*)::int from public.my_order_units), 2, 'el listado tiene dos unidades: el pedido suelto y la compra');
 select is((select order_count from public.my_order_units where unit_id = current_setting('t.co')::uuid), 2, 'la compra agrupa sus dos pedidos');
 select is((select checkout_id from public.my_order_units where unit_id = current_setting('t.co')::uuid), current_setting('t.co')::uuid, 'y dice de qué compra es');

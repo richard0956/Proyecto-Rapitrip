@@ -2,6 +2,10 @@
   "name": "rapitrip",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "db:start": "supabase start",
     "fn:serve": "supabase functions serve --env-file supabase/functions/.env",
@@ -11,7 +15,7 @@
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --level warning",
     "db:types": "supabase gen types typescript --local > packages/db-types/src/database.types.ts",
-    "fn:test": "deno test --allow-env --allow-net --allow-read supabase/functions",
+    "fn:test": "deno test --node-modules-dir=none --allow-env --allow-net --allow-read supabase/functions",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "e2e": "pnpm --filter @rapitrip/e2e e2e",

@@ -1,0 +1,25 @@
+# El paquete que se sube a Railway contiene únicamente el código de las apps.
+**
+!Dockerfile.production
+!.dockerignore
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!apps/
+!apps/**
+!packages/
+!packages/**
+!e2e/
+!e2e/package.json
+!scripts/
+!scripts/docker/
+!scripts/docker/**
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+**/*.tsbuildinfo
+**/next-env.d.ts
+**/*.log
+**/.git

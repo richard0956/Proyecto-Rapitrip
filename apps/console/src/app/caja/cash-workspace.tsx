@@ -360,7 +360,7 @@ function SalePanel({ catalog, create, onClose }: { catalog: CatalogRow[]; create
                         {row.quantity !== null ? ` · quedan ${row.quantity}` : ""} · <span className="font-mono">{row.sku}</span>
                       </span>
                     </span>
-                    <Button variant="secondary" onClick={() => setQuantity(row, inCart + 1)} aria-label={`Agregar ${row.product}, ${row.variant}`} className="min-h-10 shrink-0 px-3">
+                    <Button variant="secondary" onClick={() => setQuantity(row, inCart + 1)} aria-label={`Agregar ${row.product}, ${row.variant}${inCart > 0 ? `. ${inCart} en la venta` : ""}`} className="min-h-10 shrink-0 px-3">
                       <Plus className="size-4" aria-hidden="true" />
                       {inCart > 0 ? inCart : "Agregar"}
                     </Button>

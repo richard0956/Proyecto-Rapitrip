@@ -1,12 +1,12 @@
 import { IntroSplash, introScript, motionScript } from "@rapitrip/ui";
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeSync } from "@/components/theme-picker";
 import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
-const texto = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-texto" });
-const titulo = Bricolage_Grotesque({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-titulo" });
+const texto = localFont({ src: "../../../../packages/ui/fonts/plus-jakarta-sans.woff2", weight: "400 800", style: "normal", display: "swap", variable: "--font-texto" });
+const titulo = localFont({ src: "../../../../packages/ui/fonts/bricolage-grotesque.woff2", weight: "500 800", style: "normal", display: "swap", variable: "--font-titulo" });
 
 export const metadata: Metadata = { title: { default: "Rapitrip · Consola", template: "%s · Rapitrip" }, description: "Consola de operación de Rapitrip.", robots: { index: false, follow: false } };
 

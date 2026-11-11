@@ -172,7 +172,7 @@ export function SiteNav({ signedIn, email, photo = null, addresses, setDefault, 
               <LocationSearch id="buscar" signedIn={signedIn} addresses={addresses} setDefault={setDefault} className="hidden w-full max-w-[380px] md:flex" />
             </div>
 
-            <Link href="/" aria-label="Rapitrip, inicio" className="rounded-full px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
+            <Link href="/" className="rounded-full px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hoja">
               <BrandMark priority />
             </Link>
 

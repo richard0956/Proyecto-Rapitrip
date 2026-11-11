@@ -24,9 +24,9 @@ const products = [
   [uuid(5), STORE2_ID, CATEGORY2_ID, "Aceite vegetal", "Aceite para cocinar.", [["1 litro", 66, null]], null, "2026-10-08"],
   [uuid(6), STORE2_ID, CATEGORY2_ID, "Azúcar", "Azúcar blanca.", [["Libra", 22, null]], null, "2026-10-15"],
   [uuid(7), STORE2_ID, CATEGORY_ID, "Café instantáneo", "Frasco de café soluble.", [["200 g", 180, null]], null, "2026-10-14"],
-].map(([id, store, category, name, description, variants, brand, created]) => ({
+].map(([id, store, category, name, description, variants, brand, created], productIndex) => ({
   id, store, category, name, description, brand, created,
-  variants: variants.map(([vname, price, max], i) => ({ id: id === PRODUCT_ID && i === 0 ? VARIANT_ID : `${id.slice(0, -2)}${String(i).padStart(2, "9")}`, name: vname, price, available: true, max_per_order: max })),
+  variants: variants.map(([vname, price, max], i) => ({ id: id === PRODUCT_ID && i === 0 ? VARIANT_ID : uuid(100 + productIndex * 10 + i), name: vname, price, available: true, max_per_order: max })),
 }));
 
 const storeOf = (id) => stores.find((s) => s.id === id);

@@ -51,7 +51,7 @@ export default async function VendePage() {
         <div aria-hidden="true" className="absolute -right-24 -top-24 -z-10 size-72 rounded-full bg-esmeralda/20 blur-3xl" />
         <div aria-hidden="true" className="absolute -bottom-28 -left-16 -z-10 size-72 rounded-full bg-marino/50 blur-3xl dark:bg-marino/15" />
         <Reveal>
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-esmeralda ring-1 ring-white/15">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold text-nav-texto ring-1 ring-white/15">
             <Store aria-hidden="true" className="size-3.5" /> Para comercios
           </p>
           <h1 className="mt-4 text-[32px] font-extrabold leading-[1.05] tracking-tight sm:text-[40px]">Vende en Rapitrip</h1>

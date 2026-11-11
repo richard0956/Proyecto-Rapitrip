@@ -107,7 +107,6 @@ test.describe("@backend mapas · ubicación de tienda y destino del pedido", () 
     await page.getByRole("button", { name: "Agregar dirección" }).click();
     await page.getByLabel("Nombre", { exact: true }).fill("Casa");
     await page.getByLabel("Dirección de entrega").fill("Barrio Central, casa 4, portón azul");
-    await page.getByLabel("Departamento", { exact: true }).selectOption("managua");
     await page.getByRole("button", { name: "Usar mi ubicación" }).click();
     await expect(page.getByText("Punto marcado: 12.13640, -86.25140.")).toBeVisible();
     await page.getByRole("button", { name: "Guardar dirección" }).click();

@@ -61,6 +61,8 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     // Venta con tarjeta en terminal: 1 café; luego se anula
     await add.click();
     await page.getByRole("tab", { name: "Tarjeta (terminal)" }).click();
+    await expect(page.getByRole("button", { name: "Cobrar" })).toBeDisabled();
+    await page.getByLabel("Voucher del terminal").fill(`E2E-${unique}`);
     await page.getByRole("button", { name: "Cobrar" }).click();
     await expect(page.getByText(/Ventas \(2\)/)).toBeVisible();
     expect(await stockOf(shop.owner, shop.variantId)).toBe(7);
@@ -80,12 +82,12 @@ test.describe("@backend caja · turno y venta de mostrador", () => {
     const close = page.getByRole("dialog");
     await close.getByLabel("Efectivo contado").fill("790");
     await close.getByRole("button", { name: "Cerrar caja" }).click();
-    await expect(close.getByRole("alert")).toContainText("diferencia");
+    await expect(close.getByRole("alert")).toContainText("explica el motivo");
     await close.getByLabel("Nota").fill("faltan 10 de un vuelto mal dado");
     await close.getByRole("button", { name: "Cerrar caja" }).click();
 
     await expect(page.getByText("No hay un turno abierto")).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/Diferencia.*10/)).toBeVisible();
+    await expect(page.getByText(/Diferencia.*10/).first()).toBeVisible();
     await expectNoViolations(page);
   });
 });

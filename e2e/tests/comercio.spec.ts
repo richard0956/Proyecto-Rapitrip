@@ -42,6 +42,7 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     // Tienda y horario
     await createStore(page, "Sucursal Centro");
     await expectNoViolations(page);
+    await page.getByRole("button", { name: /Horario semanal/ }).click();
     await page.getByRole("button", { name: "Agregar tramo" }).first().click();
     await page.getByLabel("Lunes, apertura 1").fill("00:00");
     await page.getByLabel("Lunes, cierre 1").fill("23:59");
@@ -55,6 +56,7 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     // Cierre temporal: la tienda deja de estar abierta y se puede reabrir
     await page.getByRole("link", { name: /Sucursal Centro/ }).click();
     const tomorrow = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
+    await page.getByRole("button", { name: /^Estado\b/ }).click();
     await page.getByLabel("Reabre el").fill(`${tomorrow}T08:00`);
     await page.getByRole("button", { name: "Cerrar temporalmente" }).click();
     await expect(page.getByText("Cierre temporal programado.")).toBeVisible();
@@ -195,11 +197,11 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await expect(page.getByText("Tienda a suspender")).toBeVisible();
     await expectNoViolations(page);
 
-    await page.getByRole("button", { name: "Suspender comercio" }).click();
+    await page.getByRole("button", { name: "Suspender vendedor" }).click();
     await page.getByLabel("Motivo").fill("incumplimiento del convenio");
     await page.getByRole("button", { name: "Suspender", exact: true }).click();
-    await expect(page.getByText("Suspendido", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Reactivar comercio" })).toBeVisible();
+    await expect(page.getByText("Suspendido", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reactivar vendedor" })).toBeVisible();
 
     // El comercio suspendido deja de ver sus tiendas y no puede crear otras.
     const { data: stores } = await owner.client.from("stores_list").select("id");
@@ -225,7 +227,7 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await signIn(page, shop.account.email, shop.account.password);
     await fillCode(page, totp(shop.ownerSecret));
     await expect(page).toHaveURL(/\/comercio$/, { timeout: 30_000 });
-    await expect(page.getByText("Pedidos por confirmar")).toBeVisible();
+    await expect(page.getByRole("link", { name: /pedidos? espera[n]? tu confirmación/ })).toBeVisible();
 
     await page.goto(`${CONSOLE_URL}/comercio/pedidos`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pedidos", { timeout: 30_000 });
@@ -265,9 +267,9 @@ test.describe("@backend consola · área de comercio (Fase 2)", () => {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("tab", { name: /Terminados/, selected: true })).toBeVisible();
 
-    // Inicio: nada por confirmar y la venta de hoy es la del pedido confirmado (2 × 150 + 50 de envío de la zona 1)
+    // Inicio: nada por confirmar y la venta del periodo es la del pedido confirmado (2 × 150 + 50 de envío de la zona 1)
     await page.goto(`${CONSOLE_URL}/comercio`);
-    await expect(page.getByText("Ventas de hoy")).toBeVisible();
+    await expect(page.getByText("Ventas (este mes)", { exact: true })).toBeVisible();
     await expect(page.getByText(/350/).first()).toBeVisible();
     await expectNoViolations(page);
   });
@@ -289,22 +291,24 @@ test.describe("@backend consola · dashboard del comercio", () => {
     await signIn(page, shop.account.email, shop.account.password);
     await fillCode(page, totp(shop.ownerSecret));
     await expect(page).toHaveURL(/\/comercio$/, { timeout: 30_000 });
-    await expect(page.getByText("Pedidos por confirmar")).toBeVisible();
+    await expect(page.getByRole("link", { name: /pedidos? espera[n]? tu confirmación/ })).toBeVisible();
     await expect(page.getByText(/1 pedido espera tu confirmación/)).toBeVisible();
-    await expect(page.getByRole("link", { name: "Mes" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Mes", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.getByRole("img", { name: /Ventas por día/ })).toBeVisible();
     await expectNoViolations(page);
 
     // Inventario: con stock suficiente no hay nada por reponer; «Todos» muestra la variante con su estado
     await expect(page.getByText("Nada que reponer")).toBeVisible();
-    await page.getByRole("link", { name: "Todos" }).click();
-    await expect(page).toHaveURL(/inventario=todos/);
-    await expect(page.getByRole("cell", { name: /Café molido/ })).toBeVisible();
-    await expect(page.getByRole("cell", { name: "Disponible" })).toBeVisible();
+    await page.getByRole("link", { name: "Ir al inventario" }).click();
+    await expect(page).toHaveURL(/\/comercio\/inventario$/);
+    await page.getByRole("tab", { name: "Todos", exact: true }).click();
+    await expect(page.getByRole("listitem").filter({ hasText: "Café molido" })).toBeVisible();
+    await expect(page.getByText("Disponible", { exact: true })).toBeVisible();
 
     // Una tienda ajena en la URL se ignora: no aparece nada del otro comercio
-    await page.goto(`${CONSOLE_URL}/comercio?tienda=${other.storeId}&inventario=todos`);
-    await expect(page.getByRole("cell", { name: /Café molido/ })).toBeVisible();
+    await page.goto(`${CONSOLE_URL}/comercio/inventario?tienda=${other.storeId}`);
+    await page.getByRole("tab", { name: "Todos", exact: true }).click();
+    await expect(page.getByRole("listitem").filter({ hasText: "Café molido" })).toBeVisible();
     await expect(page.getByText("Té ajeno")).toHaveCount(0);
   });
 });

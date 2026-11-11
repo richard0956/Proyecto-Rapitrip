@@ -1,0 +1,48 @@
+name: rapitrip-apps
+
+x-app: &app
+  image: rapitrip-apps:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+  init: true
+  restart: unless-stopped
+  stop_grace_period: 20s
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  store:
+    <<: *app
+    command: ["store"]
+    env_file: ./apps/store/.env.local
+    environment:
+      PORT: "3000"
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  console:
+    <<: *app
+    command: ["console"]
+    env_file: ./apps/console/.env.local
+    environment:
+      PORT: "3001"
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3001
+    ports:
+      - "127.0.0.1:3001:3001"
+
+  dealer:
+    <<: *app
+    command: ["dealer"]
+    env_file: ./apps/dealer/.env.local
+    environment:
+      PORT: "3002"
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3002
+    ports:
+      - "127.0.0.1:3002:3002"

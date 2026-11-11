@@ -112,12 +112,12 @@ test.describe("@backend administración · dashboard de inicio", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Hola", { timeout: 30_000 });
 
     // El mes es el periodo por defecto; el gráfico de ventas está disponible y cambiar de periodo actualiza la URL
-    await expect(page.getByRole("link", { name: "Mes" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Mes", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.getByRole("img", { name: /Ventas por día/ })).toBeVisible();
     await page.getByRole("link", { name: "7 días" }).click();
     await expect(page).toHaveURL(/periodo=7d/);
     await expect(page.getByRole("link", { name: "7 días" })).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("link", { name: "Mes" })).not.toHaveAttribute("aria-current");
+    await expect(page.getByRole("link", { name: "Mes", exact: true })).not.toHaveAttribute("aria-current");
     await expectNoViolations(page);
 
     // Hoy no hay tendencia que dibujar y la pantalla lo explica en lugar de mostrar un gráfico vacío
@@ -127,8 +127,10 @@ test.describe("@backend administración · dashboard de inicio", () => {
     // Solicitudes: una tabla con filtros por estado y búsqueda, no dos secciones
     await page.goto(`${CONSOLE_URL}/admin/solicitudes`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solicitudes", { timeout: 30_000 });
-    await expect(page.getByRole("tab", { name: /Pendientes/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /Aprobadas/ })).toBeVisible();
+    const status = page.getByRole("combobox", { name: "Estado de la solicitud" });
+    await expect(status).toBeVisible();
+    await expect(status.getByRole("option", { name: /Pendientes/ })).toHaveCount(1);
+    await expect(status.getByRole("option", { name: /Aprobadas/ })).toHaveCount(1);
     await expect(page.getByLabel("Buscar negocio")).toBeVisible();
     await expectNoViolations(page);
   });
@@ -208,7 +210,7 @@ test.describe("@backend administración · catálogo maestro", () => {
 
     // Búsqueda: el producto aparece con las unidades vendidas este mes
     await page.getByRole("searchbox", { name: "Buscar producto" }).fill(`cafe catalogo ${unique}`);
-    const row = page.getByRole("row", { name: new RegExp(product) });
+    const row = page.getByRole("table", { name: "Productos de los comercios" }).getByRole("row", { name: new RegExp(product) });
     await expect(row).toBeVisible();
     await expect(row.getByRole("cell", { name: "3", exact: true })).toBeVisible();
     await expectNoViolations(page);
@@ -218,7 +220,7 @@ test.describe("@backend administración · catálogo maestro", () => {
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Categoría").selectOption({ label: category });
     await dialog.getByRole("button", { name: "Guardar cambios" }).click();
-    await expect(page.getByRole("row", { name: new RegExp(product) }).getByText(category)).toBeVisible({ timeout: 30_000 });
+    await expect(row.getByText(category)).toBeVisible({ timeout: 30_000 });
 
     // Ocultar exige motivo y lo deja como borrador
     await page.getByRole("button", { name: `Editar ${product}` }).click();
@@ -226,9 +228,9 @@ test.describe("@backend administración · catálogo maestro", () => {
     await expect(hide).toBeDisabled();
     await page.getByRole("dialog").getByLabel("Motivo").fill("la foto no corresponde al producto");
     await hide.click();
-    await expect(page.getByRole("row", { name: new RegExp(product) }).getByText("Borrador")).toBeVisible({ timeout: 30_000 });
+    await expect(row.getByText("Borrador")).toBeVisible({ timeout: 30_000 });
     await page.getByRole("button", { name: /Borradores/ }).click();
-    await expect(page.getByRole("row", { name: new RegExp(product) })).toBeVisible();
+    await expect(row).toBeVisible();
 
     // Categorías: la gestión de clasificación sigue en su pestaña
     await page.getByRole("link", { name: "Categorías" }).click();
