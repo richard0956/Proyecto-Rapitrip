@@ -57,6 +57,7 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 COPY --from=builder --chown=node:node /out/ ./
+COPY --from=builder --chown=node:node /app/packages/ui/fonts/*-OFL.txt ./licenses/fonts/
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=4 \
