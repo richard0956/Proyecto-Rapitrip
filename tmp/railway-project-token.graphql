@@ -1,0 +1,1 @@
+mutation { projectTokenCreate(input: {projectId: "75f9490e-ff8f-41ab-9b6d-e92a16b1c608", environmentId: "e65c9ece-b298-4904-8cfe-154ca219b500", name: "GitHub Actions - production"}) }

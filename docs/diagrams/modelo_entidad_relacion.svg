@@ -1,0 +1,461 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3260" height="2745" viewBox="0 0 3260 2745">
+<rect width="3260" height="2745" fill="#f4f7fb"/>
+<text x="40" y="68" font-family="Arial, Segoe UI, sans-serif" font-size="36" font-weight="700" fill="#17243b">Modelo entidad-relación · Rapitrip</text>
+<text x="40" y="108" font-family="Arial, Segoe UI, sans-serif" font-size="18" fill="#53647c">Estructura derivada de 89 migraciones SQL · 69 tablas · claves y relaciones declaradas</text>
+<text x="40" y="139" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#6a7890">Cada línea FK indica la columna que referencia otra tabla. Las vistas, funciones y relaciones no declaradas como FK se omiten.</text>
+<rect x="40" y="170" width="510" height="58" rx="12" fill="#4d88f5"/>
+<text x="58" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">IDENTIDAD Y ACCESO</text>
+<rect x="40" y="246" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="246" width="7" height="109" rx="3" fill="#4d88f5"/>
+<text x="60" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.profiles</text>
+<text x="60" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  status, created_at</text>
+<rect x="40" y="369" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="369" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="400" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.profile_pii</text>
+<text x="60" y="428" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  user_id</text>
+<text x="60" y="452" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="476" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  full_name, email</text>
+<rect x="40" y="516" width="510" height="181" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="516" width="7" height="181" rx="3" fill="#4d88f5"/>
+<text x="60" y="547" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.user_roles</text>
+<text x="60" y="575" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="599" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="623" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="60" y="647" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  granted_by → identity.profiles</text>
+<text x="60" y="671" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  role, status</text>
+<rect x="40" y="711" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="711" width="7" height="109" rx="3" fill="#4d88f5"/>
+<text x="60" y="742" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.commerces</text>
+<text x="60" y="770" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="794" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, status</text>
+<rect x="40" y="834" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="834" width="7" height="157" rx="3" fill="#4d88f5"/>
+<text x="60" y="865" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.couriers</text>
+<text x="60" y="893" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="917" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="941" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  department → sales.departments</text>
+<text x="60" y="965" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  full_name, phone</text>
+<rect x="40" y="1005" width="510" height="181" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1005" width="7" height="181" rx="3" fill="#4d88f5"/>
+<text x="60" y="1036" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.invitations</text>
+<text x="60" y="1064" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="1088" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  invited_by → identity.profiles</text>
+<text x="60" y="1112" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="60" y="1136" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="60" y="1160" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  email, role</text>
+<rect x="40" y="1200" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1200" width="7" height="157" rx="3" fill="#4d88f5"/>
+<text x="60" y="1231" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.commerce_requests</text>
+<text x="60" y="1259" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="1283" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  requester_id → identity.profiles</text>
+<text x="60" y="1307" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="60" y="1331" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  business_name, details</text>
+<rect x="40" y="1371" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1371" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="1402" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.push_subscriptions</text>
+<text x="60" y="1430" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="1454" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="1478" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  endpoint, p256dh</text>
+<rect x="40" y="1518" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1518" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="1549" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.deletion_requests</text>
+<text x="60" y="1577" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="1601" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="1625" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  reason, status</text>
+<rect x="40" y="1665" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1665" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="1696" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.feedback</text>
+<text x="60" y="1724" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="1748" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  user_id → identity.profiles</text>
+<text x="60" y="1772" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  topic, rating</text>
+<rect x="40" y="1812" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1812" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="1843" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.institutional_domains</text>
+<text x="60" y="1871" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  domain</text>
+<text x="60" y="1895" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  added_by → identity.profiles</text>
+<text x="60" y="1919" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  created_at</text>
+<rect x="40" y="1959" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="40" y="1959" width="7" height="133" rx="3" fill="#4d88f5"/>
+<text x="60" y="1990" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">identity.access_reviews</text>
+<text x="60" y="2018" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="60" y="2042" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  reviewed_by → identity.profiles</text>
+<text x="60" y="2066" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  reviewed_at, snapshot</text>
+<rect x="574" y="170" width="510" height="58" rx="12" fill="#16a6a3"/>
+<text x="592" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">COMERCIOS Y CATÁLOGO</text>
+<rect x="574" y="246" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="246" width="7" height="157" rx="3" fill="#16a6a3"/>
+<text x="594" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.stores</text>
+<text x="594" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="594" y="353" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  department → sales.departments</text>
+<text x="594" y="377" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, address</text>
+<rect x="574" y="417" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="417" width="7" height="133" rx="3" fill="#16a6a3"/>
+<text x="594" y="448" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.store_hours</text>
+<text x="594" y="476" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="500" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="524" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  weekday, opens</text>
+<rect x="574" y="564" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="564" width="7" height="133" rx="3" fill="#16a6a3"/>
+<text x="594" y="595" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.store_exceptions</text>
+<text x="594" y="623" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="647" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="671" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  on_date, closed</text>
+<rect x="574" y="711" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="711" width="7" height="133" rx="3" fill="#16a6a3"/>
+<text x="594" y="742" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.master_items</text>
+<text x="594" y="770" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="794" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  parent_id → commerce.master_items</text>
+<text x="594" y="818" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, name</text>
+<rect x="574" y="858" width="510" height="205" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="858" width="7" height="205" rx="3" fill="#16a6a3"/>
+<text x="594" y="889" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.products</text>
+<text x="594" y="917" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="941" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="965" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  category_id → commerce.master_items</text>
+<text x="594" y="989" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  brand_id → commerce.master_items</text>
+<text x="594" y="1013" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  product_type_id → commerce.master_items</text>
+<text x="594" y="1037" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, description</text>
+<rect x="574" y="1077" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1077" width="7" height="157" rx="3" fill="#16a6a3"/>
+<text x="594" y="1108" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.product_variants</text>
+<text x="594" y="1136" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="1160" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  product_id → commerce.products</text>
+<text x="594" y="1184" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="1208" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, sku</text>
+<rect x="574" y="1248" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1248" width="7" height="133" rx="3" fill="#16a6a3"/>
+<text x="594" y="1279" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.product_images</text>
+<text x="594" y="1307" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="1331" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  product_id → commerce.products</text>
+<text x="594" y="1355" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  path, position</text>
+<rect x="574" y="1395" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1395" width="7" height="157" rx="3" fill="#16a6a3"/>
+<text x="594" y="1426" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.inventory</text>
+<text x="594" y="1454" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  variant_id</text>
+<text x="594" y="1478" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  variant_id → commerce.product_variants</text>
+<text x="594" y="1502" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="1526" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  track_stock, quantity</text>
+<rect x="574" y="1566" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1566" width="7" height="157" rx="3" fill="#16a6a3"/>
+<text x="594" y="1597" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.stock_movements</text>
+<text x="594" y="1625" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="1649" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  variant_id → commerce.product_variants</text>
+<text x="594" y="1673" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="1697" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, delta</text>
+<rect x="574" y="1737" width="510" height="181" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1737" width="7" height="181" rx="3" fill="#16a6a3"/>
+<text x="594" y="1768" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.catalog_reports</text>
+<text x="594" y="1796" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="1820" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="594" y="1844" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="594" y="1868" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  product_id → commerce.products</text>
+<text x="594" y="1892" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  reporter_id, source</text>
+<rect x="574" y="1932" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="1932" width="7" height="157" rx="3" fill="#16a6a3"/>
+<text x="594" y="1963" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.catalog_notices</text>
+<text x="594" y="1991" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="2015" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="594" y="2039" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  report_id → commerce.catalog_reports</text>
+<text x="594" y="2063" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, message</text>
+<rect x="574" y="2103" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="2103" width="7" height="109" rx="3" fill="#16a6a3"/>
+<text x="594" y="2134" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.catalog_reviews</text>
+<text x="594" y="2162" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="2186" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  reviewed_by, reviewed_at</text>
+<rect x="574" y="2226" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="574" y="2226" width="7" height="133" rx="3" fill="#16a6a3"/>
+<text x="594" y="2257" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">commerce.catalog_measures</text>
+<text x="594" y="2285" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="594" y="2309" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="594" y="2333" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  decided_by, decided_at</text>
+<rect x="1108" y="170" width="510" height="58" rx="12" fill="#a17af7"/>
+<text x="1126" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">PEDIDOS Y ENTREGAS</text>
+<rect x="1108" y="246" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="246" width="7" height="133" rx="3" fill="#a17af7"/>
+<text x="1128" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.checkouts</text>
+<text x="1128" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  client_id → identity.profiles</text>
+<text x="1128" y="353" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  client_ref, payment_method</text>
+<rect x="1108" y="393" width="510" height="397" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="393" width="7" height="397" rx="3" fill="#a17af7"/>
+<text x="1128" y="424" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.orders</text>
+<text x="1128" y="452" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="476" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  client_id → identity.profiles</text>
+<text x="1128" y="500" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="1128" y="524" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="1128" y="548" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="1128" y="572" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cashier_id → identity.profiles</text>
+<text x="1128" y="596" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cash_session_id → sales.cash_sessions</text>
+<text x="1128" y="620" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cash_received_session → sales.cash_sessions</text>
+<text x="1128" y="644" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  refund_session_id → sales.cash_sessions</text>
+<text x="1128" y="668" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  checkout_id → sales.checkouts</text>
+<text x="1128" y="692" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  origin_department → sales.departments</text>
+<text x="1128" y="716" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  destination_department → sales.departments</text>
+<text x="1128" y="740" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cash_handoff_id → sales.cash_handoffs</text>
+<text x="1128" y="764" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  number, store_name</text>
+<rect x="1108" y="804" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="804" width="7" height="157" rx="3" fill="#a17af7"/>
+<text x="1128" y="835" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.order_items</text>
+<text x="1128" y="863" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="887" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="911" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  variant_id → commerce.product_variants</text>
+<text x="1128" y="935" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  product_name, variant_name</text>
+<rect x="1108" y="975" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="975" width="7" height="133" rx="3" fill="#a17af7"/>
+<text x="1128" y="1006" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.order_events</text>
+<text x="1128" y="1034" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="1058" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1082" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  from_status, to_status</text>
+<rect x="1108" y="1122" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1122" width="7" height="133" rx="3" fill="#a17af7"/>
+<text x="1128" y="1153" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.order_delivery</text>
+<text x="1128" y="1181" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  order_id</text>
+<text x="1128" y="1205" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1229" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  address, phone</text>
+<rect x="1108" y="1269" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1269" width="7" height="157" rx="3" fill="#a17af7"/>
+<text x="1128" y="1300" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.order_offers</text>
+<text x="1128" y="1328" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="1352" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1376" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="1128" y="1400" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  status, offered_by</text>
+<rect x="1108" y="1440" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1440" width="7" height="133" rx="3" fill="#a17af7"/>
+<text x="1128" y="1471" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.order_codes</text>
+<text x="1128" y="1499" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  order_id</text>
+<text x="1128" y="1523" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1547" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  pickup_code, delivery_code</text>
+<rect x="1108" y="1587" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1587" width="7" height="157" rx="3" fill="#a17af7"/>
+<text x="1128" y="1618" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_evidence</text>
+<text x="1128" y="1646" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="1670" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1694" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="1128" y="1718" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, file_path</text>
+<rect x="1108" y="1758" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1758" width="7" height="157" rx="3" fill="#a17af7"/>
+<text x="1128" y="1789" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_issues</text>
+<text x="1128" y="1817" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="1841" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="1865" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="1128" y="1889" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, reason</text>
+<rect x="1108" y="1929" width="510" height="205" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="1929" width="7" height="205" rx="3" fill="#a17af7"/>
+<text x="1128" y="1960" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.return_requests</text>
+<text x="1128" y="1988" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="2012" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="1128" y="2036" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  client_id → identity.profiles</text>
+<text x="1128" y="2060" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  decided_by → identity.profiles</text>
+<text x="1128" y="2084" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cash_return_session → sales.cash_sessions</text>
+<text x="1128" y="2108" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  reason, photos</text>
+<rect x="1108" y="2148" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="2148" width="7" height="133" rx="3" fill="#a17af7"/>
+<text x="1128" y="2179" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.customer_addresses</text>
+<text x="1128" y="2207" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="2231" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  department → sales.departments</text>
+<text x="1128" y="2255" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  client_id, label</text>
+<rect x="1108" y="2295" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1108" y="2295" width="7" height="157" rx="3" fill="#a17af7"/>
+<text x="1128" y="2326" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_quotes</text>
+<text x="1128" y="2354" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1128" y="2378" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  store_id → commerce.stores</text>
+<text x="1128" y="2402" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  zone → sales.delivery_zones</text>
+<text x="1128" y="2426" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  client_id, latitude</text>
+<rect x="1642" y="170" width="510" height="58" rx="12" fill="#e6a24c"/>
+<text x="1660" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">GEOGRAFÍA Y REGLAS</text>
+<rect x="1642" y="246" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="246" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.departments</text>
+<text x="1662" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  code</text>
+<text x="1662" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, extra_days</text>
+<rect x="1642" y="369" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="369" width="7" height="133" rx="3" fill="#e6a24c"/>
+<text x="1662" y="400" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.department_anchors</text>
+<text x="1662" y="428" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  department, name</text>
+<text x="1662" y="452" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  department → sales.departments</text>
+<text x="1662" y="476" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  latitude, longitude</text>
+<rect x="1642" y="516" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="516" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="547" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_zones</text>
+<text x="1662" y="575" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  zone</text>
+<text x="1662" y="599" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  up_to_km, courier_pay</text>
+<rect x="1642" y="639" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="639" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="670" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_settings</text>
+<text x="1662" y="698" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1662" y="722" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  road_factor</text>
+<rect x="1642" y="762" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="762" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="793" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.delivery_class_settings</text>
+<text x="1662" y="821" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1662" y="845" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  max_unit_kg, max_side_cm</text>
+<rect x="1642" y="885" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="885" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="916" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.programmed_bands</text>
+<text x="1662" y="944" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  band</text>
+<text x="1662" y="968" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  up_to_km, min_days</text>
+<rect x="1642" y="1008" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="1008" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="1039" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.evidence_settings</text>
+<text x="1662" y="1067" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1662" y="1091" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  require_pickup_photo, require_delivery_photo</text>
+<rect x="1642" y="1131" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="1131" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="1162" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_settings</text>
+<text x="1662" y="1190" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="1662" y="1214" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  confirm_minutes, max_hold_hours</text>
+<rect x="1642" y="1254" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="1642" y="1254" width="7" height="109" rx="3" fill="#e6a24c"/>
+<text x="1662" y="1285" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.document_counters</text>
+<text x="1662" y="1313" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  series</text>
+<text x="1662" y="1337" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  last_number</text>
+<rect x="2176" y="170" width="510" height="58" rx="12" fill="#e4778b"/>
+<text x="2194" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">PAGOS, CAJA Y FACTURAS</text>
+<rect x="2176" y="246" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="246" width="7" height="109" rx="3" fill="#e4778b"/>
+<text x="2196" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.payment_events</text>
+<text x="2196" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  event_id</text>
+<text x="2196" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  event_type, order_id</text>
+<rect x="2176" y="369" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="369" width="7" height="133" rx="3" fill="#e4778b"/>
+<text x="2196" y="400" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_registers</text>
+<text x="2196" y="428" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="452" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  assigned_cashier → identity.profiles</text>
+<text x="2196" y="476" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  name, code</text>
+<rect x="2176" y="516" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="516" width="7" height="157" rx="3" fill="#e4778b"/>
+<text x="2196" y="547" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_sessions</text>
+<text x="2196" y="575" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="599" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cashier_id → identity.profiles</text>
+<text x="2196" y="623" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  register_id → sales.cash_registers</text>
+<text x="2196" y="647" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  opened_at, opening_amount</text>
+<rect x="2176" y="687" width="510" height="181" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="687" width="7" height="181" rx="3" fill="#e4778b"/>
+<text x="2196" y="718" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_session_incidents</text>
+<text x="2196" y="746" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="770" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  session_id → sales.cash_sessions</text>
+<text x="2196" y="794" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="818" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="2196" y="842" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, detail</text>
+<rect x="2176" y="882" width="510" height="205" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="882" width="7" height="205" rx="3" fill="#e4778b"/>
+<text x="2196" y="913" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_handoffs</text>
+<text x="2196" y="941" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="965" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="2196" y="989" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  session_id → sales.cash_sessions</text>
+<text x="2196" y="1013" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  register_id → sales.cash_registers</text>
+<text x="2196" y="1037" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cashier_id → identity.profiles</text>
+<text x="2196" y="1061" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  declared_amount, counted_amount</text>
+<rect x="2176" y="1101" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1101" width="7" height="157" rx="3" fill="#e4778b"/>
+<text x="2196" y="1132" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_handoff_items</text>
+<text x="2196" y="1160" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  handoff_id, order_id</text>
+<text x="2196" y="1184" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  handoff_id → sales.cash_handoffs</text>
+<text x="2196" y="1208" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="1232" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  amount</text>
+<rect x="2176" y="1272" width="510" height="229" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1272" width="7" height="229" rx="3" fill="#e4778b"/>
+<text x="2196" y="1303" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.cash_accountability</text>
+<text x="2196" y="1331" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="1355" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  courier_id → identity.couriers</text>
+<text x="2196" y="1379" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  cashier_id → identity.profiles</text>
+<text x="2196" y="1403" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  handoff_id → sales.cash_handoffs</text>
+<text x="2196" y="1427" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  session_id → sales.cash_sessions</text>
+<text x="2196" y="1451" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="1475" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, responsible</text>
+<rect x="2176" y="1515" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1515" width="7" height="133" rx="3" fill="#e4778b"/>
+<text x="2196" y="1546" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.commerce_agreements</text>
+<text x="2196" y="1574" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  commerce_id</text>
+<text x="2196" y="1598" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="2196" y="1622" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  commission_pct, period_days</text>
+<rect x="2176" y="1662" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1662" width="7" height="133" rx="3" fill="#e4778b"/>
+<text x="2196" y="1693" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.settlements</text>
+<text x="2196" y="1721" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="1745" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="2196" y="1769" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  number, orders_count</text>
+<rect x="2176" y="1809" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1809" width="7" height="157" rx="3" fill="#e4778b"/>
+<text x="2196" y="1840" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.settlement_items</text>
+<text x="2196" y="1868" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  order_id</text>
+<text x="2196" y="1892" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  settlement_id → sales.settlements</text>
+<text x="2196" y="1916" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="1940" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  subtotal, commission</text>
+<rect x="2176" y="1980" width="510" height="205" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="1980" width="7" height="205" rx="3" fill="#e4778b"/>
+<text x="2196" y="2011" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.settlement_reversals</text>
+<text x="2196" y="2039" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="2063" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  commerce_id → identity.commerces</text>
+<text x="2196" y="2087" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="2111" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  return_request_id → sales.return_requests</text>
+<text x="2196" y="2135" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  applied_settlement_id → sales.settlements</text>
+<text x="2196" y="2159" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  amount, bearer</text>
+<rect x="2176" y="2199" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="2199" width="7" height="109" rx="3" fill="#e4778b"/>
+<text x="2196" y="2230" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.reconciliations</text>
+<text x="2196" y="2258" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="2282" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  month, totals</text>
+<rect x="2176" y="2322" width="510" height="157" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="2322" width="7" height="157" rx="3" fill="#e4778b"/>
+<text x="2196" y="2353" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.invoices</text>
+<text x="2196" y="2381" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2196" y="2405" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="2429" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  credit_for → sales.invoices</text>
+<text x="2196" y="2453" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  kind, number</text>
+<rect x="2176" y="2493" width="510" height="133" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2176" y="2493" width="7" height="133" rx="3" fill="#e4778b"/>
+<text x="2196" y="2524" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">sales.invoice_buyers</text>
+<text x="2196" y="2552" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  order_id</text>
+<text x="2196" y="2576" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">FK  order_id → sales.orders</text>
+<text x="2196" y="2600" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  full_name, email</text>
+<rect x="2710" y="170" width="510" height="58" rx="12" fill="#7e94aa"/>
+<text x="2728" y="207" font-family="Arial, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="white">AUDITORÍA Y SERVICIOS</text>
+<rect x="2710" y="246" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="246" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="277" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">audit.events</text>
+<text x="2730" y="305" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="329" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  occurred_at, actor_id</text>
+<rect x="2710" y="369" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="369" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="400" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">audit.login_events</text>
+<text x="2730" y="428" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="452" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  source_audit_id, user_id</text>
+<rect x="2710" y="492" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="492" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="523" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">audit.it_incidents</text>
+<text x="2730" y="551" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="575" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  type, origin</text>
+<rect x="2710" y="615" width="510" height="85" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="615" width="7" height="85" rx="3" fill="#7e94aa"/>
+<text x="2730" y="646" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.role_management</text>
+<text x="2730" y="674" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  manager, target</text>
+<rect x="2710" y="714" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="714" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="745" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.session_activity</text>
+<text x="2730" y="773" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  session_id</text>
+<text x="2730" y="797" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  user_id, last_activity_at</text>
+<rect x="2710" y="837" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="837" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="868" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.email_outbox</text>
+<text x="2730" y="896" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="920" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  to_email, template</text>
+<rect x="2710" y="960" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="960" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="991" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.push_outbox</text>
+<text x="2730" y="1019" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="1043" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  user_id, kind</text>
+<rect x="2710" y="1083" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="1083" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="1114" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.login_attempts</text>
+<text x="2730" y="1142" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  email</text>
+<text x="2730" y="1166" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  failed_count, last_failed_at</text>
+<rect x="2710" y="1206" width="510" height="109" rx="10" fill="white" stroke="#dce4ef" stroke-width="1.5"/>
+<rect x="2710" y="1206" width="7" height="109" rx="3" fill="#7e94aa"/>
+<text x="2730" y="1237" font-family="Arial, Segoe UI, sans-serif" font-size="19" font-weight="700" fill="#20324e">private.whatsapp_outbox</text>
+<text x="2730" y="1265" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#3f5b85">PK  id</text>
+<text x="2730" y="1289" font-family="Arial, Segoe UI, sans-serif" font-size="16" fill="#52647b">Campos  to_phone, template</text>
+<text x="40" y="2710" font-family="Arial, Segoe UI, sans-serif" font-size="15" fill="#6a7890">Fuente: supabase/migrations · Generado a partir de CREATE TABLE y referencias FOREIGN KEY / REFERENCES.</text>
+</svg>

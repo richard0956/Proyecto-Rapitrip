@@ -1,0 +1,4 @@
+project_id = "rapitrip-railway-auth"
+
+[auth]
+site_url = "https://store-production-99a83160.up.railway.app"

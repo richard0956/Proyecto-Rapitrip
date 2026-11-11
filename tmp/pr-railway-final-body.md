@@ -1,0 +1,11 @@
+Los cambios de main se validan antes de publicarse. Cuando el CI termina correctamente, GitHub despliega el mismo commit: primero las migraciones y Edge Functions de Supabase y después tienda, consola y repartidor en Railway. Además, cada aplicación tiene una imagen standalone de Next.js, escucha en el puerto asignado y ofrece /api/health sin exigir sesión ni consultar el backend.
+
+El proyecto Rapitrip y sus tres servicios de Railway ya tienen dominios, variables públicas verificadas y ajustes de construcción y salud. Por su parte, GitHub tiene el entorno production, sus tres secretos y los identificadores de los servicios. Asimismo, Supabase Auth ya permite el callback de la tienda Railway y conserva las URL existentes. El despliegue remoto aplicó únicamente las dos nuevas migraciones de esta propuesta; además, no añadió avisos de seguridad respecto de la comprobación previa.
+
+Para completar el CI se corrigen la finalización de app_metadata durante el alta de Auth, los permisos de ubicación protegidos por RLS y varias fixtures y comprobaciones que habían quedado desactualizadas. También se guardan las fuentes y sus licencias localmente para estabilizar las compilaciones, y el acceso móvil del repartidor mantiene su posición al pasar del campo al botón de envío.
+
+Validación: [CI completo](https://github.com/richard0956/Proyecto-Rapitrip/actions/runs/42944285987) sobre un backend limpio, con 1.634 comprobaciones SQL, lint de base de datos, 69 pruebas de funciones, tipos, lint, pruebas unitarias, accesibilidad, movimiento y 23 flujos de operaciones. Asimismo, las tres imágenes se construyen y arrancan sin red con PORT=8080. En local se verificó el primer toque móvil y las tres aplicaciones existentes siguen saludables.
+
+El flujo ya está activo en main y el primer CD terminó correctamente. Se verificaron por HTTPS las páginas de acceso, un recurso JavaScript y /api/health de las tres aplicaciones, junto con el origen Supabase configurado. La configuración y las instrucciones de operación están en docs/despliegue.md.
+
+Publicación: [tienda](https://store-production-99a83160.up.railway.app), [consola](https://console-production-b177663d.up.railway.app) y [repartidor](https://dealer-production-79ab0725.up.railway.app). [CD verificado](https://github.com/richard0956/Proyecto-Rapitrip/actions/runs/42945106053).

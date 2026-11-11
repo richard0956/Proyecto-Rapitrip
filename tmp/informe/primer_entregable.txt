@@ -1,0 +1,763 @@
+=== PAGINA 1 ===
+ 
+ 
+ 
+ 
+ 
+ 
+Área de Conocimiento de Tecnología de la Información y 
+Comunicación (DACTIC) 
+Programa Académico de Ingeniería de Sistemas 
+ 
+ 
+ 
+ 
+Desarrollo de una plataforma digital de comercio electrónico 
+y gestión logística para la microempresa Rapitrip. 
+ 
+ 
+ Primer entregable de proyecto de asignatura de Disen  o de Sistemas 
+de internet. 
+ 
+ 
+ 
+ 
+ 
+ 
+  Elaborado por:                                                                                                                                      Tutor: 
+ 
+Br. Richard Alexander Br. Marlyng Elizabeth Br. Moisés Abraham Cristopher Alexander 
+Malespìn Tinoco Miranda Navarrete Zelaya Maldonado Chávez Larios 
+N° de Carnet: 2022-0323I N° de Carnet: 2022-0315I N° de Carnet: 2022-0225I 
+ 
+15 de agosto de 2026, 
+Managua, Nicaragua 
+
+=== PAGINA 2 ===
+ 
+ 
+Índice 
+1. Introducción .............................................................................................................................. 1 
+2. Objetivos .................................................................................................................................... 2 
+2.1. Objetivo general ................................................................................................................. 2 
+2.2. Objetivos específicos .......................................................................................................... 2 
+3. Requerimientos Funcionales y No Funcionales ...................................................................... 3 
+3.1 Requerimientos Funcionales .............................................................................................. 3 
+3.2. Requerimientos No Funcionales ..................................................................................... 21 
+4. Diagramas de Casos de Uso ................................................................................................... 30 
+4.1 Diagrama de caso de uso de negocio ............................................................................... 30 
+4.2 Diagrama de caso de usos de sistema .............................................................................. 31 
+5. Diagrama de Clases................................................................................................................. 32 
+6. Diagramas de navegación y presentación (Prototipo de figma) ......................................... 33 
+6.1 Archivo de figma vista general del las paginas y capas del sistema ............................. 33 
+6.2 Diagrama de navegación y presentación del cliente ...................................................... 33 
+6.3 Diagrama de navegación y presentación del administrador ......................................... 33 
+6.4 Diagrama de navegación y presentación del repartidor ................................................ 34 
+6.5 Diagrama de navegación y presentación del encargado de ventas ............................... 34 
+7. Diagramas de proceso ............................................................................................................. 35 
+7.1 Diagrama de proceso | Realizar pedido ........................................................................... 35 
+7.2 Diagrama de proceso | Registrar producto ..................................................................... 36 
+8. Modelo Entidad – Relación .................................................................................................... 37 
+ 
+ 
+ 
+ 
+=== PAGINA 3 ===
+1 
+ 
+1. Introducción 
+Rapitrip es una microempresa orientada a la comercialización de productos y a la gestión de 
+servicios asociados con la preparación, coordinación y entrega de pedidos. Como parte de su 
+proceso de evolución tecnológica, se plantea el desarrollo de una plataf orma digital que permita 
+integrar en un mismo entorno las actividades de comercio electrónico dirigidas al cliente y las 
+funciones administrativas y operativas necesarias para controlar la oferta comercial, el inventario, 
+los pedidos y las entregas. 
+El presente documento corresponde al primer entregable del proyecto y comprende las actividades 
+de análisis, modelado y diseño inicial del sistema de información de Rapitrip. Para ello, se parte 
+de las necesidades y requerimientos establecidos para la plat aforma, a partir de los cuales se 
+determinan las funcionalidades esperadas y las condiciones de calidad que debe cumplir el sistema. 
+Asimismo, se consideran los distintos actores que intervienen en su funcionamiento, entre ellos el 
+Cliente, Administrador, Encargado de Pedidos y Repartidor, definiendo las responsabilidades e 
+interacciones correspondientes a cada uno. 
+Como parte del modelado del sistema, se desarrollan diagramas de casos de uso a nivel de negocio 
+y de sistema, con el propósito de representar las funciones y relaciones existentes entre los actores 
+y los procesos definidos. De igual manera, se incorpora un diagrama de clases para representar la 
+estructura conceptual de los principales elementos que intervienen en la solución.  
+Como parte del diseño de la interacción con la plataforma, la navegación y la presentación del 
+sistema se integran mediante un prototipo navegable desarrollado en Figma. Este prototipo 
+contempla los cuatro actores definidos para el sistema Cliente, Adminis trador, Encargado de 
+Pedidos y Repartidor , permite representar visualmente las interfaces correspondientes a sus 
+funciones, así como los recorridos y transiciones entre las diferentes pantallas. De esta manera, el 
+prototipo constituye una representación conjunta de la estructura navegacional y de la presentación 
+prevista para el sistema, permitiendo comprender de forma más cercana cómo interactuarán sus 
+usuarios con la futura solución. 
+=== PAGINA 4 ===
+2 
+ 
+Finalmente, se presenta el modelo Entidad–Relación de la base de datos de Rapitrip, mediante el 
+cual se representa la estructura y vinculación de la información necesaria para sustentar las 
+funcionalidades planteadas.  
+2. Objetivos 
+2.1. Objetivo general 
+Realizar el análisis, modelado y diseño del sistema de información de Rapitrip, a partir de las 
+necesidades y requerimientos de la organización, con el propósito de establecer una solución de 
+software estructurada que responda a sus procesos comerciales, administrativos y operativos. 
+2.2. Objetivos específicos 
+1.  Identificar las necesidades y requerimientos planteados por la dirección de Rapitrip para 
+el sistema, con el propósito de establecer las funcionalidades, condiciones y características 
+que deberá contemplar la solución propuesta. 
+2. Modelar las funcionalidades del sistema mediante diagramas de casos de uso, 
+representando los actores involucrados, las funciones disponibles para cada uno de ellos y 
+las relaciones existentes entre los diferentes casos de uso. 
+3. Representar la estructura conceptual del sistema mediante un diagrama de clases, 
+identificando las principales clases, atributos, operaciones y relaciones derivadas de las 
+funcionalidades definidas para Rapitrip. 
+4. Diseñar un prototipo navegable del sistema mediante Figma que integre su navegación y 
+presentación, representando las interfaces, recorridos e interacciones correspondientes al 
+Cliente, Administrador, Encargado de Pedidos y Repartidor de acuerdo con las fu nciones 
+establecidas para cada actor. 
+5. Presentar el modelo entidad -relación de la base de datos de Rapitrip, mostrando las 
+entidades, atributos, claves y relaciones necesarias para estructurar la información utilizada 
+por las funcionalidades definidas para el sistema 
+=== PAGINA 5 ===
+3 
+ 
+3. Requerimientos Funcionales y No Funcionales 
+3.1 Requerimientos Funcionales 
+RF1: Gestionar acceso, registro, roles y permisos de usuarios 
+Código RF1  
+Nombre Gestionar acceso, registro, roles y permisos de usuarios  
+Versión 1.1 (14/08/2026)  
+Autores Equipo Rapitrip  
+Fuentes Yamil Kuant  
+Proceso FPO-001: Autenticación y roles  
+Descripción 
+Permitir al Cliente acceder públicamente al catálogo sin autenticarse y registrarse 
+para utilizar funciones asociadas a su cuenta. El Administrador, Encargado de 
+Pedidos y Repartidor deberán autenticarse mediante cuentas autorizadas y acceder 
+únicamente a las funciones correspondientes a su rol. 
+ 
+Importancia Alta  
+Urgencia Alta  
+Estado Parcial  
+Comentarios 
+El catálogo público y los nuevos roles operativos requieren adecuación respecto a la 
+versión actual. 
+ 
+=== PAGINA 6 ===
+4 
+ 
+RF2: Consultar la oferta comercial 
+Código RF2 
+Nombre Consultar la oferta comercial 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-002: Consulta de oferta 
+Descripción 
+Permitir al Cliente revisar los productos disponibles en el catálogo sin iniciar sesión, 
+realizar búsquedas y consultar el detalle de los productos seleccionados. 
+Importancia Alta 
+Urgencia Media 
+Estado Parcial 
+Comentarios 
+El catálogo y el detalle existen; debe garantizarse el acceso público sin autenticación 
+y validar la búsqueda en el entorno final. 
+=== PAGINA 7 ===
+5 
+ 
+RF3: Administrar la oferta comercial 
+Código RF3 
+Nombre Administrar la oferta comercial 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-003: Gestión de oferta 
+Descripción 
+Permitir al Administrador registrar, consultar, actualizar y eliminar franquicias, 
+tiendas y productos, así como controlar la publicación de los productos dentro de la 
+oferta comercial. 
+Importancia Alta 
+Urgencia Media 
+Estado Operativo 
+Comentarios 
+La edición de franquicias requiere validación y la eliminación puede estar restringida 
+por dependencias. 
+ 
+=== PAGINA 8 ===
+6 
+ 
+RF4: Gestionar inventario y disponibilidad 
+Código RF4 
+Nombre Gestionar inventario y disponibilidad 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-004: Inventario 
+Descripción 
+Controlar existencias, cantidades reservadas, disponibilidad y puntos de reorden 
+asociados a los productos comercializados. 
+Importancia Alta 
+Urgencia Alta 
+Estado Operativo 
+Comentarios 
+Existen alertas por stock bajo y sincronización con la disponibilidad mostrada en el 
+catálogo. 
+ 
+=== PAGINA 9 ===
+7 
+ 
+RF5: Gestionar carrito y generación de pedidos 
+Código RF5 
+Nombre Gestionar carrito y generación de pedidos 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-005: Carrito y pedidos 
+Descripción 
+Permitir al Cliente agregar productos al carrito, modificar cantidades, eliminar 
+productos y revisar el resumen de compra antes de decidir realizar el pedido. Al 
+proceder, el sistema deberá validar la información requerida y generar el pedido 
+correspondiente. 
+Importancia Alta 
+Urgencia Alta 
+Estado Operativo 
+Comentarios 
+La generación del pedido depende de un carrito válido y de la disponibilidad de los 
+productos. 
+ 
+=== PAGINA 10 ===
+8 
+ 
+RF6: Gestionar el procesamiento de pedidos 
+Código RF6 
+Nombre Gestionar el procesamiento de pedidos 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-006: Procesamiento de pedidos 
+Descripción 
+Permitir al Encargado de Pedidos revisar pedidos, consultar su información 
+específica y gestionar su procesamiento hasta dejarlos preparados para iniciar la 
+operación de entrega. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios El rol de Encargado de Pedidos y su módulo operativo todavía deben implementarse. 
+ 
+=== PAGINA 11 ===
+9 
+ 
+RF7: Gestionar entregas 
+Código RF7 
+Nombre Gestionar entregas 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-007: Entregas 
+Descripción 
+Crear, organizar y mantener la información logística asociada a las entregas 
+generadas a partir de los pedidos, conservando su relación con el pedido y su estado 
+operativo. 
+Importancia Alta 
+Urgencia Alta 
+Estado Parcial 
+Comentarios 
+La creación de información de entrega existe, pero el ciclo logístico completo 
+todavía requiere ampliación. 
+=== PAGINA 12 ===
+10 
+ 
+ 
+RF8: Gestionar repartidores 
+Código RF8 
+Nombre Gestionar repartidores 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-008: Repartidores 
+Descripción 
+Permitir al Administrador registrar, consultar, actualizar, activar y desactivar a los 
+repartidores disponibles para la operación logística. 
+Importancia Media 
+Urgencia Media 
+Estado Operativo 
+Comentarios 
+Los repartidores están registrados en el sistema, pero aún no disponen de un portal 
+operativo propio. 
+ 
+=== PAGINA 13 ===
+11 
+ 
+RF9: Asignar y reasignar entregas 
+Código RF9 
+Nombre Asignar y reasignar entregas 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-009: Asignación 
+Descripción 
+Asignar entregas a repartidores disponibles y permitir su reasignación cuando las 
+condiciones operativas lo requieran. 
+Importancia Alta 
+Urgencia Alta 
+Estado Parcial 
+Comentarios 
+Existe asignación inicial, pero la reasignación manual desde interfaz debe 
+implementarse. 
+ 
+=== PAGINA 14 ===
+12 
+ 
+RF10: Gestionar la ejecución de entregas por el repartidor 
+Código RF10 
+Nombre Gestionar la ejecución de entregas por el repartidor 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-010: Ejecución de entregas 
+Descripción 
+Permitir al Repartidor consultar sus entregas asignadas, revisar el detalle de una 
+entrega, registrar su avance operativo y confirmar su finalización. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+Se requiere un módulo dedicado para que el Repartidor actualice directamente el 
+proceso de entrega. 
+ 
+=== PAGINA 15 ===
+13 
+ 
+RF11: Gestionar rutas de entrega 
+Código RF11 
+Nombre Gestionar rutas de entrega 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-011: Rutas 
+Descripción 
+Permitir al Repartidor consultar el destino y la ruta asociada a una entrega específica 
+para facilitar el desplazamiento hacia el Cliente. 
+Importancia Media 
+Urgencia Media 
+Estado Pendiente 
+Comentarios Falta integración con mapas y rutas reales para la operación en campo. 
+ 
+=== PAGINA 16 ===
+14 
+ 
+RF12: Consultar pedidos y realizar seguimiento de entregas 
+Código RF12 
+Nombre Consultar pedidos y realizar seguimiento de entregas 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-012: Seguimiento 
+Descripción 
+Permitir al Cliente revisar los pedidos asociados a su cuenta y realizar el seguimiento 
+de una entrega específica. El personal autorizado podrá consultar la situación de 
+pedidos y entregas de acuerdo con su rol. 
+Importancia Alta 
+Urgencia Alta 
+Estado Parcial 
+Comentarios El seguimiento actual es parcial y no dispone de rastreo en vivo del Repartidor. 
+ 
+=== PAGINA 17 ===
+15 
+ 
+RF13: Gestionar incidencias operativas 
+Código RF13 
+Nombre Gestionar incidencias operativas 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-013: Incidencias 
+Descripción 
+Permitir registrar y gestionar incidencias que afecten pedidos o entregas, desde su 
+reporte hasta la atención correspondiente por el personal autorizado. 
+Importancia Media 
+Urgencia Media 
+Estado Pendiente 
+Comentarios 
+Debe definirse e implementar el flujo completo de atención y resolución de 
+incidencias. 
+ 
+=== PAGINA 18 ===
+16 
+ 
+RF15: Supervisar la operación logística 
+Código RF15 
+Nombre Supervisar la operación logística 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-015: Supervisión logística 
+Descripción 
+Permitir al Administrador consultar de forma centralizada la situación operativa de 
+pedidos, entregas, repartidores e incidencias para apoyar la supervisión de la 
+operación. 
+Importancia Alta 
+Urgencia Media 
+Estado Parcial 
+Comentarios 
+Actualmente existen consultas separadas; falta consolidar la supervisión operativa 
+en una vista centralizada. 
+ 
+=== PAGINA 19 ===
+17 
+ 
+RF16: Registrar evidencia fotográfica de entrega 
+Código RF16 
+Nombre Registrar evidencia fotográfica de entrega 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-016: Evidencia de entrega 
+Descripción 
+Exigir al Repartidor el envío de una fotografía como evidencia antes de completar 
+la confirmación de una entrega, asociando la imagen al pedido y a la entrega 
+correspondientes. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+La fotografía será obligatoria para completar el caso de uso Confirmar entrega del 
+pedido y deberá almacenarse vinculada a la entrega correspondiente. 
+ 
+=== PAGINA 20 ===
+18 
+ 
+RF17: Gestionar direcciones de entrega 
+Código RF17 
+Nombre Gestionar direcciones de entrega 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-017: Direcciones de entrega 
+Descripción 
+Permitir al Cliente registrar, consultar, modificar y eliminar direcciones asociadas a 
+su cuenta para utilizarlas durante la realización de pedidos. 
+Importancia Alta 
+Urgencia Media 
+Estado Operativo 
+Comentarios 
+La gestión de direcciones está disponible para el Cliente y se utiliza durante la 
+confirmación del pedido. 
+ 
+=== PAGINA 21 ===
+19 
+ 
+RF18: Gestionar datos de la cuenta 
+Código RF-18 
+Nombre Gestionar datos de la cuenta 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-018: Gestión de cuenta 
+Descripción 
+Permitir a los usuarios autenticados consultar y modificar los datos personales y de 
+seguridad habilitados para su propia cuenta, de acuerdo con su rol. 
+Importancia Media 
+Urgencia Media 
+Estado Parcial 
+Comentarios 
+Cliente y Administrador cuentan con gestión de datos; deberá extenderse a 
+Encargado de Pedidos y Repartidor. 
+ 
+=== PAGINA 22 ===
+20 
+ 
+RF19: Gestionar soporte y retroalimentación del cliente 
+Código RF-19 
+Nombre Gestionar soporte y retroalimentación del cliente 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso FPO-019: Soporte y retroalimentación 
+Descripción 
+Permitir al Cliente enviar mensajes de ayuda al soporte y comentarios de opinión 
+mediante los canales habilitados por la aplicación. 
+Importancia Media 
+Urgencia Baja 
+Estado Parcial 
+Comentarios 
+Las funciones actuales se apoyan en WhatsApp y no constituyen todavía un módulo 
+interno de soporte con seguimiento. 
+ 
+=== PAGINA 23 ===
+21 
+ 
+3.2. Requerimientos No Funcionales 
+RNF1: Tiempo de Respuesta del Sistema 
+Código RNF1 
+Nombre Tiempo de Respuesta del Sistema 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-001: Rendimiento 
+Descripción 
+El sistema deberá responder a las solicitudes principales en un tiempo inferior a 3 
+segundos bajo condiciones normales de operación. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+Falta realizar pruebas de rendimiento y carga que demuestren el cumplimiento del 
+tiempo objetivo. 
+ 
+=== PAGINA 24 ===
+22 
+ 
+RNF2: Disponibilidad Operativa del Servicio 
+Código RNF2 
+Nombre Disponibilidad Operativa del Servicio 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-002: Disponibilidad 
+Descripción 
+El sistema deberá mantener una disponibilidad mínima del 99 % durante su período 
+normal de operación. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+Requiere infraestructura, monitoreo y medición del nivel de disponibilidad 
+alcanzado. 
+ 
+=== PAGINA 25 ===
+23 
+ 
+RNF3: Seguridad y Control de Acceso 
+Código RNF3 
+Nombre Seguridad y Control de Acceso 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-003: Seguridad y acceso 
+Descripción 
+El sistema deberá proteger las funciones y la información restringidas mediante 
+autenticación, autorización y control de acceso según el rol. El catálogo público 
+podrá consultarse sin autenticación, mientras que las funciones personales, 
+administrativas y operativas requerirán una identidad autenticada y permisos 
+correspondientes. 
+Importancia Alta 
+Urgencia Alta 
+Estado Parcial 
+Comentarios 
+Existen mecanismos de autenticación, pero deben ampliarse al Encargado de 
+Pedidos y Repartidor y validarse los permisos por rol. 
+ 
+=== PAGINA 26 ===
+24 
+ 
+RNF4: Modularidad, Mantenibilidad y Capacidad de Evolución 
+Código RNF4 
+Nombre Modularidad, Mantenibilidad y Capacidad de Evolución 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-004: Arquitectura y mantenimiento 
+Descripción 
+El sistema deberá mantener una estructura modular, organizada y documentada que 
+facilite el mantenimiento y permita incorporar o modificar módulos, roles y 
+funcionalidades sin requerir una reestructuración completa. 
+Importancia Alta 
+Urgencia Media 
+Estado Parcial 
+Comentarios 
+La arquitectura actual ofrece una base modular, pero falta completar documentación 
+técnica y validar la incorporación de nuevos módulos. 
+=== PAGINA 27 ===
+25 
+ 
+RNF5: Usabilidad y Facilidad de Interacción 
+Código RNF-05 
+Nombre Usabilidad y Facilidad de Interacción 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-005: Usabilidad 
+Descripción 
+La aplicación deberá proporcionar interfaces claras, consistentes y fáciles de utilizar 
+para Cliente, Administrador, Encargado de Pedidos y Repartidor, mostrando a cada 
+actor las funciones correspondientes a sus responsabilidades. 
+Importancia Alta 
+Urgencia Media 
+Estado Parcial 
+Comentarios 
+Se requiere validar la experiencia de uso de los nuevos módulos operativos y 
+mantener consistencia entre roles. 
+ 
+=== PAGINA 28 ===
+26 
+ 
+RNF6: Compatibilidad con Dispositivos Móviles 
+Código RNF-06 
+Nombre Compatibilidad con Dispositivos Móviles 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-006: Compatibilidad móvil 
+Descripción 
+La aplicación deberá funcionar correctamente en los dispositivos Android definidos 
+como plataforma objetivo, adaptándose a diferentes tamaños de pantalla y 
+permitiendo el uso de funciones móviles necesarias, como ubicación y captura o 
+selección de evidencia fotográfica. 
+Importancia Alta 
+Urgencia Alta 
+Estado Parcial 
+Comentarios 
+La aplicación funciona en Android, pero deben validarse distintos modelos y las 
+nuevas funciones de ubicación y fotografía. 
+=== PAGINA 29 ===
+27 
+ 
+RNF7: Integridad y Consistencia de los Datos 
+Código RNF-07 
+Nombre Integridad y Consistencia de los Datos 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-007: Integridad de datos 
+Descripción 
+El sistema deberá garantizar la consistencia de la información de usuarios, 
+productos, inventario, pedidos, entregas y evidencias asociadas, evitando registros 
+incompletos, duplicados, relaciones incorrectas o pérdidas de correspondencia entre 
+entidades. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+Se requieren validaciones adicionales y pruebas de integridad, especialmente para 
+pedidos, inventario y evidencia de entrega. 
+=== PAGINA 30 ===
+28 
+ 
+RNF8: Respaldo y Recuperación de la Base de Datos 
+Código RNF-08 
+Nombre Respaldo y Recuperación de la Base de Datos 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-008: Respaldo y recuperación 
+Descripción 
+El sistema deberá disponer de mecanismos automáticos de respaldo que permitan 
+proteger y recuperar la información almacenada ante fallos o pérdida de datos. 
+Importancia Alta 
+Urgencia Alta 
+Estado Pendiente 
+Comentarios 
+Debe definirse la estrategia, frecuencia y mecanismo de recuperación de los 
+respaldos. 
+ 
+=== PAGINA 31 ===
+29 
+ 
+RNF9: Resiliencia ante Conectividad Intermitente 
+Código RNF-09 
+Nombre Resiliencia ante Conectividad Intermitente 
+Versión 1.1 (14/08/2026) 
+Autores Equipo Rapitrip 
+Fuentes Yamil Kuant 
+Proceso NF-009: Conectividad móvil 
+Descripción 
+El sistema deberá manejar de forma controlada las interrupciones temporales de 
+conectividad durante las operaciones móviles, evitando la pérdida de información y 
+permitiendo reintentar de forma segura las operaciones importantes cuando la 
+conexión vuelva a estar disponible. 
+Importancia Alta 
+Urgencia Media 
+Estado Pendiente 
+Comentarios 
+Es especialmente relevante para cambios de estado, incidencias y envío de evidencia 
+fotográfica realizados por el Repartidor en ruta. 
+ 
+ 
+ 
+ 
+ 
+ 
+=== PAGINA 32 ===
+30 
+ 
+4. Diagramas de Casos de Uso 
+4.1 Diagrama de caso de uso de negocio 
+ 
+
+=== PAGINA 33 ===
+31 
+ 
+4.2 Diagrama de caso de usos de sistema 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+=== PAGINA 34 ===
+32 
+ 
+5. Diagrama de Clases 
+
+=== PAGINA 35 ===
+33 
+ 
+6. Diagramas de navegación y presentación (Prototipo de figma) 
+El acápite para el d iagrama de navegación y presentación se unificaron tomando en cuenta que 
+para la lógica de ambos está basada en un prototipo de figma, de igual cumpliendo con lo que se 
+requiere en la lógica de ambos diagramas presentando la navegación de los usuarios por el sistema 
+y presentado tal cual una visualización inicial del sistema 
+6.1 Archivo de figma vista general de las páginas y capas del sistema 
+Link de figma: 
+https://www.figma.com/design/ApaHyj069QzBBdk0EZvWF6/Rapitrip-%E2%80%94-
+Prototipo?node-id=50-1139&t=8yk8xvHtrfPIMrYo-1 
+6.2 Diagrama de navegación y presentación del cliente 
+Link de figma para ver el prototipo: 
+https://www.figma.com/proto/ApaHyj069QzBBdk0EZvWF6/Rapitrip-%E2%80%94-
+Prototipo?node-id=7-2&p=f&t=E6chySFPWzD5xxmq-1&scaling=min-zoom&content-
+scaling=fixed&page-id=0%3A1&starting-point-node-id=7%3A2 
+6.3 Diagrama de navegación y presentación del administrador 
+Link de figma para ver el prototipo: 
+https://www.figma.com/proto/ApaHyj069QzBBdk0EZvWF6/Rapitrip-%E2%80%94-
+Prototipo?node-id=22-3&p=f&t=NSF7cZi4BSgOP8Ec-1&scaling=min-zoom&content-
+scaling=fixed&page-id=22%3A2&starting-point-node-id=22%3A3 
+ 
+ 
+=== PAGINA 36 ===
+34 
+ 
+6.4 Diagrama de navegación y presentación del repartidor 
+Link de figma para ver el prototipo: 
+https://www.figma.com/proto/ApaHyj069QzBBdk0EZvWF6/Rapitrip-%E2%80%94-
+Prototipo?node-id=50-1140&p=f&scaling=min-zoom&content-scaling=fixed&page-
+id=50%3A1139&starting-point-node-id=50%3A1140&t=LvB35GJxO61sZd6N-1 
+6.5 Diagrama de navegación y presentación del encargado de ventas 
+Link de figma para ver el prototipo: 
+https://www.figma.com/proto/ApaHyj069QzBBdk0EZvWF6/Rapitrip-%E2%80%94-
+Prototipo?node-id=42-3&p=f&t=rzPMADA142gMS4pw-1&scaling=min-zoom&content-
+scaling=fixed&page-id=42%3A2&starting-point-node-id=42%3A3 
+=== PAGINA 37 ===
+35 
+ 
+7. Diagramas de proceso 
+7.1 Diagrama de proceso | Realizar pedido 
+ 
+
+=== PAGINA 38 ===
+36 
+ 
+7.2 Diagrama de proceso | Registrar producto 
+ 
+
+=== PAGINA 39 ===
+37 
+ 
+8. Modelo Entidad – Relación 
+ 
+ 
+ 

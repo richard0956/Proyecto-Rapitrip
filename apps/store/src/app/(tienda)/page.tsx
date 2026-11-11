@@ -114,8 +114,8 @@ export default async function Home() {
         <Tray>
           <section aria-labelledby="categorias">
             <SectionHeader id="categorias" title="Categorías populares" href="/catalogo" />
-            {/* Se desliza sola en bucle (se detiene al pasar el cursor); con «reducir movimiento» es una fila que se desliza con el dedo. */}
-            <div className="mt-6 -mx-3 sm:-mx-6 lg:mx-0">
+            {/* Navegación manual con flechas o gestos. */}
+            <div className="mt-6">
               <AutoRail count={popular.length} gap="0.75rem">
                 {popular.map((category, index) => (
                   <CategoryTile key={category.id} category={category} index={index} className="w-[132px] shrink-0 sm:w-[148px]" />

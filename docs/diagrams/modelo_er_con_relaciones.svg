@@ -1,0 +1,488 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3500" height="5226" viewBox="0 0 3500 5226">
+<rect x="0" y="0" width="3500" height="5226" fill="#f4f7fb"/>
+<text x="55" y="69" font-family="Arial" font-size="39" font-weight="700" fill="#18283e">Modelo entidad-relación · Rapitrip</text>
+<text x="55" y="112" font-family="Arial" font-size="19" fill="#52627a">Relaciones dibujadas a partir de claves foráneas declaradas en las migraciones SQL.</text>
+<text x="55" y="142" font-family="Arial" font-size="17" fill="#66768d">La línea une la tabla referenciada con la tabla que contiene la FK. Las entidades compartidas se repiten en cada área para facilitar la lectura.</text>
+<rect x="55" y="175" width="3390" height="665" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="175" width="3390" height="59" fill="#447de3"/>
+<text x="78" y="215" font-family="Arial" font-size="25" font-weight="700" fill="white">Identidad y acceso</text>
+<polyline points="620,421.0 671.6,421.0 671.6,315.0 740,315.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="315.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 680.0,421.0 680.0,421.0 740,421.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="421.0" r="5" fill="#447de3"/>
+<polyline points="620,527.0 688.4,527.0 688.4,421.0 740,421.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="421.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 671.6,421.0 671.6,527.0 740,527.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="527.0" r="5" fill="#447de3"/>
+<polyline points="620,633.0 680.0,633.0 680.0,527.0 740,527.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="527.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 688.4,421.0 688.4,633.0 740,633.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="633.0" r="5" fill="#447de3"/>
+<polyline points="1260,527.0 1311,527.0 1311,633.0 1260,633.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1260" cy="633.0" r="5" fill="#447de3"/>
+<polyline points="620,527.0 680.0,527.0 680.0,633.0 740,633.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="633.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 688.4,421.0 688.4,739.0 740,739.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="739.0" r="5" fill="#447de3"/>
+<polyline points="620,527.0 671.6,527.0 671.6,739.0 740,739.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="739.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 1000.0,421.0 1000.0,315.0 1380,315.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="315.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 1053.2,421.0 1053.2,421.0 1380,421.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="421.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 946.8,421.0 946.8,527.0 1380,527.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="527.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 1000.0,421.0 1000.0,633.0 1380,633.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="633.0" r="5" fill="#447de3"/>
+<polyline points="620,421.0 1053.2,421.0 1053.2,739.0 1380,739.0" fill="none" stroke="#447de3" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="739.0" r="5" fill="#447de3"/>
+<rect x="100" y="382" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="115" y="412" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.profiles</text>
+<text x="115" y="439" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="488" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="115" y="518" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.commerces</text>
+<text x="115" y="545" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="594" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="624" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.departments</text>
+<text x="115" y="651" font-family="Arial" font-size="16" fill="#5e7088">PK: code    ·    0 FK declaradas</text>
+<rect x="740" y="276" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="755" y="306" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.profile_pii</text>
+<text x="755" y="333" font-family="Arial" font-size="16" fill="#5e7088">PK: user_id    ·    1 FK declarada</text>
+<rect x="740" y="382" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="755" y="412" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.user_roles</text>
+<text x="755" y="439" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    3 FK declaradas</text>
+<rect x="740" y="488" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="755" y="518" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.couriers</text>
+<text x="755" y="545" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="594" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="755" y="624" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.invitations</text>
+<text x="755" y="651" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    3 FK declaradas</text>
+<rect x="740" y="700" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="755" y="730" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.commerce_requests</text>
+<text x="755" y="757" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="1380" y="276" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="1395" y="306" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.push_subscriptions</text>
+<text x="1395" y="333" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="382" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="1395" y="412" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.deletion_requests</text>
+<text x="1395" y="439" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="488" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="1395" y="518" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.feedback</text>
+<text x="1395" y="545" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="594" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="1395" y="624" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.institutional_domains</text>
+<text x="1395" y="651" font-family="Arial" font-size="16" fill="#5e7088">PK: domain    ·    1 FK declarada</text>
+<rect x="1380" y="700" width="520" height="78" fill="#ffffff" stroke="#447de3" stroke-width="2"/>
+<text x="1395" y="730" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.access_reviews</text>
+<text x="1395" y="757" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="55" y="868" width="3390" height="771" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="868" width="3390" height="59" fill="#159f9b"/>
+<text x="78" y="908" font-family="Arial" font-size="25" font-weight="700" fill="white">Comercios, catálogo e inventario</text>
+<polyline points="620,1220.0 671.6,1220.0 671.6,1220.0 740,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="620,1326.0 680.0,1326.0 680.0,1220.0 740,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="1218,1287 1218,1269 1242,1269 1242,1287" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1242" cy="1326.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1311.6,1220.0 1311.6,1008.0 1380,1008.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1008.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1320.0,1220.0 1320.0,1114.0 1380,1114.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1114.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1328.4,1220.0 1328.4,1220.0 1380,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1326.0 1311.6,1326.0 1311.6,1220.0 1380,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="620,1220.0 1000.0,1220.0 1000.0,1326.0 1380,1326.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1326.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1328.4,1220.0 1328.4,1326.0 1380,1326.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1326.0" r="5" fill="#159f9b"/>
+<polyline points="1900,1220.0 1939,1220.0 1939,1326.0 1900,1326.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1900" cy="1326.0" r="5" fill="#159f9b"/>
+<polyline points="620,1220.0 1000.0,1220.0 1000.0,1432.0 1380,1432.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1432.0" r="5" fill="#159f9b"/>
+<polyline points="1900,1326.0 1963,1326.0 1963,1432.0 1900,1432.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1900" cy="1432.0" r="5" fill="#159f9b"/>
+<polyline points="620,1220.0 946.8,1220.0 946.8,1538.0 1380,1538.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1538.0" r="5" fill="#159f9b"/>
+<polyline points="1900,1220.0 1960.0,1220.0 1960.0,1167.0 2020,1167.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="1167.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1693.2,1220.0 1693.2,1167.0 2020,1167.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="1167.0" r="5" fill="#159f9b"/>
+<polyline points="1900,1220.0 1951.6,1220.0 1951.6,1273.0 2020,1273.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="1273.0" r="5" fill="#159f9b"/>
+<polyline points="2540,1167.0 2600.0,1167.0 2600.0,1220.0 2660,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2660" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 2058.0,1220.0 2058.0,1220.0 2660,1220.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2660" cy="1220.0" r="5" fill="#159f9b"/>
+<polyline points="2540,1167.0 2591.6,1167.0 2591.6,1326.0 2660,1326.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2660" cy="1326.0" r="5" fill="#159f9b"/>
+<polyline points="1260,1220.0 1960.0,1220.0 1960.0,1326.0 2660,1326.0" fill="none" stroke="#159f9b" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2660" cy="1326.0" r="5" fill="#159f9b"/>
+<rect x="100" y="1181" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="1211" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.commerces</text>
+<text x="115" y="1238" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="1287" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="1317" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.departments</text>
+<text x="115" y="1344" font-family="Arial" font-size="16" fill="#5e7088">PK: code    ·    0 FK declaradas</text>
+<rect x="740" y="1181" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="755" y="1211" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.stores</text>
+<text x="755" y="1238" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="1287" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="755" y="1317" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.master_items</text>
+<text x="755" y="1344" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="969" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="999" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.store_hours</text>
+<text x="1395" y="1026" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="1075" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="1105" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.store_exceptions</text>
+<text x="1395" y="1132" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="1181" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="1211" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.products</text>
+<text x="1395" y="1238" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    4 FK declaradas</text>
+<rect x="1380" y="1287" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="1317" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.catalog_reports</text>
+<text x="1395" y="1344" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    3 FK declaradas</text>
+<rect x="1380" y="1393" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="1423" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.catalog_notices</text>
+<text x="1395" y="1450" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="1380" y="1499" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="1395" y="1529" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.catalog_measures</text>
+<text x="1395" y="1556" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="2020" y="1128" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="2035" y="1158" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.product_variants</text>
+<text x="2035" y="1185" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="2020" y="1234" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="2035" y="1264" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.product_images</text>
+<text x="2035" y="1291" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="2020" y="1340" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="2035" y="1370" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.catalog_reviews</text>
+<text x="2035" y="1397" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="2660" y="1181" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="2675" y="1211" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.inventory</text>
+<text x="2675" y="1238" font-family="Arial" font-size="16" fill="#5e7088">PK: variant_id    ·    2 FK declaradas</text>
+<rect x="2660" y="1287" width="520" height="78" fill="#ffffff" stroke="#159f9b" stroke-width="2"/>
+<text x="2675" y="1317" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.stock_movements</text>
+<text x="2675" y="1344" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="55" y="1667" width="3390" height="983" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="1667" width="3390" height="59" fill="#956ceb"/>
+<text x="78" y="1707" font-family="Arial" font-size="25" font-weight="700" fill="white">Pedidos y entregas</text>
+<polyline points="620,1807.0 647,1807.0 647,1913.0 620,1913.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="1913.0" r="5" fill="#956ceb"/>
+<polyline points="620,2337.0 659,2337.0 659,1913.0 620,1913.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="1913.0" r="5" fill="#956ceb"/>
+<polyline points="620,2231.0 671,2231.0 671,2019.0 620,2019.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="2019.0" r="5" fill="#956ceb"/>
+<polyline points="620,2337.0 683,2337.0 683,2019.0 620,2019.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="2019.0" r="5" fill="#956ceb"/>
+<polyline points="620,2019.0 647,2019.0 647,2125.0 620,2125.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="2125.0" r="5" fill="#956ceb"/>
+<polyline points="620,1807.0 659,1807.0 659,2549.0 620,2549.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="2549.0" r="5" fill="#956ceb"/>
+<polyline points="620,1807.0 671.6,1807.0 671.6,2019.0 740,2019.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2019.0" r="5" fill="#956ceb"/>
+<polyline points="620,2337.0 680.0,2337.0 680.0,2125.0 740,2125.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2125.0" r="5" fill="#956ceb"/>
+<polyline points="620,2019.0 688.4,2019.0 688.4,2231.0 740,2231.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2231.0" r="5" fill="#956ceb"/>
+<polyline points="620,2443.0 671.6,2443.0 671.6,2231.0 740,2231.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2231.0" r="5" fill="#956ceb"/>
+<polyline points="620,1807.0 680.0,1807.0 680.0,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="620,2019.0 688.4,2019.0 688.4,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="620,2231.0 671.6,2231.0 671.6,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="620,1913.0 680.0,1913.0 680.0,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="620,2549.0 688.4,2549.0 688.4,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2019.0 1323,2019.0 1323,2337.0 1260,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1260" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="620,2337.0 680.0,2337.0 680.0,2337.0 740,2337.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2337.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1328.4,2337.0 1328.4,1966.0 1380,1966.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1966.0" r="5" fill="#956ceb"/>
+<polyline points="620,2125.0 946.8,2125.0 946.8,1966.0 1380,1966.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="1966.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1320.0,2337.0 1320.0,2072.0 1380,2072.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="2072.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1328.4,2337.0 1328.4,2178.0 1380,2178.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="2178.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1311.6,2337.0 1311.6,2284.0 1380,2284.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="2284.0" r="5" fill="#956ceb"/>
+<polyline points="620,1913.0 1000.0,1913.0 1000.0,2284.0 1380,2284.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="2284.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1328.4,2337.0 1328.4,2390.0 1380,2390.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="2390.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1586.8,2337.0 1586.8,2072.0 2020,2072.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2072.0" r="5" fill="#956ceb"/>
+<polyline points="620,1913.0 1320.0,1913.0 1320.0,2072.0 2020,2072.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2072.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1693.2,2337.0 1693.2,2178.0 2020,2178.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2178.0" r="5" fill="#956ceb"/>
+<polyline points="620,1913.0 1222.0,1913.0 1222.0,2178.0 2020,2178.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2178.0" r="5" fill="#956ceb"/>
+<polyline points="1260,2337.0 1640.0,2337.0 1640.0,2284.0 2020,2284.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2284.0" r="5" fill="#956ceb"/>
+<polyline points="620,1807.0 1418.0,1807.0 1418.0,2284.0 2020,2284.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2284.0" r="5" fill="#956ceb"/>
+<polyline points="620,2549.0 1222.0,2549.0 1222.0,2284.0 2020,2284.0" fill="none" stroke="#956ceb" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="2284.0" r="5" fill="#956ceb"/>
+<rect x="100" y="1768" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="1798" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.profiles</text>
+<text x="115" y="1825" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="1874" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="1904" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.couriers</text>
+<text x="115" y="1931" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="100" y="1980" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="2010" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.stores</text>
+<text x="115" y="2037" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="100" y="2086" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="2116" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">commerce.product_variants</text>
+<text x="115" y="2143" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="100" y="2192" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="2222" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.commerces</text>
+<text x="115" y="2249" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="2298" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="115" y="2328" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.departments</text>
+<text x="115" y="2355" font-family="Arial" font-size="16" fill="#5e7088">PK: code    ·    0 FK declaradas</text>
+<rect x="100" y="2404" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="115" y="2434" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_zones</text>
+<text x="115" y="2461" font-family="Arial" font-size="16" fill="#5e7088">PK: zone    ·    0 FK declaradas</text>
+<rect x="100" y="2510" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="115" y="2540" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_sessions</text>
+<text x="115" y="2567" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="1980" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="755" y="2010" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.checkouts</text>
+<text x="755" y="2037" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="740" y="2086" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="755" y="2116" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.customer_addresses</text>
+<text x="755" y="2143" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="740" y="2192" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="755" y="2222" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_quotes</text>
+<text x="755" y="2249" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="2298" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="755" y="2328" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.orders</text>
+<text x="755" y="2355" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    12 FK declaradas</text>
+<rect x="1380" y="1927" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="1395" y="1957" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.order_items</text>
+<text x="1395" y="1984" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="1380" y="2033" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="1395" y="2063" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.order_events</text>
+<text x="1395" y="2090" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="2139" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="1395" y="2169" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.order_delivery</text>
+<text x="1395" y="2196" font-family="Arial" font-size="16" fill="#5e7088">PK: order_id    ·    1 FK declarada</text>
+<rect x="1380" y="2245" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="1395" y="2275" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.order_offers</text>
+<text x="1395" y="2302" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="1380" y="2351" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="1395" y="2381" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.order_codes</text>
+<text x="1395" y="2408" font-family="Arial" font-size="16" fill="#5e7088">PK: order_id    ·    1 FK declarada</text>
+<rect x="2020" y="2033" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="2035" y="2063" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_evidence</text>
+<text x="2035" y="2090" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="2020" y="2139" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="2035" y="2169" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_issues</text>
+<text x="2035" y="2196" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="2020" y="2245" width="520" height="78" fill="#ffffff" stroke="#956ceb" stroke-width="2"/>
+<text x="2035" y="2275" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.return_requests</text>
+<text x="2035" y="2302" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    4 FK declaradas</text>
+<rect x="55" y="2678" width="3390" height="983" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="2678" width="3390" height="59" fill="#dd9a43"/>
+<text x="78" y="2718" font-family="Arial" font-size="25" font-weight="700" fill="white">Geografía y parámetros operativos</text>
+<polyline points="620,3189.0 671.6,3189.0 671.6,2818.0 740,2818.0" fill="none" stroke="#dd9a43" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="2818.0" r="5" fill="#dd9a43"/>
+<rect x="100" y="3150" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="115" y="3180" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.departments</text>
+<text x="115" y="3207" font-family="Arial" font-size="16" fill="#5e7088">PK: code    ·    0 FK declaradas</text>
+<rect x="740" y="2779" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="2809" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.department_anchors</text>
+<text x="755" y="2836" font-family="Arial" font-size="16" fill="#5e7088">PK: department, name    ·    1 FK declarada</text>
+<rect x="740" y="2885" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="2915" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_zones</text>
+<text x="755" y="2942" font-family="Arial" font-size="16" fill="#5e7088">PK: zone    ·    0 FK declaradas</text>
+<rect x="740" y="2991" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3021" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_settings</text>
+<text x="755" y="3048" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="3097" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3127" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.delivery_class_settings</text>
+<text x="755" y="3154" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="3203" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3233" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.programmed_bands</text>
+<text x="755" y="3260" font-family="Arial" font-size="16" fill="#5e7088">PK: band    ·    0 FK declaradas</text>
+<rect x="740" y="3309" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3339" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.evidence_settings</text>
+<text x="755" y="3366" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="3415" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3445" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_settings</text>
+<text x="755" y="3472" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="3521" width="520" height="78" fill="#ffffff" stroke="#dd9a43" stroke-width="2"/>
+<text x="755" y="3551" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.document_counters</text>
+<text x="755" y="3578" font-family="Arial" font-size="16" fill="#5e7088">PK: series    ·    0 FK declaradas</text>
+<rect x="55" y="3689" width="3390" height="771" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="3689" width="3390" height="59" fill="#dc7187"/>
+<text x="78" y="3729" font-family="Arial" font-size="25" font-weight="700" fill="white">Pagos, caja, liquidaciones y facturas</text>
+<polyline points="620,4200.0 647,4200.0 647,3882.0 620,3882.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3882.0" r="5" fill="#dc7187"/>
+<polyline points="620,4094.0 659,4094.0 659,3882.0 620,3882.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3882.0" r="5" fill="#dc7187"/>
+<polyline points="620,4306.0 671,4306.0 671,3882.0 620,3882.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3882.0" r="5" fill="#dc7187"/>
+<polyline points="740,4041.0 563,4041.0 563,3882.0 620,3882.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3882.0" r="5" fill="#dc7187"/>
+<polyline points="1380,4041.0 554,4041.0 554,3882.0 620,3882.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3882.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 659,3882.0 659,3988.0 620,3988.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3988.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 671,4200.0 671,3988.0 620,3988.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3988.0" r="5" fill="#dc7187"/>
+<polyline points="740,4041.0 572,4041.0 572,3988.0 620,3988.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="3988.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 647,4200.0 647,4306.0 620,4306.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="620" cy="4306.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 671.6,4200.0 671.6,3935.0 740,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 680.0,4200.0 680.0,4041.0 740,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1260,3935.0 1323,3935.0 1323,4041.0 1260,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1260" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="620,4094.0 671.6,4094.0 671.6,4147.0 740,4147.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="4147.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 680.0,3882.0 680.0,4253.0 740,4253.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="4253.0" r="5" fill="#dc7187"/>
+<polyline points="1218,4214 1218,4196 1242,4196 1242,4214" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1242" cy="4253.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 671.6,3882.0 671.6,4359.0 740,4359.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="740" cy="4359.0" r="5" fill="#dc7187"/>
+<polyline points="1260,4041.0 1320.0,4041.0 1320.0,3935.0 1380,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 1053.2,3882.0 1053.2,3935.0 1380,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,4094.0 946.8,4094.0 946.8,3935.0 1380,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,4306.0 1000.0,4306.0 1000.0,4041.0 1380,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1260,4041.0 1328.4,4041.0 1328.4,4041.0 1380,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1260,3935.0 1311.6,3935.0 1311.6,4041.0 1380,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 1000.0,4200.0 1000.0,4041.0 1380,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="620,4094.0 1053.2,4094.0 1053.2,4147.0 1380,4147.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="1380" cy="4147.0" r="5" fill="#dc7187"/>
+<polyline points="1900,4041.0 1951.6,4041.0 1951.6,3935.0 2020,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 1320.0,3882.0 1320.0,3935.0 2020,3935.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="3935.0" r="5" fill="#dc7187"/>
+<polyline points="620,4306.0 1418.0,4306.0 1418.0,4041.0 2020,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="620,4200.0 1222.0,4200.0 1222.0,4041.0 2020,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1900,4041.0 1960.0,4041.0 1960.0,4041.0 2020,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1260,4041.0 1693.2,4041.0 1693.2,4041.0 2020,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 1222.0,3882.0 1222.0,4041.0 2020,4041.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4041.0" r="5" fill="#dc7187"/>
+<polyline points="1900,4147.0 1960.0,4147.0 1960.0,4147.0 2020,4147.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4147.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 1418.0,3882.0 1418.0,4147.0 2020,4147.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4147.0" r="5" fill="#dc7187"/>
+<polyline points="620,4094.0 1222.0,4094.0 1222.0,4253.0 2020,4253.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4253.0" r="5" fill="#dc7187"/>
+<polyline points="620,3882.0 1320.0,3882.0 1320.0,4253.0 2020,4253.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4253.0" r="5" fill="#dc7187"/>
+<polyline points="620,3988.0 1418.0,3988.0 1418.0,4253.0 2020,4253.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4253.0" r="5" fill="#dc7187"/>
+<polyline points="1900,4147.0 1951.6,4147.0 1951.6,4253.0 2020,4253.0" fill="none" stroke="#dc7187" stroke-opacity="0.57" stroke-width="3"/>
+<circle cx="2020" cy="4253.0" r="5" fill="#dc7187"/>
+<rect x="100" y="3843" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="115" y="3873" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.orders</text>
+<text x="115" y="3900" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    12 FK declaradas</text>
+<rect x="100" y="3949" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="115" y="3979" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.return_requests</text>
+<text x="115" y="4006" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    4 FK declaradas</text>
+<rect x="100" y="4055" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="4085" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.commerces</text>
+<text x="115" y="4112" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="4161" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="4191" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.profiles</text>
+<text x="115" y="4218" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="4267" width="520" height="78" fill="#f0f4fa" stroke="#aebdd0" stroke-width="2"/>
+<text x="115" y="4297" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">identity.couriers</text>
+<text x="115" y="4324" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="3790" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="3820" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.payment_events</text>
+<text x="755" y="3847" font-family="Arial" font-size="16" fill="#5e7088">PK: event_id    ·    0 FK declaradas</text>
+<rect x="740" y="3896" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="3926" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_registers</text>
+<text x="755" y="3953" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="740" y="4002" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="4032" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_sessions</text>
+<text x="755" y="4059" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="4108" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="4138" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.commerce_agreements</text>
+<text x="755" y="4165" font-family="Arial" font-size="16" fill="#5e7088">PK: commerce_id    ·    1 FK declarada</text>
+<rect x="740" y="4214" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="4244" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.invoices</text>
+<text x="755" y="4271" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    2 FK declaradas</text>
+<rect x="740" y="4320" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="755" y="4350" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.invoice_buyers</text>
+<text x="755" y="4377" font-family="Arial" font-size="16" fill="#5e7088">PK: order_id    ·    1 FK declarada</text>
+<rect x="1380" y="3896" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="1395" y="3926" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_session_incidents</text>
+<text x="1395" y="3953" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    3 FK declaradas</text>
+<rect x="1380" y="4002" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="1395" y="4032" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_handoffs</text>
+<text x="1395" y="4059" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    4 FK declaradas</text>
+<rect x="1380" y="4108" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="1395" y="4138" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.settlements</text>
+<text x="1395" y="4165" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    1 FK declarada</text>
+<rect x="1380" y="4214" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="1395" y="4244" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.reconciliations</text>
+<text x="1395" y="4271" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="2020" y="3896" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="2035" y="3926" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_handoff_items</text>
+<text x="2035" y="3953" font-family="Arial" font-size="16" fill="#5e7088">PK: handoff_id, order_id    ·    2 FK declaradas</text>
+<rect x="2020" y="4002" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="2035" y="4032" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.cash_accountability</text>
+<text x="2035" y="4059" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    5 FK declaradas</text>
+<rect x="2020" y="4108" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="2035" y="4138" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.settlement_items</text>
+<text x="2035" y="4165" font-family="Arial" font-size="16" fill="#5e7088">PK: order_id    ·    2 FK declaradas</text>
+<rect x="2020" y="4214" width="520" height="78" fill="#ffffff" stroke="#dc7187" stroke-width="2"/>
+<text x="2035" y="4244" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">sales.settlement_reversals</text>
+<text x="2035" y="4271" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    4 FK declaradas</text>
+<rect x="55" y="4488" width="3390" height="665" fill="#ffffff" stroke="#dce4ef" stroke-width="2"/>
+<rect x="55" y="4488" width="3390" height="59" fill="#7c91a5"/>
+<text x="78" y="4528" font-family="Arial" font-size="25" font-weight="700" fill="white">Auditoría y servicios internos</text>
+<rect x="100" y="4589" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="115" y="4619" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">audit.events</text>
+<text x="115" y="4646" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="4695" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="115" y="4725" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">audit.login_events</text>
+<text x="115" y="4752" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="4801" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="115" y="4831" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">audit.it_incidents</text>
+<text x="115" y="4858" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="100" y="4907" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="115" y="4937" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.role_management</text>
+<text x="115" y="4964" font-family="Arial" font-size="16" fill="#5e7088">PK: manager, target    ·    0 FK declaradas</text>
+<rect x="100" y="5013" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="115" y="5043" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.session_activity</text>
+<text x="115" y="5070" font-family="Arial" font-size="16" fill="#5e7088">PK: session_id    ·    0 FK declaradas</text>
+<rect x="740" y="4642" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="755" y="4672" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.email_outbox</text>
+<text x="755" y="4699" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="4748" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="755" y="4778" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.push_outbox</text>
+<text x="755" y="4805" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<rect x="740" y="4854" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="755" y="4884" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.login_attempts</text>
+<text x="755" y="4911" font-family="Arial" font-size="16" fill="#5e7088">PK: email    ·    0 FK declaradas</text>
+<rect x="740" y="4960" width="520" height="78" fill="#ffffff" stroke="#7c91a5" stroke-width="2"/>
+<text x="755" y="4990" font-family="Arial" font-size="20" font-weight="700" fill="#21334e">private.whatsapp_outbox</text>
+<text x="755" y="5017" font-family="Arial" font-size="16" fill="#5e7088">PK: id    ·    0 FK declaradas</text>
+<text x="55" y="5200" font-family="Arial" font-size="17" fill="#5f7085">Fuente: supabase/migrations · 69 tablas · 98 FK entre tablas · 98 relaciones representadas en líneas · 0 sin línea</text>
+</svg>

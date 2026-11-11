@@ -1,0 +1,1 @@
+Stopped services: [supabase_imgproxy_rapitrip supabase_edge_runtime_rapitrip supabase_analytics_rapitrip supabase_vector_rapitrip supabase_pooler_rapitrip]

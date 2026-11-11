@@ -1,0 +1,4 @@
+project_id = "rapitrip-railway-auth"
+
+[auth]
+additional_redirect_urls = ["https://proyecto-rapitrip-store.vercel.app/**", "https://store-production-99a83160.up.railway.app/auth/callback**"]

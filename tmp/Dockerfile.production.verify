@@ -1,0 +1,65 @@
+# syntax=docker/dockerfile:1
+# Cada servicio de Railway construye únicamente su aplicación.
+FROM node:24-bookworm-slim AS builder
+
+ARG PNPM_VERSION=11.6.0
+RUN npm install --global pnpm@${PNPM_VERSION}
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NODE_ENV=development
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/store/package.json ./apps/store/package.json
+COPY apps/console/package.json ./apps/console/package.json
+COPY apps/dealer/package.json ./apps/dealer/package.json
+COPY packages/db-types/package.json ./packages/db-types/package.json
+COPY packages/maps/package.json ./packages/maps/package.json
+COPY packages/supabase/package.json ./packages/supabase/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/validation/package.json ./packages/validation/package.json
+COPY e2e/package.json ./e2e/package.json
+RUN --mount=type=cache,id=rapitrip-pnpm,target=/pnpm/store pnpm --store-dir /pnpm/store --filter '@rapitrip/store...' --filter '@rapitrip/console...' \
+    --filter '@rapitrip/courier...' install --frozen-lockfile --network-concurrency=8 --fetch-timeout=300000
+
+COPY tsconfig.base.json ./
+COPY apps ./apps
+COPY packages ./packages
+COPY scripts/docker ./scripts/docker
+
+ARG APP_NAME
+# Estas variables son públicas: Next las incrusta en el JavaScript del navegador.
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_TIMEZONE=America/Managua
+ARG NEXT_PUBLIC_CURRENCY=NIO
+ARG NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=false
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY
+ARG NEXT_PUBLIC_MAPBOX_TOKEN
+ARG NEXT_PUBLIC_CONTACT_EMAIL
+ARG NEXT_PUBLIC_WHATSAPP_NUMBER
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY
+ENV NODE_ENV=production \
+    DOCKER_BUILD=true
+RUN node scripts/docker/validate-build.mjs \
+    && pnpm --dir apps/${APP_NAME} build \
+    && mkdir -p /out/apps/${APP_NAME}/.next/static /out/apps/${APP_NAME}/public /out/scripts/docker \
+    && cp -a apps/${APP_NAME}/.next/standalone/. /out/ \
+    && cp -a apps/${APP_NAME}/.next/static/. /out/apps/${APP_NAME}/.next/static/ \
+    && cp -a apps/${APP_NAME}/public/. /out/apps/${APP_NAME}/public/ \
+    && cp scripts/docker/start-production.mjs scripts/docker/healthcheck-production.mjs /out/scripts/docker/
+
+FROM node:24-bookworm-slim AS production
+WORKDIR /app
+ARG APP_NAME
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    APP_NAME=${APP_NAME} \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+COPY --from=builder --chown=node:node /out/ ./
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=4 \
+    CMD node /app/scripts/docker/healthcheck-production.mjs
+CMD ["node", "/app/scripts/docker/start-production.mjs"]

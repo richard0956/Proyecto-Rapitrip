@@ -38,16 +38,12 @@ function Circle({ href, current, tone, label, count, icon }: { href: string; cur
   );
 }
 
-/**
- * Fila de círculos con las categorías del catálogo, a la manera de los círculos de productos de la portada. Se desliza sola
- * en bucle (se detiene al pasar el cursor) y, con «reducir movimiento», queda como una fila que se desliza con el dedo.
- * Cada círculo conserva el resto de filtros.
- */
+/** Categorías centradas cuando caben, con navegación manual mediante flechas o gestos. */
 export function CategoryCircles({ base, filters, categories }: { base: string; filters: CatalogFilters; categories: Category[] }) {
   if (categories.length === 0) return null;
   const iconClass = "size-7 sm:size-8";
   return (
-    <nav aria-label="Categorías" className="-mx-3 sm:-mx-6 lg:mx-0">
+    <nav aria-label="Categorías" className="w-full">
       <AutoRail count={categories.length + 1} gap="0.75rem">
         <Circle
           href={filtersHref(base, filters, { categoria: null, pagina: 1 })}

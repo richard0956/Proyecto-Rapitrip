@@ -1,0 +1,450 @@
+revalidating cache with key: async (filters, page, limit = PAGE_SIZE)=>must(await publicSupabase().rpc("catalog_search_stores", {
+        p_open_only: filters.abiertas,
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        p_limit: limit,
+        p_offset: (page - 1) * limit
+    }), "tiendas")-catalog-search-stores-[{"q":null,"tipo":null,"categoria":null,"abiertas":true},1,6] Error: tiendas: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:200:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (storeId)=>must(await publicSupabase().rpc("catalog_categories", storeId ? {
+        p_store: storeId
+    } : {}), "categorías")-catalog-categories-[null] Error: categorías: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:153:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"vendidos","tipo":null,"abiertas":false,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"descuento","tipo":null,"abiertas":true,"descuento":true,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"recientes","tipo":null,"abiertas":true,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"recientes","tipo":null,"abiertas":true,"descuento":true,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"precio_asc","tipo":null,"abiertas":true,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, page, limit = PAGE_SIZE)=>must(await publicSupabase().rpc("catalog_search_stores", {
+        p_open_only: filters.abiertas,
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        p_limit: limit,
+        p_offset: (page - 1) * limit
+    }), "tiendas")-catalog-search-stores-[{"q":null,"tipo":null,"categoria":null,"abiertas":true},1,6] Error: tiendas: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:200:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (storeId)=>must(await publicSupabase().rpc("catalog_categories", storeId ? {
+        p_store: storeId
+    } : {}), "categorías")-catalog-categories-[null] Error: categorías: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:153:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"vendidos","tipo":null,"abiertas":false,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"descuento","tipo":null,"abiertas":true,"descuento":true,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"recientes","tipo":null,"abiertas":true,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"recientes","tipo":null,"abiertas":true,"descuento":true,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
+revalidating cache with key: async (filters, store, page)=>must(await publicSupabase().rpc("catalog_search_products", {
+        ...store ? {
+            p_store: store
+        } : {},
+        ...filters.categoria ? {
+            p_category: filters.categoria
+        } : {},
+        ...filters.q ? {
+            p_query: filters.q
+        } : {},
+        ...filters.min !== null ? {
+            p_min_price: filters.min
+        } : {},
+        ...filters.max !== null ? {
+            p_max_price: filters.max
+        } : {},
+        ...filters.tipo ? {
+            p_kind: filters.tipo
+        } : {},
+        ...filters.abiertas ? {
+            p_open_only: true
+        } : {},
+        ...filters.descuento ? {
+            p_discount_only: true
+        } : {},
+        p_sort: filters.orden,
+        p_limit: PAGE_SIZE,
+        p_offset: (page - 1) * PAGE_SIZE
+    }), "productos")-catalog-search-products-[{"q":null,"categoria":null,"tienda":null,"min":null,"max":null,"orden":"precio_asc","tipo":null,"abiertas":true,"descuento":false,"pagina":1},null,1] Error: productos: TypeError: fetch failed
+    at must (src\lib\catalog.ts:131:27)
+    at <unknown> (src\lib\catalog.ts:177:5)
+  129 | /** Error de lectura: la página muestra su estado de error en vez de un catálogo vacío engañoso. */
+  130 | function must<T>(result: { data: T | null; error: { message: string } | null }, what: string): T {
+> 131 |   if (result.error) throw new Error(`${what}: ${result.error.message}`);
+      |                           ^
+  132 |   return result.data as T;
+  133 | }
+  134 |
